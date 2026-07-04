@@ -3,62 +3,139 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>精靈咖啡屋｜Elf Cafe</title>
+  <title>精靈咖啡屋｜森林地圖</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <main class="page">
-    <section class="hero">
-      <p class="eyebrow">Elf Cafe / Magical Menu</p>
-      <h1>精靈咖啡屋</h1>
-      <p class="subtitle">歡迎來到月光與星糖調製而成的小小店鋪。</p>
-      <p class="description">
-        這裡販售魔法飲品、童話甜點、素材小物與沉浸式委託商品。
-        每一份品項都像遊戲道具一樣，擁有自己的星等、屬性與故事。
-      </p>
-      <div class="hero-actions">
-        <a href="#menu" class="button primary">查看今日菜單</a>
-        <a href="#items" class="button secondary">素材圖鑑</a>
-      </div>
-    </section>
+  <main class="game-shell">
+    <section class="game-window" aria-label="精靈咖啡屋遊戲介面">
+      <header class="top-bar">
+        <div class="brand-block">
+          <p class="save-label">SAVE 001 / Forest Cafe</p>
+          <h1>精靈咖啡屋</h1>
+        </div>
 
-    <section id="menu" class="section">
-      <div class="section-heading">
-        <p class="eyebrow">Today's Special</p>
-        <h2>今日推薦</h2>
-      </div>
+        <div class="status-pills" aria-label="玩家狀態列">
+          <span>☀️ 森林午後</span>
+          <span>✦ 星糖 128</span>
+          <span>🪙 葉幣 320</span>
+        </div>
+      </header>
 
-      <div class="cards">
-        <article class="card">
-          <span class="tag">飲品｜★★★</span>
-          <h3>月光花瓣拿鐵</h3>
-          <p>以月光花瓣調和溫熱牛奶，帶有柔和祝福效果，適合夜晚創作前飲用。</p>
-        </article>
+      <nav class="location-tabs" aria-label="地圖快捷選單">
+        <button class="tab active" data-target="cafe">咖啡廳</button>
+        <button class="tab" data-target="backyard">後山</button>
+        <button class="tab" data-target="kitchen">廚房</button>
+        <button class="tab" data-target="alchemy">煉金室</button>
+        <button class="tab" data-target="greenhouse">溫室</button>
+      </nav>
 
-        <article class="card">
-          <span class="tag">甜點｜★★★★</span>
-          <h3>星星莓塔</h3>
-          <p>酸甜莓果上灑著金箔斑點，據說吃到最後一口的人會得到一點點好運。</p>
-        </article>
+      <section class="map-area">
+        <button class="arrow left" id="prevScene" type="button" aria-label="上一個場景">‹</button>
 
-        <article class="card">
-          <span class="tag">魔法素材｜★★★★★</span>
-          <h3>夜空碎片</h3>
-          <p>封存了一小段星空的稀有素材，常用於夢境、夜晚與情緒相關魔法。</p>
-        </article>
-      </div>
-    </section>
+        <div class="map-viewport" id="mapViewport" tabindex="0" aria-label="可左右滑動的森林咖啡廳地圖">
+          <div class="map-track">
+            <article class="scene-card cafe active" id="cafe" data-speaker="小店長" data-title="咖啡廳" data-dialogue="歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？">
+              <div class="scene-sky"></div>
+              <div class="forest-layer back"></div>
+              <div class="forest-layer front"></div>
+              <div class="cottage">
+                <span class="roof"></span>
+                <span class="sign">CAFE</span>
+                <span class="door"></span>
+                <span class="window w1"></span>
+                <span class="window w2"></span>
+              </div>
+              <div class="scene-info">
+                <span class="chapter">AREA 01</span>
+                <h2>咖啡廳</h2>
+                <p>主店面。販售魔法飲品、甜點與今日推薦，也是客人接委託的地方。</p>
+              </div>
+              <button class="enter-button" type="button">進入店內</button>
+            </article>
 
-    <section id="items" class="section split">
-      <div>
-        <p class="eyebrow">Collection</p>
-        <h2>可擴充的圖鑑系統</h2>
-      </div>
-      <p>
-        之後可以把每個素材整理成獨立卡片：編號、名稱、稀有度、屬性、用途、象徵、售價與委託形式。
-        也可以做成像遊戲介面一樣的菜單頁。
-      </p>
+            <article class="scene-card backyard" id="backyard" data-speaker="採集精靈" data-title="後山" data-dialogue="後山今天長出了星星莓！如果天黑前採回來，可以做成閃閃發光的莓果塔。">
+              <div class="scene-sky"></div>
+              <div class="forest-layer back"></div>
+              <div class="mountain"></div>
+              <div class="path"></div>
+              <div class="berry bush1">✦</div>
+              <div class="berry bush2">✦</div>
+              <div class="berry bush3">✦</div>
+              <div class="scene-info">
+                <span class="chapter">AREA 02</span>
+                <h2>後山</h2>
+                <p>採集素材的地點。月光花瓣、星星莓、夜露蘑菇都可能在這裡出現。</p>
+              </div>
+              <button class="enter-button" type="button">前往採集</button>
+            </article>
+
+            <article class="scene-card kitchen" id="kitchen" data-speaker="甜點助手" data-title="廚房" data-dialogue="烤箱剛剛叮了一聲！今天的星星莓塔、雲朵司康和森林蜂蜜布丁都準備好了。">
+              <div class="scene-sky indoor"></div>
+              <div class="shelf shelf1"></div>
+              <div class="shelf shelf2"></div>
+              <div class="oven"></div>
+              <div class="table"></div>
+              <div class="steam s1">♨</div>
+              <div class="steam s2">♨</div>
+              <div class="scene-info">
+                <span class="chapter">AREA 03</span>
+                <h2>廚房</h2>
+                <p>製作甜點與料理的地方。適合放置食物委託、限定菜單與製作紀錄。</p>
+              </div>
+              <button class="enter-button" type="button">查看甜點</button>
+            </article>
+
+            <article class="scene-card alchemy" id="alchemy" data-speaker="煉金師" data-title="煉金室" data-dialogue="噓——這瓶紅豆湯圓藥劑還在反應中。素材比例只要差一點，效果就會完全不同喔。">
+              <div class="scene-sky indoor night"></div>
+              <div class="magic-circle"></div>
+              <div class="bottle b1"></div>
+              <div class="bottle b2"></div>
+              <div class="bottle b3"></div>
+              <div class="spark spark1">✧</div>
+              <div class="spark spark2">✦</div>
+              <div class="spark spark3">✧</div>
+              <div class="scene-info">
+                <span class="chapter">AREA 04</span>
+                <h2>煉金室</h2>
+                <p>調製藥水、魔法飲品與特殊素材的地方。適合做成素材合成系統。</p>
+              </div>
+              <button class="enter-button" type="button">開始調製</button>
+            </article>
+
+            <article class="scene-card greenhouse" id="greenhouse" data-speaker="花園精靈" data-title="溫室" data-dialogue="今天的月光花瓣狀態很好，花瓣邊緣有淡淡的光，適合拿來提升藥水安定性。">
+              <div class="scene-sky"></div>
+              <div class="glass-house"></div>
+              <div class="plant p1">✿</div>
+              <div class="plant p2">✿</div>
+              <div class="plant p3">✿</div>
+              <div class="plant p4">✿</div>
+              <div class="scene-info">
+                <span class="chapter">AREA 05</span>
+                <h2>溫室</h2>
+                <p>培育花草與珍稀素材的玻璃小屋。可以放素材圖鑑、星等和用途設定。</p>
+              </div>
+              <button class="enter-button" type="button">照料植物</button>
+            </article>
+          </div>
+        </div>
+
+        <button class="arrow right" id="nextScene" type="button" aria-label="下一個場景">›</button>
+      </section>
+
+      <footer class="dialogue-box" aria-live="polite">
+        <div class="npc-portrait">🧝‍♀️</div>
+        <div class="dialogue-content">
+          <div class="name-row">
+            <span class="speaker" id="speakerName">小店長</span>
+            <span class="place" id="placeName">咖啡廳</span>
+          </div>
+          <p id="dialogueText">歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？</p>
+        </div>
+      </footer>
     </section>
   </main>
+
+  <script src="script.js"></script>
 </body>
 </html>
