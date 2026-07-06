@@ -10,9 +10,12 @@
   <main class="game-shell">
     <section class="game-window" aria-label="精靈咖啡屋遊戲介面">
       <header class="top-bar">
-        <div class="brand-block">
-          <p class="save-label">SAVE 001 / Forest Cafe</p>
-          <h1>精靈咖啡屋</h1>
+        <div class="profile-card">
+          <div class="avatar">🧁</div>
+          <div>
+            <p class="save-label">LV. 05 / Forest Cafe</p>
+            <h1>精靈咖啡屋</h1>
+          </div>
         </div>
 
         <div class="status-pills" aria-label="玩家狀態列">
@@ -21,6 +24,18 @@
           <span>🪙 葉幣 320</span>
         </div>
       </header>
+
+      <div class="side-rail left-rail" aria-label="左側功能選單">
+        <button>📮<small>郵件</small></button>
+        <button>📜<small>任務</small></button>
+        <button>🎁<small>活動</small></button>
+      </div>
+
+      <div class="side-rail right-rail" aria-label="右側功能選單">
+        <button>📖<small>圖鑑</small></button>
+        <button>🛒<small>商店</small></button>
+        <button>🧺<small>倉庫</small></button>
+      </div>
 
       <nav class="location-tabs" aria-label="地圖快捷選單">
         <button class="tab active" data-target="cafe">咖啡廳</button>
@@ -46,6 +61,12 @@
                 <span class="window w1"></span>
                 <span class="window w2"></span>
               </div>
+              <button class="object-tag tag-menu" type="button">菜單</button>
+              <button class="object-tag tag-order" type="button">委託</button>
+              <button class="object-tag tag-daily" type="button">今日推薦</button>
+              <div class="npc npc-main">🧚</div>
+              <div class="npc npc-cat">🐾</div>
+              <div class="speech-bubble">新甜點完成！</div>
               <div class="scene-info">
                 <span class="chapter">AREA 01</span>
                 <h2>咖啡廳</h2>
@@ -62,6 +83,10 @@
               <div class="berry bush1">✦</div>
               <div class="berry bush2">✦</div>
               <div class="berry bush3">✦</div>
+              <button class="object-tag tag-menu" type="button">採集點</button>
+              <button class="object-tag tag-order" type="button">素材</button>
+              <div class="npc npc-main">🐰</div>
+              <div class="speech-bubble">星星莓發光了！</div>
               <div class="scene-info">
                 <span class="chapter">AREA 02</span>
                 <h2>後山</h2>
@@ -78,6 +103,10 @@
               <div class="table"></div>
               <div class="steam s1">♨</div>
               <div class="steam s2">♨</div>
+              <button class="object-tag tag-menu" type="button">甜點</button>
+              <button class="object-tag tag-order" type="button">製作</button>
+              <div class="npc npc-main">🍮</div>
+              <div class="speech-bubble">烤箱叮！</div>
               <div class="scene-info">
                 <span class="chapter">AREA 03</span>
                 <h2>廚房</h2>
@@ -95,6 +124,10 @@
               <div class="spark spark1">✧</div>
               <div class="spark spark2">✦</div>
               <div class="spark spark3">✧</div>
+              <button class="object-tag tag-menu" type="button">配方</button>
+              <button class="object-tag tag-order" type="button">調合</button>
+              <div class="npc npc-main">🧪</div>
+              <div class="speech-bubble">魔力穩定中…</div>
               <div class="scene-info">
                 <span class="chapter">AREA 04</span>
                 <h2>煉金室</h2>
@@ -110,6 +143,10 @@
               <div class="plant p2">✿</div>
               <div class="plant p3">✿</div>
               <div class="plant p4">✿</div>
+              <button class="object-tag tag-menu" type="button">澆水</button>
+              <button class="object-tag tag-order" type="button">圖鑑</button>
+              <div class="npc npc-main">🌱</div>
+              <div class="speech-bubble">月光花瓣盛開了</div>
               <div class="scene-info">
                 <span class="chapter">AREA 05</span>
                 <h2>溫室</h2>
@@ -133,6 +170,14 @@
           <p id="dialogueText">歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？</p>
         </div>
       </footer>
+
+      <nav class="bottom-dock" aria-label="底部導覽列">
+        <button>📢<span>公告</span></button>
+        <button>✅<span>簽到</span></button>
+        <button>🏠<span>裝飾</span></button>
+        <button>📚<span>圖鑑</span></button>
+        <button>⚙️<span>設定</span></button>
+      </nav>
     </section>
   </main>
 
