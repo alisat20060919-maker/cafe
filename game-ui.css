@@ -1,1 +1,62 @@
-.game-window{position:relative}.top-bar{position:relative;z-index:40;background:linear-gradient(180deg,rgba(63,46,32,.88),rgba(23,63,44,.7))}.profile-card{display:flex;align-items:center;gap:12px}.avatar{display:grid;place-items:center;width:58px;height:58px;border:3px solid #fff0b8;border-radius:22px;background:linear-gradient(180deg,#ffe59c,#c77b49);box-shadow:inset 0 -5px 0 rgba(90,50,31,.25),0 8px 18px rgba(0,0,0,.22);font-size:1.9rem}.side-rail{position:absolute;top:138px;z-index:35;display:grid;gap:10px}.left-rail{left:14px}.right-rail{right:14px}.side-rail button{width:70px;min-height:64px;border-radius:18px;color:#fff4d7;background:linear-gradient(180deg,rgba(95,58,42,.96),rgba(48,32,27,.95));font-size:1.4rem;font-weight:900;border:2px solid rgba(247,216,123,.58);box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15)}.side-rail small{display:block;margin-top:3px;font-size:.72rem}.location-tabs{padding-left:120px;padding-right:120px}.scene-info{left:clamp(92px,12vw,150px);width:min(360px,calc(100% - 220px))}.arrow.left{left:92px}.arrow.right{right:92px}.object-tag{position:absolute;z-index:12;padding:8px 14px;border-radius:999px;border:2px solid rgba(247,216,123,.58);background:linear-gradient(180deg,#fff0b0,#efb862);color:#3d2414;font-weight:900;box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15);animation:floaty 2.4s ease-in-out infinite}.tag-menu{left:48%;bottom:46%}.tag-order{right:28%;bottom:24%;animation-delay:.4s}.tag-daily{left:30%;bottom:20%;animation-delay:.8s}.npc{position:absolute;z-index:16;display:grid;place-items:center;border:3px solid rgba(255,244,215,.85);border-radius:50%;background:linear-gradient(180deg,#fff0b0,#d78655);box-shadow:0 12px 20px rgba(0,0,0,.22);animation:bob 2.2s ease-in-out infinite}.npc-main{right:22%;bottom:22%;width:82px;height:82px;font-size:2.5rem}.npc-cat{left:35%;bottom:18%;width:54px;height:54px;font-size:1.6rem;animation-delay:.4s}.speech-bubble{position:absolute;right:19%;bottom:39%;z-index:17;padding:8px 12px;border:2px solid #5a321f;border-radius:18px 18px 18px 4px;color:#3d2414;background:#fff4d7;font-weight:900}.dialogue-box{margin-left:94px;margin-right:94px}.bottom-dock{position:relative;z-index:42;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 20px 16px}.bottom-dock button{min-height:66px;border-radius:20px;background:linear-gradient(180deg,#fff0b0,#e9b45f);color:#402411;font-size:1.35rem;font-weight:900;border:2px solid rgba(247,216,123,.58);box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15)}.bottom-dock span{display:block;margin-top:2px;font-size:.78rem}@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@media(max-width:760px){.game-shell{padding:0}.game-window{width:100%;min-height:100vh;border-radius:0;border-left:0;border-right:0}.top-bar{padding:12px 12px 8px;gap:10px}.avatar{width:46px;height:46px;border-radius:16px;font-size:1.55rem}.status-pills{gap:5px;max-width:52%}.status-pills span{padding:5px 8px;font-size:.72rem}.side-rail{top:122px;gap:8px}.left-rail{left:6px}.right-rail{right:6px}.side-rail button{width:58px;min-height:56px;border-radius:16px;font-size:1.15rem}.side-rail small{font-size:.66rem}.location-tabs{padding:10px 72px}.map-area{height:520px}.scene-info{top:16px;left:72px;width:calc(100% - 144px);padding:12px}.scene-info h2{font-size:2rem}.scene-info p{font-size:.82rem;line-height:1.55}.object-tag{padding:6px 11px;font-size:.82rem}.tag-menu{left:45%;bottom:48%}.tag-order{right:18%;bottom:28%}.tag-daily{left:21%;bottom:21%}.npc-main{right:16%;bottom:21%;width:70px;height:70px;font-size:2.1rem}.npc-cat{left:29%;bottom:18%}.speech-bubble{right:14%;bottom:38%;max-width:150px;font-size:.8rem}.arrow.left{left:68px}.arrow.right{right:68px}.dialogue-box{margin-left:70px;margin-right:70px}.bottom-dock{padding:0 8px 10px;gap:5px}.bottom-dock button{min-height:56px;border-radius:16px;font-size:1.1rem}.bottom-dock span{font-size:.68rem}}@media(max-width:390px){.status-pills span:nth-child(1){display:none}.map-area{height:500px}.scene-info{display:none}.dialogue-box{margin-left:64px;margin-right:64px}}
+/* 遊戲感收斂版：保留 HUD，但不要塞滿畫面 */
+.game-window{position:relative}
+.top-bar{position:relative;z-index:40;background:linear-gradient(180deg,rgba(63,46,32,.88),rgba(23,63,44,.7))}
+.profile-card{display:flex;align-items:center;gap:12px}
+.avatar{display:grid;place-items:center;width:54px;height:54px;border:3px solid #fff0b8;border-radius:20px;background:linear-gradient(180deg,#ffe59c,#c77b49);box-shadow:inset 0 -5px 0 rgba(90,50,31,.25),0 8px 18px rgba(0,0,0,.22);font-size:1.75rem}
+
+/* 桌機才顯示側邊快捷，手機先收起來 */
+.side-rail{position:absolute;top:136px;z-index:35;display:grid;gap:10px}
+.left-rail{left:14px}.right-rail{right:14px}
+.side-rail button{width:68px;min-height:62px;border-radius:18px;color:#fff4d7;background:linear-gradient(180deg,rgba(95,58,42,.96),rgba(48,32,27,.95));font-size:1.35rem;font-weight:900;border:2px solid rgba(247,216,123,.58);box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15)}
+.side-rail small{display:block;margin-top:3px;font-size:.7rem}
+
+.location-tabs{padding-left:110px;padding-right:110px}
+.scene-info{left:clamp(92px,12vw,150px);width:min(360px,calc(100% - 220px))}
+.arrow.left{left:90px}.arrow.right{right:90px}
+
+.object-tag{position:absolute;z-index:12;padding:8px 14px;border-radius:999px;border:2px solid rgba(247,216,123,.58);background:linear-gradient(180deg,#fff0b0,#efb862);color:#3d2414;font-weight:900;box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15);animation:softFloat 2.6s ease-in-out infinite}
+.tag-menu{left:48%;bottom:46%}.tag-order{right:28%;bottom:24%;animation-delay:.4s}.tag-daily{left:30%;bottom:20%;animation-delay:.8s}
+.npc{position:absolute;z-index:16;display:grid;place-items:center;border:3px solid rgba(255,244,215,.85);border-radius:50%;background:linear-gradient(180deg,#fff0b0,#d78655);box-shadow:0 12px 20px rgba(0,0,0,.22);animation:bob 2.2s ease-in-out infinite}
+.npc-main{right:22%;bottom:22%;width:82px;height:82px;font-size:2.5rem}.npc-cat{left:35%;bottom:18%;width:54px;height:54px;font-size:1.6rem;animation-delay:.4s}
+.speech-bubble{position:absolute;right:19%;bottom:39%;z-index:17;padding:8px 12px;border:2px solid #5a321f;border-radius:18px 18px 18px 4px;color:#3d2414;background:#fff4d7;font-weight:900}
+.dialogue-box{margin-left:92px;margin-right:92px}
+.bottom-dock{position:relative;z-index:42;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 20px 16px}
+.bottom-dock button{min-height:64px;border-radius:20px;background:linear-gradient(180deg,#fff0b0,#e9b45f);color:#402411;font-size:1.28rem;font-weight:900;border:2px solid rgba(247,216,123,.58);box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 20px rgba(0,0,0,.15)}
+.bottom-dock span{display:block;margin-top:2px;font-size:.76rem}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes softFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+@media(max-width:760px){
+  .game-shell{padding:0}.game-window{width:100%;min-height:100vh;border-radius:0;border-left:0;border-right:0}
+  .top-bar{padding:12px 12px 8px;gap:10px}.avatar{width:44px;height:44px;border-radius:16px;font-size:1.45rem}
+  h1{font-size:1.45rem}.save-label{font-size:.64rem;letter-spacing:.08em}
+  .status-pills{gap:5px;max-width:50%}.status-pills span{padding:5px 8px;font-size:.72rem}.status-pills span:first-child{display:none}
+
+  /* 手機不要左右塞一排按鈕，畫面才不亂 */
+  .side-rail{display:none}
+  .location-tabs{padding:10px 12px;justify-content:flex-start}
+  .tab{padding:8px 12px;font-size:.84rem}
+  .map-area{height:535px}
+  .arrow{width:38px;height:54px;border-radius:15px;font-size:2.25rem;background:rgba(62,36,24,.5)}
+  .arrow.left{left:8px}.arrow.right{right:8px}
+
+  .scene-info{top:14px;left:14px;transform:none;width:min(250px,calc(100% - 28px));padding:12px;border-width:2px;border-radius:18px;background:rgba(42,29,22,.5)}
+  .scene-info h2{font-size:1.75rem}.scene-info p{font-size:.78rem;line-height:1.48}.chapter{font-size:.68rem}
+  .cottage{bottom:22%;width:68vw;height:158px}.roof{top:-52px;height:78px}.window{display:none}
+
+  /* 場景內只留兩個明確入口 */
+  .object-tag{padding:6px 11px;font-size:.82rem}.tag-menu{left:44%;bottom:48%}.tag-order{right:17%;bottom:29%}.tag-daily{display:none}
+  .npc-main{right:15%;bottom:21%;width:68px;height:68px;font-size:2rem}.npc-cat{display:none}
+  .speech-bubble{right:12%;bottom:38%;max-width:145px;font-size:.78rem;padding:7px 10px}
+  .enter-button{right:50%;bottom:22px;transform:translateX(50%);padding:11px 18px;border-radius:16px}
+
+  .dialogue-box{grid-template-columns:58px 1fr;gap:10px;margin:0 12px 12px;padding:11px;min-height:86px;border-radius:20px}
+  .npc-portrait{width:58px;height:58px;border-radius:16px;font-size:1.85rem}
+  .dialogue-content p{font-size:.9rem;line-height:1.5}.speaker{padding:4px 11px}.place{font-size:.78rem}
+  .bottom-dock{padding:0 8px 10px;gap:5px}.bottom-dock button{min-height:52px;border-radius:15px;font-size:1rem}.bottom-dock span{font-size:.66rem}
+}
+
+@media(max-width:390px){
+  .map-area{height:512px}.scene-info{display:none}.cottage{width:72vw}.dialogue-box{margin-left:10px;margin-right:10px}
+  .bottom-dock button{min-height:50px}
+}
