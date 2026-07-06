@@ -1,4 +1,16 @@
-/* mobile polish after disabling UI asset test */
+/* mobile polish + Drive icon test, no generated images */
+:root{
+  --ico-cafe:url('https://drive.google.com/thumbnail?id=1-INH1EtGKGr4jJXNd3COKygOWHOwJeZh&sz=w160');
+  --ico-backyard:url('https://drive.google.com/thumbnail?id=1Es8LQBKecJgDFjX180-phTjDC4HF8WQz&sz=w160');
+  --ico-kitchen:url('https://drive.google.com/thumbnail?id=1C5-Ul3jBTzFlpojugIXUzgUjXDm7gfYO&sz=w160');
+  --ico-alchemy:url('https://drive.google.com/thumbnail?id=1IqJFIt-DpFkBouLev0gXNUCdFDQWVprJ&sz=w160');
+  --ico-greenhouse:url('https://drive.google.com/thumbnail?id=1YIYfZII1R7AJxKJx2PBD2XWz0MXPpnjw&sz=w160');
+  --ico-checkin:url('https://drive.google.com/thumbnail?id=1bTWDZRysGGf-aU4qmne8DOtObwLF9Gvb&sz=w160');
+  --ico-decor:url('https://drive.google.com/thumbnail?id=1i3EKWzGH4mj8N62N0EV9rgc8vA6Jvk8q&sz=w160');
+  --ico-inventory:url('https://drive.google.com/thumbnail?id=1bUIhrjt3uDZrwORLxsGKQ2KZICKuBf3T&sz=w160');
+  --ico-quest:url('https://drive.google.com/thumbnail?id=15tV4KNUl69LKVUyWrmY0pYH6ZyCmTRQA&sz=w160');
+  --ico-settings:url('https://drive.google.com/thumbnail?id=1lGBZisAS0ujf7qBvGzxnDIqyfmLrwgev&sz=w160');
+}
 .object-tag{display:none!important}
 .npc{position:absolute;z-index:15;display:grid;place-items:center}
 .npc-main{right:17%;bottom:20%;font-size:2.1rem;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
@@ -14,8 +26,14 @@
   .save-label{font-size:.72rem;margin-bottom:4px}
   .status-pills{gap:8px;justify-content:flex-start}
   .status-pills span{font-size:.82rem;padding:7px 12px}
-  .location-tabs{padding:10px 12px;gap:8px}
-  .tab{padding:9px 14px;font-size:.95rem}
+  .location-tabs{padding:10px 12px;gap:8px;align-items:center}
+  .tab{display:inline-flex;align-items:center;gap:6px;padding:8px 13px;font-size:.9rem;white-space:nowrap}
+  .tab::before{content:'';width:22px;height:22px;display:inline-block;background:center/contain no-repeat;flex:0 0 auto;filter:drop-shadow(0 2px 2px rgba(0,0,0,.18))}
+  .tab:nth-child(1)::before{background-image:var(--ico-cafe)}
+  .tab:nth-child(2)::before{background-image:var(--ico-backyard)}
+  .tab:nth-child(3)::before{background-image:var(--ico-kitchen)}
+  .tab:nth-child(4)::before{background-image:var(--ico-alchemy)}
+  .tab:nth-child(5)::before{background-image:var(--ico-greenhouse)}
   .map-area{height:500px}
   .scene-info{top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 58px);padding:16px;border-radius:22px}
   .scene-info h2{font-size:2.25rem}
@@ -30,19 +48,25 @@
   .npc-portrait{width:62px;height:62px;border-radius:18px;font-size:2rem}
   .dialogue-content p{font-size:.92rem;line-height:1.55}
   .bottom-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:0 8px 14px;margin:0}
-  .bottom-dock button{min-height:48px;border-radius:16px;font-size:1rem;padding:3px 2px;line-height:1.05}
-  .bottom-dock span{font-size:.62rem;margin-top:1px;white-space:nowrap}
+  .bottom-dock button{min-height:58px;border-radius:16px;font-size:0;padding:4px 2px 5px;line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(62,36,24,.56)}
+  .bottom-dock button::before{content:'';width:28px;height:28px;display:block;background:center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+  .bottom-dock button:nth-child(1)::before{background-image:var(--ico-checkin)}
+  .bottom-dock button:nth-child(2)::before{background-image:var(--ico-decor)}
+  .bottom-dock button:nth-child(3)::before{background-image:var(--ico-inventory)}
+  .bottom-dock button:nth-child(4)::before{background-image:var(--ico-quest)}
+  .bottom-dock button:nth-child(5)::before{background-image:var(--ico-settings)}
+  .bottom-dock span{font-size:.58rem;margin-top:0;white-space:nowrap}
 }
 @media(max-width:390px){
   .game-shell{padding-top:calc(28px + env(safe-area-inset-top))}
   h1{font-size:1.8rem}
   .status-pills span{font-size:.76rem;padding:6px 10px}
+  .tab{font-size:.84rem;padding:8px 12px}.tab::before{width:20px;height:20px}
   .map-area{height:480px}
   .scene-info{width:calc(100% - 44px);padding:14px}
   .scene-info h2{font-size:2rem}
   .scene-info p{font-size:.84rem}
   .cottage{width:76vw;height:154px}
   .roof{top:-50px;height:76px}
-  .bottom-dock button{min-height:45px;font-size:.92rem}
-  .bottom-dock span{font-size:.58rem}
+  .bottom-dock button{min-height:54px}.bottom-dock button::before{width:25px;height:25px}.bottom-dock span{font-size:.54rem}
 }
