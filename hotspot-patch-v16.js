@@ -18,20 +18,7 @@
   }
 
   function openGacha(){
-    const win = document.querySelector('.game-window');
-    const viewport = document.querySelector('#mapViewport');
-    const card = document.querySelector('#gacha');
-    if (!viewport || !card) return;
-    win?.classList.remove('inside-mode');
-    document.querySelectorAll('.scene-card').forEach(x => x.classList.toggle('active', x.id === 'gacha'));
-    document.querySelectorAll('.location-tabs .tab').forEach(x => x.classList.remove('active'));
-    const speaker = document.querySelector('#speakerName');
-    const place = document.querySelector('#placeName');
-    const dialogue = document.querySelector('#dialogueText');
-    if (speaker) speaker.textContent = '星糖扭蛋機';
-    if (place) place.textContent = '星糖扭蛋';
-    if (dialogue) dialogue.textContent = '投入星糖，看看今天會遇見哪一位精靈吧。';
-    viewport.scrollTo({ left: card.offsetLeft, behavior: 'smooth' });
+    window.location.href = 'lucky-v19.html?v=fairy02';
   }
 
   function wireBottomGacha(){
