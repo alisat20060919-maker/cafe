@@ -1,6 +1,6 @@
-import { GameDB } from './game-data.js';
-import { getState } from './game-state.js';
-import { Events, on } from './event-bus.js';
+import { GameDB } from './game-data.js?v=core03';
+import { getState } from './game-state.js?v=core03';
+import { Events, on } from './event-bus.js?v=core03';
 
 function pageHeader(kicker, title, body) {
   return `
