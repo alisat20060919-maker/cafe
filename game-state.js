@@ -78,6 +78,7 @@ export function getState() {
 
 export function persistState() {
   saveSave(state);
+  emitStateChanged(reason);
 }
 
 export function resetState() {
