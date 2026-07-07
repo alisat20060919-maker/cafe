@@ -76,7 +76,7 @@ export function getState() {
   return state;
 }
 
-export function persistState() {
+export function persistState(reason = 'manual') {
   saveSave(state);
   emitStateChanged(reason);
 }
