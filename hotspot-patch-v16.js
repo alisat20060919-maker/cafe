@@ -36,11 +36,12 @@
     if (document.querySelector('#gachaSpa')) return;
     const style = document.createElement('style');
     style.textContent = `
+      .game-window.gacha-mode .top-bar,
       .game-window.gacha-mode .location-tabs,
       .game-window.gacha-mode .map-area,
       .game-window.gacha-mode .cafe-inside,
       .game-window.gacha-mode .dialogue-box{display:none!important}
-      .gacha-spa{display:none;flex:1;min-height:0;padding:10px 0 0}
+      .gacha-spa{display:none;flex:1;min-height:0;padding:0}
       .game-window.gacha-mode .gacha-spa{display:flex;flex-direction:column}
       .gacha-spa-head{display:flex;justify-content:space-between;align-items:flex-end;margin:0 0 8px}
       .gacha-spa-label{font-size:12px;letter-spacing:.2em;opacity:.75}
