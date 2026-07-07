@@ -40,10 +40,6 @@ function itemIcon(itemId) {
   return GameDB.items[itemId]?.icon || '◇';
 }
 
-function fairyName(fairyId) {
-  return GameDB.fairies[fairyId]?.name || fairyId;
-}
-
 function renderCost(cost = {}) {
   return Object.entries(cost)
     .map(([itemId, qty]) => `${itemIcon(itemId)} ${itemName(itemId)} ×${qty}`)
@@ -68,12 +64,10 @@ function ensureTopActions() {
   actions.className = 'top-actions';
   actions.innerHTML = `
     <button type="button" data-action="daily">🎁<span>簽到</span></button>
-    <button type="button" data-action="settings">⚙️<span>設定</span></button>
   `;
   topBar.appendChild(actions);
 
   actions.querySelector('[data-action="daily"]').addEventListener('click', handleDaily);
-  actions.querySelector('[data-action="settings"]').addEventListener('click', openSettings);
 }
 
 function ensurePageHost() {
@@ -102,15 +96,18 @@ function rewriteBottomDock() {
   if (!dock) return;
 
   dock.innerHTML = `
-    <button type="button" data-page-button="home">🏠<span>店鋪</span></button>
     <button type="button" data-page-button="gacha">🎰<span>祈願</span></button>
     <button type="button" data-page-button="commissions">📋<span>委託</span></button>
+    <button type="button" class="dock-center" data-page-button="home">🏠<span>店鋪</span></button>
     <button type="button" data-page-button="inventory">🧺<span>背包</span></button>
+    <button type="button" data-dock-action="settings">⚙️<span>設定</span></button>
   `;
 
   $all('[data-page-button]', dock).forEach((button) => {
     button.addEventListener('click', () => setPage(button.dataset.pageButton));
   });
+
+  $('[data-dock-action="settings"]', dock)?.addEventListener('click', openSettings);
 }
 
 function updateStatus() {
@@ -156,7 +153,7 @@ function setPage(page) {
 
   if (currentPage === 'home') {
     pageHost.hidden = true;
-    setDialogue('咖啡屋', '回到店鋪。簽到在右上角，設定也移到右上角，底部只保留真正的主功能。');
+    setDialogue('咖啡屋', '回到店鋪。主畫面現在放在底部中央圓形按鈕，簽到留在右上角。');
     updateStatus();
     return;
   }
