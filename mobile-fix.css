@@ -1,4 +1,4 @@
-/* mobile polish + Drive icon/frame test, no generated images */
+/* stable mobile polish + Drive icon test only, no generated images */
 :root{
   --ico-cafe:url('https://drive.google.com/thumbnail?id=1-INH1EtGKGr4jJXNd3COKygOWHOwJeZh&sz=w160');
   --ico-backyard:url('https://drive.google.com/thumbnail?id=1Es8LQBKecJgDFjX180-phTjDC4HF8WQz&sz=w160');
@@ -10,9 +10,6 @@
   --ico-inventory:url('https://drive.google.com/thumbnail?id=1bUIhrjt3uDZrwORLxsGKQ2KZICKuBf3T&sz=w160');
   --ico-quest:url('https://drive.google.com/thumbnail?id=15tV4KNUl69LKVUyWrmY0pYH6ZyCmTRQA&sz=w160');
   --ico-settings:url('https://drive.google.com/thumbnail?id=1lGBZisAS0ujf7qBvGzxnDIqyfmLrwgev&sz=w160');
-  --frame-info:url('https://drive.google.com/thumbnail?id=12KkA-Zk5ohsXHzc3YZNMpm1EVFoG55Cg&sz=w900');
-  --frame-button:url('https://drive.google.com/thumbnail?id=1wQrC97OPBiDNteH6XXtbp6wINrelX36S&sz=w500');
-  --frame-dialogue:url('https://drive.google.com/thumbnail?id=1jPUMlsEf1PPeCnnes-X8FdsK7ogoO-Zn&sz=w900');
 }
 .object-tag{display:none!important}
 .npc{position:absolute;z-index:15;display:grid;place-items:center}
@@ -38,20 +35,18 @@
   .tab:nth-child(4)::before{background-image:var(--ico-alchemy)}
   .tab:nth-child(5)::before{background-image:var(--ico-greenhouse)}
   .map-area{height:500px}
-  .scene-info{top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 46px);padding:28px 26px 26px;border:0;border-radius:0;background:var(--frame-info) center/100% 100% no-repeat!important;box-shadow:none;color:#4b2e1f;text-shadow:0 1px 0 rgba(255,250,226,.65)}
-  .scene-info .chapter{color:#8a5a2b;background:rgba(255,247,204,.58);border-color:rgba(162,112,55,.28)}
-  .scene-info h2{font-size:2.05rem;color:#5a321c}
-  .scene-info p{font-size:.88rem;line-height:1.6;color:#5c402d}
+  .scene-info{top:24px;left:50%;transform:translateX(-50%);width:calc(100% - 58px);padding:16px;border-radius:22px}
+  .scene-info h2{font-size:2.25rem}
+  .scene-info p{font-size:.9rem;line-height:1.65}
   .cottage{bottom:18%;width:72vw;height:168px}
   .roof{top:-56px;height:82px}
   .window{display:none}
-  .enter-button{right:50%;bottom:22px;transform:translateX(50%);padding:16px 36px 17px;border:0;border-radius:0;background:var(--frame-button) center/100% 100% no-repeat!important;box-shadow:none;color:#56331f;font-weight:950;text-shadow:0 1px 0 rgba(255,245,204,.8)}
+  .enter-button{right:50%;bottom:22px;transform:translateX(50%);padding:12px 24px;border-radius:18px;font-size:1rem}
   .arrow{width:42px;height:58px;border-radius:16px;font-size:2.4rem}
   .arrow.left{left:7px}.arrow.right{right:7px}
-  .dialogue-box{grid-template-columns:62px 1fr;gap:12px;margin:0 12px 12px;padding:20px 22px 18px;min-height:112px;border:0;border-radius:0;background:var(--frame-dialogue) center/100% 100% no-repeat!important;box-shadow:none;color:#4b2e1f}
-  .npc-portrait{width:62px;height:62px;border-radius:18px;font-size:2rem;background:rgba(255,247,210,.62);border:1px solid rgba(111,76,42,.2)}
-  .dialogue-meta .speaker{color:#5c321e}.dialogue-meta .place{color:#8a5a2b}
-  .dialogue-content p{font-size:.92rem;line-height:1.55;color:#5c402d;text-shadow:0 1px 0 rgba(255,250,226,.55)}
+  .dialogue-box{grid-template-columns:62px 1fr;gap:12px;margin:0 12px 12px;padding:12px;min-height:98px;border-radius:24px}
+  .npc-portrait{width:62px;height:62px;border-radius:18px;font-size:2rem}
+  .dialogue-content p{font-size:.92rem;line-height:1.55}
   .bottom-dock{grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:0 8px 14px;margin:0}
   .bottom-dock button{min-height:58px;border-radius:16px;font-size:0;padding:4px 2px 5px;line-height:1.05;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:rgba(62,36,24,.56)}
   .bottom-dock button::before{content:'';width:28px;height:28px;display:block;background:center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
@@ -68,12 +63,10 @@
   .status-pills span{font-size:.76rem;padding:6px 10px}
   .tab{font-size:.84rem;padding:8px 12px}.tab::before{width:20px;height:20px}
   .map-area{height:480px}
-  .scene-info{width:calc(100% - 34px);padding:25px 23px 23px}
-  .scene-info h2{font-size:1.9rem}
-  .scene-info p{font-size:.82rem}
+  .scene-info{width:calc(100% - 44px);padding:14px}
+  .scene-info h2{font-size:2rem}
+  .scene-info p{font-size:.84rem}
   .cottage{width:76vw;height:154px}
   .roof{top:-50px;height:76px}
-  .enter-button{padding:15px 34px 16px}
-  .dialogue-box{padding:18px 18px 16px;margin-inline:8px}
   .bottom-dock button{min-height:54px}.bottom-dock button::before{width:25px;height:25px}.bottom-dock span{font-size:.54rem}
 }
