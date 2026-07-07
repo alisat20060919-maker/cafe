@@ -10,8 +10,8 @@
 
 .cafe-room-scene{
   isolation:isolate;
-  cursor:crosshair;
-  background-image:linear-gradient(180deg,rgba(24,59,46,.05),rgba(24,59,46,.22)),url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1000')!important;
+  cursor:pointer;
+  background-image:linear-gradient(180deg,rgba(24,59,46,.02),rgba(24,59,46,.15)),url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1000')!important;
   background-position:center 50%!important;
   background-size:cover!important;
 }
@@ -19,57 +19,46 @@
 .cafe-room-scene::before{
   content:"";
   position:absolute;
-  left:4%;
-  right:4%;
-  bottom:4%;
-  height:34%;
+  inset:0;
   z-index:1;
-  border-radius:50%;
-  background:radial-gradient(ellipse,rgba(255,234,163,.18),transparent 68%);
+  background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,.12));
   pointer-events:none;
 }
 
-.cafe-room-scene::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  z-index:2;
-  background:linear-gradient(180deg,rgba(10,20,15,0) 52%,rgba(10,20,15,.18));
-  pointer-events:none;
-}
+.cafe-room-scene::after{display:none;}
 
 .room-tip{
   position:absolute;
-  left:14px;
-  bottom:14px;
+  left:10px;
+  bottom:10px;
   z-index:6;
-  padding:7px 12px;
-  border:2px solid rgba(247,216,123,.62);
+  padding:5px 10px;
+  border:2px solid rgba(247,216,123,.5);
   border-radius:999px;
   color:#fff4d7;
-  background:rgba(42,29,22,.72);
-  font-size:.8rem;
+  background:rgba(42,29,22,.58);
+  font-size:.72rem;
   font-weight:900;
 }
 
 .room-hotspot{
   position:absolute;
   z-index:7;
-  width:72px;
-  height:72px;
-  border:3px solid rgba(255,234,163,.86);
+  width:24px;
+  height:24px;
+  border:2px solid rgba(255,246,195,.95);
   border-radius:50%;
   color:#2b1d13;
-  background:radial-gradient(circle,#fff7d8 0 30%,#f7d87b 31% 58%,rgba(247,216,123,.28) 59% 100%);
-  box-shadow:0 0 0 8px rgba(247,216,123,.16),0 0 28px rgba(247,216,123,.42),0 12px 24px rgba(0,0,0,.24);
-  font-size:.72rem;
+  background:radial-gradient(circle,#fffef4 0 28%,#f7d87b 29% 60%,rgba(247,216,123,.08) 61% 100%);
+  box-shadow:0 0 0 9px rgba(247,216,123,.12),0 0 22px rgba(247,216,123,.58);
+  font-size:0;
   font-weight:900;
   animation:pulseHotspot 1.8s ease-in-out infinite;
   transition:transform .16s ease, filter .16s ease, box-shadow .16s ease;
 }
 
 .room-hotspot:hover,.room-hotspot:focus-visible{
-  transform:translateY(-5px) scale(1.08);
+  transform:translateY(-2px) scale(1.15);
   filter:brightness(1.12);
   outline:none;
 }
@@ -77,27 +66,30 @@
 .room-hotspot span{
   position:absolute;
   left:50%;
-  top:78px;
-  min-width:84px;
+  top:28px;
+  min-width:68px;
   transform:translateX(-50%);
-  padding:5px 8px;
-  border:2px solid rgba(247,216,123,.7);
+  padding:4px 8px;
+  border:2px solid rgba(247,216,123,.74);
   border-radius:999px;
   color:#fff4d7;
   background:rgba(42,29,22,.82);
   white-space:nowrap;
+  font-size:.72rem;
+  line-height:1.1;
+  box-shadow:0 6px 14px rgba(0,0,0,.18);
 }
 
 .room-hotspot.active{
-  transform:translateY(-4px) scale(1.06);
-  background:radial-gradient(circle,#ffffff 0 28%,#91f0d0 29% 58%,rgba(145,240,208,.26) 59% 100%);
-  box-shadow:0 0 0 9px rgba(145,240,208,.2),0 0 34px rgba(145,240,208,.6),0 12px 24px rgba(0,0,0,.24);
+  transform:translateY(-2px) scale(1.16);
+  background:radial-gradient(circle,#ffffff 0 28%,#91f0d0 29% 60%,rgba(145,240,208,.08) 61% 100%);
+  box-shadow:0 0 0 10px rgba(145,240,208,.16),0 0 26px rgba(145,240,208,.68);
 }
 
-.hotspot-menu{left:18%;top:34%;}
-.hotspot-quest{right:16%;top:40%;animation-delay:.25s;}
-.hotspot-cabinet{left:27%;bottom:22%;animation-delay:.5s;}
-.hotspot-order{right:16%;bottom:22%;animation-delay:.75s;}
+.hotspot-menu{left:24%;top:42%;}
+.hotspot-quest{right:26%;top:55%;animation-delay:.25s;}
+.hotspot-cabinet{left:30%;bottom:31%;animation-delay:.5s;}
+.hotspot-order{right:28%;bottom:29%;animation-delay:.75s;}
 
 .inside-actions{margin-top:10px!important;opacity:.88;}
 .inside-action{transition:transform .16s ease, filter .16s ease;}
@@ -168,17 +160,17 @@
 .quest-board ul{margin:10px 0 0;padding-left:1.2em;}
 .dialogue-box{position:relative;z-index:15;}
 
-@keyframes pulseHotspot{0%,100%{filter:brightness(1);}50%{filter:brightness(1.18);}}
+@keyframes pulseHotspot{0%,100%{filter:brightness(1);}50%{filter:brightness(1.2);}}
 @keyframes rpgWindowIn{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:translateY(0) scale(1);}}
 
 @media(max-width:760px){
   .cafe-room-scene{background-position:center 50%!important;}
-  .room-hotspot{width:54px;height:54px;border-width:2px;font-size:.62rem;}
-  .room-hotspot span{top:58px;min-width:74px;font-size:.68rem;padding:4px 7px;}
-  .hotspot-menu{left:14%;top:32%;}
-  .hotspot-quest{right:13%;top:39%;}
-  .hotspot-cabinet{left:25%;bottom:23%;}
-  .hotspot-order{right:14%;bottom:23%;}
+  .room-hotspot{width:22px;height:22px;border-width:2px;}
+  .room-hotspot span{top:26px;min-width:62px;font-size:.66rem;padding:4px 7px;}
+  .hotspot-menu{left:22%;top:42%;}
+  .hotspot-quest{right:24%;top:55%;}
+  .hotspot-cabinet{left:30%;bottom:31%;}
+  .hotspot-order{right:25%;bottom:29%;}
   .room-tip{left:10px;bottom:10px;font-size:.72rem;}
   .inside-actions{opacity:.95;}
   .inside-panel-wrap{position:static;width:100%;transform:none;margin-top:12px;pointer-events:auto;}
@@ -189,6 +181,6 @@
 }
 
 @media(max-width:390px){
-  .room-hotspot{width:48px;height:48px;}
-  .room-hotspot span{top:52px;font-size:.62rem;}
+  .room-hotspot{width:20px;height:20px;}
+  .room-hotspot span{top:24px;font-size:.6rem;}
 }
