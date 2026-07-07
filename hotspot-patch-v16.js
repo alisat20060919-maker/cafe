@@ -18,7 +18,7 @@
   }
 
   function openGacha(){
-    window.location.href = 'lucky-v19.html?v=fairy02';
+    window.location.href = 'lucky-v19.html?v=nav-gacha01';
   }
 
   function wireBottomGacha(){
