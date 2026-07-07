@@ -1,6 +1,6 @@
 import { GameDB } from './game-data.js?v=core03';
 import { getState, drawGacha } from './game-state.js?v=core03';
-import { emitStateChanged, emitNotice } from './event-bus.js?v=core03';
+import { emitNotice } from './event-bus.js?v=core03';
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
