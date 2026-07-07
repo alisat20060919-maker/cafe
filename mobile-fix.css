@@ -18,6 +18,12 @@
 }
 .object-tag{display:none!important}
 .npc,.npc-main,.npc-cat,.speech-bubble{display:none!important}
+.kitchen::before,.alchemy::before{content:""!important;position:absolute!important;inset:0!important;z-index:0!important;opacity:1!important}
+.kitchen::before{background:linear-gradient(180deg,#74492d 0%,#5a3522 48%,#3b2418 100%)!important}
+.alchemy::before{background:linear-gradient(180deg,#423038 0%,#312334 48%,#201725 100%)!important}
+.kitchen::after,.alchemy::after{content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;height:42%!important;z-index:1!important;background:linear-gradient(180deg,#6f8f4c 0%,#3e6f38 100%)!important}
+.kitchen::after{background:repeating-linear-gradient(90deg,rgba(255,220,143,.07) 0 34px,transparent 34px 68px),linear-gradient(180deg,#7b4d2c 0%,#4a2c1d 100%)!important}
+.alchemy::after{background:repeating-linear-gradient(90deg,rgba(255,217,126,.05) 0 34px,transparent 34px 68px),linear-gradient(180deg,#4b332b 0%,#251a20 100%)!important}
 .cottage,.magic-tree,.kitchen-counter,.alchemy-table,.greenhouse-house{position:absolute!important;z-index:4!important;left:50%!important;bottom:82px!important;transform:translateX(-50%)!important;width:min(560px,68vw)!important;height:330px!important;border:0!important;border-radius:0!important;background:center/contain no-repeat!important;box-shadow:none!important;clip-path:none!important;overflow:visible!important}
 .cottage>*{display:none!important}
 .cottage{background-image:var(--scene-cafe)!important}
@@ -49,8 +55,10 @@
   .scene-info h2{font-size:2.25rem}
   .scene-info p{font-size:.9rem;line-height:1.65}
   .cottage,.magic-tree,.kitchen-counter,.alchemy-table,.greenhouse-house{bottom:56px!important;width:88vw!important;height:260px!important}
-  .cottage{width:104vw!important;height:310px!important;bottom:46px!important}
+  .cottage{width:104vw!important;height:310px!important;bottom:68px!important}
   .magic-tree{width:72vw!important;height:205px!important;bottom:86px!important}
+  .kitchen-counter{width:98vw!important;height:292px!important;bottom:36px!important}
+  .alchemy-table{width:92vw!important;height:270px!important;bottom:44px!important}
   .enter-button{right:50%;bottom:12px;transform:translateX(50%);padding:12px 24px;border-radius:18px;font-size:1rem}
   .arrow{width:42px;height:58px;border-radius:16px;font-size:2.4rem}
   .arrow.left{left:7px}.arrow.right{right:7px}
@@ -77,7 +85,9 @@
   .scene-info h2{font-size:2rem}
   .scene-info p{font-size:.84rem}
   .cottage,.magic-tree,.kitchen-counter,.alchemy-table,.greenhouse-house{bottom:54px!important;width:86vw!important;height:245px!important}
-  .cottage{width:106vw!important;height:295px!important;bottom:44px!important}
+  .cottage{width:106vw!important;height:295px!important;bottom:66px!important}
   .magic-tree{width:70vw!important;height:190px!important;bottom:86px!important}
+  .kitchen-counter{width:98vw!important;height:278px!important;bottom:34px!important}
+  .alchemy-table{width:90vw!important;height:254px!important;bottom:42px!important}
   .bottom-dock button{min-height:54px}.bottom-dock button::before{width:25px;height:25px}.bottom-dock span{font-size:.54rem}
 }
