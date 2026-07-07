@@ -1,6 +1,6 @@
 import { GameDB } from './game-data.js?v=core03';
 import { getState, canCompleteCommission, completeCommission, formatReward } from './game-state.js?v=core03';
-import { Events, on, emitStateChanged, emitNotice } from './event-bus.js?v=core03';
+import { Events, on, emitNotice } from './event-bus.js?v=core03';
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
@@ -77,7 +77,6 @@ export function renderCommissions() {
     button.addEventListener('click', () => {
       const result = completeCommission(button.dataset.complete);
       emitNotice(result.ok ? '委託完成' : '還不能完成', result.message);
-      emitStateChanged('commission');
       renderCommissions();
     });
   });
