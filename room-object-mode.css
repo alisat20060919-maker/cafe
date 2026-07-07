@@ -1,109 +1,13 @@
-/* Make cafe interior feel like a playable room instead of a button menu. */
-.game-window.inside-mode .cafe-room-scene{
-  min-height:500px;
-}
-
-.game-window.inside-mode .cafe-room-scene::after{
-  background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(0,0,0,.22));
-}
-
-.room-hotspot{
-  width:auto;
-  min-width:118px;
-  height:auto;
-  padding:0;
-  border:0;
-  border-radius:0;
-  color:#fff4d7;
-  background:transparent;
-  box-shadow:none;
-  animation:none;
-  text-shadow:0 2px 5px rgba(0,0,0,.75);
-}
-
-.room-hotspot::before{
-  content:"";
-  display:block;
-  width:78px;
-  height:78px;
-  margin:0 auto 8px;
-  border:3px solid rgba(255,234,163,.9);
-  border-radius:24px;
-  background:linear-gradient(180deg,#f9e7a7,#a86c3c);
-  box-shadow:0 0 0 8px rgba(247,216,123,.12),0 0 28px rgba(247,216,123,.42),0 12px 26px rgba(0,0,0,.3);
-  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease;
-}
-
-.hotspot-quest::before{background:linear-gradient(180deg,#9fe6cf,#315f48);border-radius:50% 50% 22px 22px;}
-.hotspot-cabinet::before{background:linear-gradient(180deg,#d7f8ef,#5a321f);border-radius:20px;}
-.hotspot-order::before{background:linear-gradient(180deg,#fff4d7,#d89d57);border-radius:18px;}
-
-.room-hotspot span{
-  position:static;
-  display:inline-flex;
-  min-width:auto;
-  transform:none;
-  padding:6px 12px;
-  border:2px solid rgba(247,216,123,.82);
-  border-radius:999px;
-  background:rgba(42,29,22,.86);
-  font-size:.78rem;
-  letter-spacing:.06em;
-}
-
-.room-hotspot:hover::before,
-.room-hotspot:focus-visible::before,
-.room-hotspot.active::before{
-  transform:translateY(-6px) scale(1.06);
-  filter:brightness(1.16);
-  box-shadow:0 0 0 10px rgba(145,240,208,.18),0 0 36px rgba(145,240,208,.66),0 16px 28px rgba(0,0,0,.32);
-}
-
-.room-hotspot.active span{
-  color:#2b1d13;
-  background:linear-gradient(180deg,#fff7d8,#f0b85e);
-}
-
-.hotspot-menu{left:12%;top:22%;}
-.hotspot-quest{right:10%;top:23%;}
-.hotspot-cabinet{left:13%;bottom:25%;}
-.hotspot-order{right:12%;bottom:22%;}
-
-.room-tip{
-  left:50%;
-  bottom:12px;
-  transform:translateX(-50%);
-  background:rgba(42,29,22,.82);
-}
-
-.inside-actions{display:none!important;}
-
-.inside-panel-wrap{
-  margin-top:-64px;
-  position:relative;
-  z-index:8;
-  width:min(760px,calc(100% - 26px));
-  margin-left:auto;
-  margin-right:auto;
-}
-
-.inside-panel{
-  border-radius:26px;
-  background:linear-gradient(180deg,rgba(73,49,30,.96),rgba(42,29,22,.98));
-}
-
-.item-card,.quest-board,.order-list section{
-  background:rgba(255,244,215,.1);
-}
-
-@media(max-width:760px){
-  .game-window.inside-mode .cafe-room-scene{min-height:430px;}
-  .room-hotspot{min-width:88px;}
-  .room-hotspot::before{width:58px;height:58px;border-radius:18px;margin-bottom:6px;}
-  .room-hotspot span{font-size:.68rem;padding:5px 8px;}
-  .hotspot-menu{left:7%;top:20%;}
-  .hotspot-quest{right:6%;top:22%;}
-  .hotspot-cabinet{left:8%;bottom:26%;}
-  .hotspot-order{right:7%;bottom:24%;}
-  .inside-panel-wrap{margin-top:-34px;width:calc(100% - 12px);}
-}
+/* emergency override: keep interior as normal wide room */
+html body body .game-window.inside-mode{max-width:430px!important;min-height:auto!important;margin:0 auto!important;border:3px solid rgba(247,216,123,.55)!important;border-radius:28px!important;box-shadow:0 18px 50px rgba(0,0,0,.28)!important;overflow:hidden!important;background:#123523!important}
+html body body .game-window.inside-mode .top-bar{position:relative!important;padding:16px 18px 12px!important;background:linear-gradient(180deg,#173f2c,#123523)!important;border-bottom:2px solid rgba(247,216,123,.26)!important;pointer-events:auto!important}
+html body body .game-window.inside-mode .profile-card{display:flex!important}
+html body body .game-window.inside-mode .cafe-inside{position:relative!important;min-height:auto!important;padding:12px 12px 14px!important;overflow:visible!important;background:linear-gradient(180deg,#173f2c,#203827)!important}
+html body body .game-window.inside-mode .inside-head{position:relative!important;top:auto!important;left:auto!important;right:auto!important;z-index:5!important;display:flex!important;align-items:flex-start!important;justify-content:space-between!important;margin:0 0 10px!important;padding:0!important;pointer-events:auto!important}
+html body body .game-window.inside-mode .inside-label,html body body .game-window.inside-mode .inside-title,html body body .game-window.inside-mode .inside-subtitle{display:block!important}
+html body body .game-window.inside-mode .inside-back{position:static!important;border-radius:999px!important;padding:7px 12px!important;background:linear-gradient(180deg,#fff0a9,#e9a84d)!important;color:#2b1d13!important;border:2px solid rgba(247,216,123,.78)!important;font-weight:900!important}
+html body body .game-window.inside-mode .cafe-room-scene{position:relative!important;inset:auto!important;min-height:390px!important;border:3px solid rgba(247,216,123,.65)!important;border-radius:24px!important;overflow:hidden!important;box-shadow:inset 0 0 0 5px rgba(255,244,215,.08),0 16px 32px rgba(0,0,0,.22)!important;background-image:linear-gradient(180deg,rgba(24,59,46,.05),rgba(24,59,46,.22)),url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1000')!important;background-position:center 50%!important;background-size:cover!important}
+html body body .game-window.inside-mode .cafe-room-scene:after{display:none!important}
+html body body .game-window.inside-mode .inside-actions{position:relative!important;right:auto!important;top:auto!important;z-index:5!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;width:auto!important;margin-top:10px!important;opacity:.95!important}
+html body body .game-window.inside-mode .inside-panel-wrap{position:static!important;left:auto!important;right:auto!important;bottom:auto!important;z-index:5!important;width:100%!important;transform:none!important;margin-top:12px!important;pointer-events:auto!important}
+html body body .game-window.inside-mode .bottom-dock{position:relative!important;display:grid!important;grid-template-columns:repeat(5,1fr)!important}
