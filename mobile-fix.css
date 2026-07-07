@@ -15,6 +15,11 @@
   --scene-kitchen:url('https://drive.google.com/thumbnail?id=1iIvvy33Nu4YpdlfXE2tsF1WR7YqRwxwp&sz=w900');
   --scene-alchemy:url('https://drive.google.com/thumbnail?id=1BA2LN6xfGFIVRBSvjeDOTmpnJeRen6RF&sz=w900');
   --scene-greenhouse:url('https://drive.google.com/thumbnail?id=1Zla5lYg0IcwYDhfKHmAI4Xx2Wnk0z8LN&sz=w900');
+  --inside-cafe-bg:url('https://drive.google.com/thumbnail?id=1sBiLgaTXlNfPZTruV6mPqkyGf11YH9l8&sz=w1000');
+  --btn-menu:url('https://drive.google.com/thumbnail?id=1SiZCoo2UWnPXrjzYjxswHr3b7M0aINmn&sz=w180');
+  --btn-quest:url('https://drive.google.com/thumbnail?id=1KlASJXlqFKXwGg_uqyzF01OmsSoUny0a&sz=w180');
+  --btn-cabinet:url('https://drive.google.com/thumbnail?id=1VGbxyCfzYyCa8rzVTOb83aCyOYIUAThB&sz=w180');
+  --btn-order:url('https://drive.google.com/thumbnail?id=1YR5wtMLXONFK4R5N0NKqPvO-T392CjR8&sz=w180');
 }
 .object-tag{display:none!important}
 .npc,.npc-main,.npc-cat,.speech-bubble{display:none!important}
@@ -31,6 +36,22 @@
 .kitchen-counter{background-image:var(--scene-kitchen)!important}
 .alchemy-table{background-image:var(--scene-alchemy)!important}
 .greenhouse-house{background-image:var(--scene-greenhouse)!important}
+.cafe-inside{display:none;padding:18px 22px 22px;background:linear-gradient(180deg,#173f2c 0%,#203827 100%)}
+.game-window.inside-mode .location-tabs,.game-window.inside-mode .map-area{display:none!important}
+.game-window.inside-mode .cafe-inside{display:block!important}
+.inside-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.inside-title{margin:0;color:#fff7d8;font-size:1.25rem;font-weight:900;letter-spacing:.08em;text-shadow:0 3px 0 rgba(62,36,24,.65)}
+.inside-subtitle{margin:4px 0 0;color:#d8eec7;font-size:.82rem;font-weight:700}
+.inside-back{flex:0 0 auto;border:2px solid rgba(247,216,123,.62);border-radius:999px;padding:8px 14px;color:#2b1d13;background:linear-gradient(180deg,#ffeaa3,#efb862);font-weight:900;box-shadow:inset 0 -3px 0 rgba(62,36,24,.18),0 8px 18px rgba(0,0,0,.12)}
+.cafe-room-scene{position:relative;min-height:420px;border:3px solid rgba(247,216,123,.65);border-radius:26px;overflow:hidden;background-image:linear-gradient(180deg,rgba(24,59,46,.05),rgba(24,59,46,.22)),var(--inside-cafe-bg);background-size:cover;background-position:center 58%;box-shadow:inset 0 0 0 5px rgba(255,244,215,.08),0 16px 32px rgba(0,0,0,.22)}
+.cafe-room-scene::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(0,0,0,.16));pointer-events:none}
+.inside-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+.inside-action{min-height:82px;border:2px solid rgba(247,216,123,.62);border-radius:20px;color:#fff4d7;background:linear-gradient(180deg,rgba(62,36,24,.76),rgba(42,29,22,.88));font-weight:900;display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 10px;box-shadow:inset 0 -3px 0 rgba(62,36,24,.24),0 8px 18px rgba(0,0,0,.16)}
+.inside-action::before{content:"";width:46px;height:46px;display:block;flex:0 0 auto;background:center/contain no-repeat;filter:drop-shadow(0 2px 2px rgba(0,0,0,.2))}
+.inside-action.menu::before{background-image:var(--btn-menu)}
+.inside-action.quest::before{background-image:var(--btn-quest)}
+.inside-action.cabinet::before{background-image:var(--btn-cabinet)}
+.inside-action.order::before{background-image:var(--btn-order)}
 .bottom-dock{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:0 18px 16px}
 .bottom-dock button{min-height:58px;border:2px solid rgba(247,216,123,.55);border-radius:18px;color:#fff4d7;background:rgba(62,36,24,.62);box-shadow:inset 0 -3px 0 rgba(62,36,24,.25),0 8px 18px rgba(0,0,0,.12);font-weight:900}
 .bottom-dock span{display:block;font-size:.72rem;margin-top:2px}
@@ -62,6 +83,15 @@
   .enter-button{right:50%;bottom:12px;transform:translateX(50%);padding:12px 24px;border-radius:18px;font-size:1rem}
   .arrow{width:42px;height:58px;border-radius:16px;font-size:2.4rem}
   .arrow.left{left:7px}.arrow.right{right:7px}
+  .cafe-inside{padding:12px 12px 14px}
+  .inside-head{margin-bottom:10px;align-items:flex-start}
+  .inside-title{font-size:1.12rem}
+  .inside-subtitle{font-size:.72rem}
+  .inside-back{padding:7px 12px;font-size:.86rem}
+  .cafe-room-scene{min-height:390px;border-radius:24px;background-position:center 54%}
+  .inside-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+  .inside-action{min-height:68px;border-radius:18px;font-size:.94rem;justify-content:flex-start;padding:8px 12px}
+  .inside-action::before{width:42px;height:42px}
   .dialogue-box{grid-template-columns:62px 1fr;gap:12px;margin:0 12px 12px;padding:12px;min-height:98px;border-radius:24px}
   .npc-portrait{width:62px;height:62px;border-radius:18px;font-size:2rem}
   .dialogue-content p{font-size:.92rem;line-height:1.55}
@@ -89,5 +119,7 @@
   .magic-tree{width:70vw!important;height:190px!important;bottom:86px!important}
   .kitchen-counter{width:98vw!important;height:278px!important;bottom:50px!important}
   .alchemy-table{width:90vw!important;height:254px!important;bottom:58px!important}
+  .cafe-room-scene{min-height:360px;background-position:center 52%}
+  .inside-action{min-height:62px;font-size:.88rem}.inside-action::before{width:38px;height:38px}
   .bottom-dock button{min-height:54px}.bottom-dock button::before{width:25px;height:25px}.bottom-dock span{font-size:.54rem}
 }
