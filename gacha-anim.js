@@ -10,6 +10,7 @@
   ];
   const history = [];
   const owned = new Set();
+  let skip = localStorage.getItem('gachaSkip') === '1';
 
   const modal = document.createElement('div');
   modal.className = 'gachaModal';
@@ -24,6 +25,13 @@
 
   const card = (x) => `<div class="resultCard ${x[0]}"><div class="tier">${x[0].toUpperCase()}</div><div class="icon">${x[1]}</div><div class="name">${x[2]}</div></div>`;
 
+  const result = (count) => {
+    const out = Array.from({length: count}, pick);
+    out.forEach(x => { history.push(x); owned.add(x[2]); });
+    show('抽取結果', `<div class="resultGrid ${count === 1 ? 'single' : ''}">${out.map(card).join('')}</div>`);
+    return out;
+  };
+
   const show = (title, html) => {
     modal.innerHTML = `<div class="gachaPanel"><h2>${title}</h2>${html}<div class="gachaActions"><button data-close>關閉</button><button data-again>再抽一次</button></div></div>`;
     modal.classList.add('show');
@@ -37,19 +45,28 @@
     if (kind === 'book') show('圖鑑', owned.size ? `<div class="resultGrid">${[...owned].map(s => pool.find(x => x[2] === s)).filter(Boolean).map(card).join('')}</div>` : '<div class="emptyNote">還沒有收藏</div>');
   };
 
+  const setSkipText = () => {
+    const btn = document.querySelector('[data-skip]');
+    if (btn) btn.textContent = skip ? '動畫OFF' : '動畫ON';
+    stage.classList.toggle('skipFX', skip);
+  };
+
   const play = (btn, count) => {
+    if (skip) { result(count); return; }
+    const preview = Array.from({length: count}, pick);
+    const rare = preview.some(x => x[0] !== 'r');
     btn.classList.remove('tap');
-    stage.classList.remove('gachaRun');
+    stage.classList.remove('gachaRun','rareRun');
     void btn.offsetWidth;
     btn.classList.add('tap');
     stage.classList.add('gachaRun');
-    setTimeout(() => btn.classList.remove('tap'), 520);
-    setTimeout(() => stage.classList.remove('gachaRun'), 950);
+    if (rare) stage.classList.add('rareRun');
+    setTimeout(() => btn.classList.remove('tap'), 620);
+    setTimeout(() => stage.classList.remove('gachaRun','rareRun'), 1250);
     setTimeout(() => {
-      const out = Array.from({length: count}, pick);
-      out.forEach(x => { history.push(x); owned.add(x[2]); });
-      show('抽取結果', `<div class="resultGrid ${count === 1 ? 'single' : ''}">${out.map(card).join('')}</div>`);
-    }, 820);
+      preview.forEach(x => { history.push(x); owned.add(x[2]); });
+      show('抽取結果', `<div class="resultGrid ${count === 1 ? 'single' : ''}">${preview.map(card).join('')}</div>`);
+    }, 1080);
   };
 
   buttons[0].onclick = () => play(buttons[0], 1);
@@ -59,4 +76,7 @@
   mini[0]?.addEventListener('click', () => showInfo('rate'));
   mini[1]?.addEventListener('click', () => showInfo('log'));
   mini[2]?.addEventListener('click', () => showInfo('book'));
+  mini[3]?.setAttribute('data-skip','1');
+  mini[3]?.addEventListener('click', () => { skip = !skip; localStorage.setItem('gachaSkip', skip ? '1' : '0'); setSkipText(); });
+  setSkipText();
 })();
