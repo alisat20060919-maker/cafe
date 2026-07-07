@@ -1,2 +1,15 @@
 /* UI asset experiment disabled. Keep this file intentionally minimal. */
 @import url('room-object-mode.css?v=inside04');
+
+:root{
+  --inside-cafe-bg:url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1000');
+}
+
+.cafe-room-scene{
+  background-image:linear-gradient(180deg,rgba(24,59,46,.05),rgba(24,59,46,.22)),url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1000')!important;
+  background-position:center 50%!important;
+}
+
+@media(max-width:760px){
+  .cafe-room-scene{background-position:center 50%!important;}
+}
