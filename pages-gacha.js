@@ -68,7 +68,6 @@ export function renderGacha(results = []) {
         }
         drawn.push(result.drop);
       }
-      emitStateChanged('gacha');
       renderGacha(drawn);
     });
   });
