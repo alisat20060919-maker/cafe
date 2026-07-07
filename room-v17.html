@@ -1,1 +1,49 @@
-<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>精靈咖啡屋店內</title><style>body{margin:0;background:#0e2f20;color:#fff4d7;font-family:serif}.app{max-width:430px;margin:auto;min-height:100vh;background:#123b29;padding:18px 14px}.top{font-size:30px;font-weight:900;margin:18px 0 10px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.pill{border:2px solid #b89b58;border-radius:999px;padding:6px 10px;background:#2a2118}.head{display:flex;justify-content:space-between;align-items:center;margin:12px 0}.back{padding:8px 14px;border-radius:999px;background:#efb85e;color:#2b1d13;font-weight:900;border:2px solid #d8b978}.map{position:relative;height:390px;border:3px solid #d8b978;border-radius:24px;overflow-x:auto;overflow-y:hidden;background:#173f2c;-webkit-overflow-scrolling:touch}.world{position:relative;width:780px;height:390px;background:url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1200') center/cover no-repeat}.hot{position:absolute;width:22px;height:22px;border:2px solid #fff4bd;border-radius:50%;background:#f7d87b;box-shadow:0 0 0 8px #f7d87b55,0 0 20px #f7d87b}.hot span{position:absolute;left:50%;top:26px;transform:translateX(-50%);white-space:nowrap;background:#2a1d16dd;border:2px solid #d8b978;border-radius:999px;padding:4px 8px;font-size:12px}.menu{left:198px;top:220px;background:#91f0d0}.cabinet{left:92px;top:252px}.quest{left:438px;top:232px}.order{left:640px;top:150px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.act{min-height:64px;border:2px solid #b89b58;border-radius:18px;background:#2a1d16;color:#fff4d7;font-size:18px;font-weight:900}.act.on{background:#efb85e;color:#2b1d13}.panel{margin-top:14px;border:3px solid #d8b978;border-radius:22px;background:#2a1d16;padding:16px}.dock{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.dock button{border:2px solid #b89b58;border-radius:14px;background:#2a1d16;color:#fff4d7;padding:8px 2px}</style></head><body><main class="app"><div class="top">精靈咖啡屋</div><div class="pills"><span class="pill">☀️ 森林午後</span><span class="pill">✦ 星糖 128</span><span class="pill">🌕 葉幣 320</span></div><div class="head"><div><b>INTERIOR</b><br>咖啡廳內部</div><a class="back" href="./">返回地圖</a></div><section class="map"><div class="world"><i class="hot menu"><span>今日菜單</span></i><i class="hot cabinet"><span>商品櫃</span></i><i class="hot quest"><span>接委託</span></i><i class="hot order"><span>客人訂單</span></i></div></section><section class="actions"><button class="act on">今日菜單</button><button class="act">接委託</button><button class="act">商品櫃</button><button class="act">客人訂單</button></section><section class="panel"><h2>今日菜單</h2><p><b>月光花瓣拿鐵</b><br>溫柔發光的奶泡，適合想讓委託氛圍變柔和的客人。</p></section><nav class="dock"><button>✅<br>簽到</button><button>🏠<br>裝飾</button><button>🧺<br>庫存</button><button>📋<br>委託</button><button>⚙️<br>設定</button></nav></main></body></html>
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>精靈咖啡屋店內</title>
+<style>
+body{margin:0;background:#0e2f20;color:#fff4d7;font-family:serif}.app{max-width:430px;margin:auto;min-height:100vh;background:#123b29;padding:18px 14px}.top{font-size:30px;font-weight:900;margin:18px 0 10px}.pills{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.pill{border:2px solid #b89b58;border-radius:999px;padding:6px 10px;background:#2a2118}.head{display:flex;justify-content:space-between;align-items:center;margin:12px 0}.back{padding:8px 14px;border-radius:999px;background:#efb85e;color:#2b1d13;font-weight:900;border:2px solid #d8b978;text-decoration:none}.map{position:relative;height:390px;border:3px solid #d8b978;border-radius:24px;overflow-x:auto;overflow-y:hidden;background:#173f2c;-webkit-overflow-scrolling:touch;scrollbar-color:#f7d87b55 transparent}.world{position:relative;width:780px;height:390px;background:url('https://drive.google.com/thumbnail?id=1xLva8jEHumD53I5IOSFH8CXH9ba6kCkN&sz=w1200') center/cover no-repeat}.hot{position:absolute;width:25px;height:25px;border:2px solid #fff4bd;border-radius:50%;background:#f7d87b;box-shadow:0 0 0 8px #f7d87b55,0 0 20px #f7d87b;appearance:none;padding:0}.hot span{position:absolute;left:50%;top:28px;transform:translateX(-50%);white-space:nowrap;background:#2a1d16dd;border:2px solid #d8b978;border-radius:999px;padding:4px 8px;font-size:12px;color:#fff4d7}.hot.on{background:#91f0d0;box-shadow:0 0 0 9px #91f0d055,0 0 22px #91f0d0}.menu{left:198px;top:220px}.cabinet{left:92px;top:252px}.quest{left:438px;top:232px}.order{left:640px;top:150px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.act{min-height:68px;border:2px solid #b89b58;border-radius:18px;background:#2a1d16;color:#fff4d7;font-size:18px;font-weight:900;box-shadow:inset 0 -4px 0 #0003,0 6px 14px #0002}.act small{display:block;font-size:11px;opacity:.72;margin-top:3px}.act.on{background:linear-gradient(#fff1ad,#efb85e);color:#2b1d13;transform:translateY(-2px)}.panel{margin-top:14px;border:3px solid #d8b978;border-radius:22px;background:#2a1d16;padding:16px;min-height:150px}.kicker{display:inline-block;background:#f4d676;color:#2b1d13;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;letter-spacing:.12em}.panel h2{margin:10px 0}.panel p{line-height:1.65;margin:0}.choices{display:grid;gap:8px;margin-top:12px}.choice{border:2px solid #b89b58;border-radius:14px;background:#3a291f;color:#fff4d7;padding:10px;text-align:left;font-weight:900}.dock{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.dock button{border:2px solid #b89b58;border-radius:14px;background:#2a1d16;color:#fff4d7;padding:8px 2px;font-weight:900}.dock button.on{background:#efb85e;color:#2b1d13}.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);opacity:0;background:#2a1d16ee;border:2px solid #d8b978;border-radius:999px;padding:8px 14px;color:#fff4d7;transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top">精靈咖啡屋</div>
+  <div class="pills"><span class="pill">☀️ 森林午後</span><span class="pill">✦ 星糖 128</span><span class="pill">🌕 葉幣 320</span></div>
+  <div class="head"><div><b>INTERIOR</b><br>咖啡廳內部</div><a class="back" href="./">返回地圖</a></div>
+  <section class="map" id="roomMap"><div class="world">
+    <button class="hot menu on" data-panel="menu"><span>今日菜單</span></button>
+    <button class="hot cabinet" data-panel="cabinet"><span>商品櫃</span></button>
+    <button class="hot quest" data-panel="quest"><span>接委託</span></button>
+    <button class="hot order" data-panel="order"><span>客人訂單</span></button>
+  </div></section>
+  <section class="actions">
+    <button class="act on" data-panel="menu">今日菜單<small>MENU</small></button>
+    <button class="act" data-panel="quest">接委託<small>ORDER</small></button>
+    <button class="act" data-panel="cabinet">商品櫃<small>DISPLAY</small></button>
+    <button class="act" data-panel="order">客人訂單<small>LOG</small></button>
+  </section>
+  <section class="panel" id="panel"></section>
+  <nav class="dock">
+    <button data-dock="簽到" class="on">✅<br>簽到</button><button data-dock="裝飾">🏠<br>裝飾</button><button data-dock="庫存">🧺<br>庫存</button><button data-dock="委託">📋<br>委託</button><button data-dock="設定">⚙️<br>設定</button>
+  </nav>
+</main>
+<div class="toast" id="toast">已切換</div>
+<script>
+const data={
+  menu:{k:'MENU BOARD',t:'今日菜單',x:110,html:'<p><b>月光花瓣拿鐵</b><br>溫柔發光的奶泡，適合想讓委託氛圍變柔和的客人。</p><div class="choices"><button class="choice">查看：星星莓奶油塔</button><button class="choice">查看：夜空碎片可可</button></div>'},
+  quest:{k:'COMMISSION COUNTER',t:'接委託',x:360,html:'<p><b>今日可接單</b><br>把委託包裝成點餐：客人可以選品項，也可以自帶價請店長調配。</p><div class="choices"><button class="choice">我要點餐</button><button class="choice">查看委託規則</button></div>'},
+  cabinet:{k:'DISPLAY CABINET',t:'商品櫃',x:0,html:'<p><b>展示商品</b><br>QQ 小甜點、亮晶晶郵票、插圖驚喜包都放在玻璃櫃裡。</p><div class="choices"><button class="choice">QQ 小甜點</button><button class="choice">亮晶晶郵票</button></div>'},
+  order:{k:'ORDER LOG',t:'客人訂單',x:430,html:'<p><b>訂單狀態</b><br>待確認、製作中、已完成。之後這裡可以變成真正的排單紀錄。</p><div class="choices"><button class="choice">待確認</button><button class="choice">製作中</button></div>'}
+};
+const panel=document.querySelector('#panel'),map=document.querySelector('#roomMap'),toast=document.querySelector('#toast');
+function showToast(text){toast.textContent=text;toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),900)}
+function openPanel(name){const item=data[name]||data.menu;document.querySelectorAll('[data-panel]').forEach(el=>el.classList.toggle('on',el.dataset.panel===name));panel.innerHTML=`<span class="kicker">${item.k}</span><h2>${item.t}</h2>${item.html}`;map.scrollTo({left:item.x,behavior:'smooth'});showToast('已切換到：'+item.t)}
+document.querySelectorAll('[data-panel]').forEach(el=>el.addEventListener('click',()=>openPanel(el.dataset.panel)));
+document.querySelectorAll('[data-dock]').forEach(el=>el.addEventListener('click',()=>{document.querySelectorAll('[data-dock]').forEach(b=>b.classList.remove('on'));el.classList.add('on');showToast(el.dataset.dock+' 功能先放這裡')}));
+openPanel('menu');
+</script>
+</body>
+</html>
