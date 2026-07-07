@@ -1,8 +1,11 @@
 export const Events = {
-  STATE_CHANGED: 'fairyCafe:stateChanged',
-  ROUTE_CHANGED: 'fairyCafe:routeChanged',
-  NOTICE: 'fairyCafe:notice',
-  CONFIRM: 'fairyCafe:confirm',
+  STATE_UPDATED: 'state:updated',
+  STATE_CHANGED: 'state:updated',
+  ROUTE_CHANGED: 'route:changed',
+  GACHA_ROLLED: 'gacha:rolled',
+  GACHA_FAILED: 'gacha:failed',
+  NOTICE: 'ui:notice',
+  CONFIRM: 'ui:confirm',
 };
 
 export function emit(eventName, detail = {}) {
@@ -15,7 +18,7 @@ export function on(eventName, handler) {
 }
 
 export function emitStateChanged(reason = 'unknown') {
-  emit(Events.STATE_CHANGED, { reason });
+  emit(Events.STATE_UPDATED, { reason, at: new Date().toISOString() });
 }
 
 export function emitNotice(title, body) {
