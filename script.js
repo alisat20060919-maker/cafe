@@ -31,6 +31,24 @@ const interiorDialogue = {
   },
 };
 
+const hotspotPositions = {
+  menu: { left: '198px', top: '220px' },
+  cabinet: { left: '92px', top: '252px' },
+  quest: { left: '438px', top: '232px' },
+  order: { left: '640px', top: '150px' },
+};
+
+function applyHotspotPositions() {
+  roomHotspots.forEach((hotspot) => {
+    const pos = hotspotPositions[hotspot.dataset.panel];
+    if (!pos) return;
+    hotspot.style.left = pos.left;
+    hotspot.style.top = pos.top;
+    hotspot.style.right = 'auto';
+    hotspot.style.bottom = 'auto';
+  });
+}
+
 let activeIndex = 0;
 
 function setActiveScene(index) {
@@ -77,6 +95,7 @@ function closeInsidePage() {
 
 function openCafeInside() {
   gameWindow?.classList.add('inside-mode');
+  applyHotspotPositions();
   setInteriorPanel('menu');
 }
 
@@ -142,4 +161,5 @@ viewport.addEventListener('keydown', (event) => {
   if (event.key === 'ArrowRight') scrollToScene(activeIndex + 1);
 });
 
+applyHotspotPositions();
 setActiveScene(0);
