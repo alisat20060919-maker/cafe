@@ -1,6 +1,6 @@
-import { getState, claimDailyReward, resetState, replaceState, persistState } from './game-state.js';
-import { exportSave, importSave } from './save.js';
-import { Events, on, emitStateChanged } from './event-bus.js';
+import { getState, claimDailyReward, resetState, replaceState, persistState } from './game-state.js?v=core03';
+import { exportSave, importSave } from './save.js?v=core03';
+import { Events, on, emitStateChanged } from './event-bus.js?v=core03';
 
 let modalHost;
 
