@@ -17,11 +17,41 @@
 .top-actions button span{margin-left:2px}
 .status-pills{flex-wrap:wrap}
 
+.bottom-dock{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  align-items:end!important;
+  gap:6px!important;
+  padding-top:14px!important;
+  overflow:visible!important;
+}
+.bottom-dock button{
+  min-width:0!important;
+  position:relative;
+  z-index:1;
+}
+.bottom-dock .dock-center{
+  width:64px!important;
+  height:64px!important;
+  justify-self:center!important;
+  border-radius:999px!important;
+  transform:translateY(-13px)!important;
+  background:radial-gradient(circle at 35% 28%,#fff7c9,#d9a441 54%,#765228)!important;
+  border:2px solid rgba(255,244,185,.95)!important;
+  box-shadow:0 10px 24px rgba(55,34,12,.28),0 0 0 6px rgba(255,240,180,.22)!important;
+}
+.bottom-dock .dock-center span{font-size:11px!important;font-weight:900!important}
 .bottom-dock button.active,
 .bottom-dock button:active{
   transform:translateY(-2px) scale(1.02);
   filter:brightness(1.08);
   box-shadow:0 8px 20px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.55);
+}
+.bottom-dock .dock-center.active,
+.bottom-dock .dock-center:active{
+  transform:translateY(-17px) scale(1.05)!important;
+  filter:brightness(1.12);
+  box-shadow:0 12px 28px rgba(55,34,12,.34),0 0 0 7px rgba(255,240,180,.28)!important;
 }
 
 .game-window[data-page]:not([data-page="home"]){
@@ -73,5 +103,6 @@ body.soft-mode *{animation-duration:.01ms!important;transition-duration:.01ms!im
 body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
 
 @media(max-width:520px){
-  .top-bar{display:grid!important;grid-template-columns:1fr;gap:8px!important}.top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}.bottom-dock button span{font-size:11px}
+  .top-bar{display:grid!important;grid-template-columns:1fr;gap:8px!important}
+  .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}.bottom-dock button span{font-size:10px}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
 }
