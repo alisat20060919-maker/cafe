@@ -1,4 +1,4 @@
-import { canGatherAt, gatherAt } from '@actions/gather';
+import { canGatherAt, gatherAt, getGatherStatus } from '@actions/gather';
 import { emitNotice } from '@eventBus';
 
 let activeIndex = 0;
@@ -63,6 +63,22 @@ function applyHotspotPositions() {
   });
 }
 
+function renderGatherStatusBadges() {
+  $all('.scene-card').forEach((scene) => {
+    scene.querySelector('.gather-status-badge')?.remove();
+
+    const status = getGatherStatus(scene.id);
+    if (!status) return;
+
+    const badge = document.createElement('div');
+    badge.className = 'gather-status-badge';
+    badge.dataset.depleted = status.isDepleted ? 'true' : 'false';
+    badge.textContent = status.label;
+
+    scene.querySelector('.scene-info')?.appendChild(badge);
+  });
+}
+
 export function setActiveScene(index) {
   const scenes = $all('.scene-card');
   const tabs = $all('.tab');
@@ -79,6 +95,7 @@ export function setActiveScene(index) {
     tab.classList.toggle('active', tab.dataset.target === scene.id);
   });
 
+  renderGatherStatusBadges();
   setDialogue(scene.dataset.speaker, scene.dataset.title, scene.dataset.dialogue);
 }
 
@@ -113,6 +130,7 @@ function openCafeInside() {
 
 function handleGatherScene(scene) {
   const result = gatherAt(scene.id);
+  renderGatherStatusBadges();
   emitNotice(result.ok ? result.title : result.title || '採集失敗', result.message);
   setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
 }
@@ -209,11 +227,13 @@ export function initHome() {
   if (!homeRoot || homeRoot.dataset.homeReady === 'true') return;
   homeRoot.dataset.homeReady = 'true';
   applyHotspotPositions();
+  renderGatherStatusBadges();
   bindHomeEvents();
   setActiveScene(0);
 }
 
 export function renderHome() {
   homeRoot?.classList.remove('inside-mode');
+  renderGatherStatusBadges();
   setActiveScene(activeIndex);
 }
