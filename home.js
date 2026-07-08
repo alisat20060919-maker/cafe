@@ -1,5 +1,6 @@
 import { canGatherAt, gatherAt, getGatherStatus } from '@actions/gather';
 import { emitNotice } from '@eventBus';
+import { showModal } from '@ui';
 
 let activeIndex = 0;
 let homeRoot;
@@ -79,6 +80,38 @@ function renderGatherStatusBadges() {
   });
 }
 
+function showGatherResultModal(result) {
+  if (!result.ok) {
+    showModal(`
+      <div class="core-modal-card compact gather-result-modal is-empty">
+        <button type="button" class="core-modal-close" data-close-modal>×</button>
+        <span class="core-modal-kicker">GATHER RESULT</span>
+        <div class="gather-result-icon">🧺</div>
+        <h2>${result.title || '今天採集完成'}</h2>
+        <p>${result.message}</p>
+        <div class="gather-result-status">剩餘 ${result.remaining || 0}/${result.limit || 0}</div>
+      </div>
+    `);
+    return;
+  }
+
+  const drop = result.dropView;
+  showModal(`
+    <div class="core-modal-card compact gather-result-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">GATHER RESULT</span>
+      <div class="gather-result-icon">${drop.icon}</div>
+      <h2>${result.title}</h2>
+      <p>你找到了 <b>${drop.name}</b> ×${drop.qty}</p>
+      <div class="gather-result-meta">
+        <span>${drop.rarity}</span>
+        <span>${drop.typeLabel}</span>
+      </div>
+      <div class="gather-result-status">今日剩餘 ${result.remaining}/${result.limit}</div>
+    </div>
+  `);
+}
+
 export function setActiveScene(index) {
   const scenes = $all('.scene-card');
   const tabs = $all('.tab');
@@ -131,7 +164,7 @@ function openCafeInside() {
 function handleGatherScene(scene) {
   const result = gatherAt(scene.id);
   renderGatherStatusBadges();
-  emitNotice(result.ok ? result.title : result.title || '採集失敗', result.message);
+  showGatherResultModal(result);
   setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
 }
 
