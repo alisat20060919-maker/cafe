@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 14;
+export const SAVE_VERSION = 16;
 
 function createDefaultState() {
   return {
@@ -33,6 +33,10 @@ function createDefaultState() {
       kitchen: true,
       alchemy: false,
     },
+    gacha: {
+      totalPulls: 0,
+      pityCounter: 0,
+    },
     gachaHistory: [],
     commissions: {},
     dailyCommissions: {
@@ -40,6 +44,7 @@ function createDefaultState() {
       ids: [],
       freeRefreshUsed: false,
       paidRefreshCount: 0,
+      rerollCount: 0,
     },
     story: {
       seenOpening: false,
@@ -47,6 +52,8 @@ function createDefaultState() {
     daily: {
       lastCheckIn: null,
       streak: 0,
+      shopDate: null,
+      shopPurchases: {},
     },
     gathering: {
       backyard: {
@@ -132,6 +139,14 @@ function normalizeFairyState(nextState) {
   nextState.fairies = normalized;
 }
 
+function normalizeGachaState(nextState) {
+  if (!isPlainObject(nextState.gacha)) nextState.gacha = {};
+  nextState.gacha.totalPulls = Math.max(0, Number(nextState.gacha.totalPulls || 0));
+  nextState.gacha.pityCounter = Math.max(0, Number(nextState.gacha.pityCounter || 0));
+  if (!Array.isArray(nextState.gachaHistory)) nextState.gachaHistory = [];
+  nextState.gachaHistory = nextState.gachaHistory.slice(0, 30);
+}
+
 function syncCollectionFromOwned(nextState) {
   if (!nextState.collection) nextState.collection = {};
   if (!nextState.collection.discoveredItems) nextState.collection.discoveredItems = {};
@@ -154,6 +169,17 @@ function syncUnlockedScenes(nextState) {
   const fresh = createDefaultState();
   nextState.unlockedScenes = mergeDeep(fresh.unlockedScenes, nextState.unlockedScenes || {});
   nextState.unlockedScenes.kitchen = true;
+}
+
+function normalizeDailyState(nextState) {
+  if (!isPlainObject(nextState.daily)) nextState.daily = {};
+  nextState.daily.streak = Math.max(0, Number(nextState.daily.streak || 0));
+  nextState.daily.lastCheckIn = nextState.daily.lastCheckIn || null;
+  if (nextState.daily.shopDate !== getLocalDateKey()) {
+    nextState.daily.shopDate = getLocalDateKey();
+    nextState.daily.shopPurchases = {};
+  }
+  if (!isPlainObject(nextState.daily.shopPurchases)) nextState.daily.shopPurchases = {};
 }
 
 function normalizePlayerProgress(nextState, saved) {
@@ -241,7 +267,7 @@ function resetDailyCommissionRecords(nextState, poolIds = []) {
   });
 }
 
-function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false, incrementPaid = false } = {}) {
+function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false, incrementPaid = false, incrementReroll = false } = {}) {
   const today = getLocalDateKey();
   const poolIds = getDailyCommissionPoolIds();
   const current = isPlainObject(nextState.dailyCommissions) ? nextState.dailyCommissions : {};
@@ -252,6 +278,7 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
   const shouldRefresh = force || !sameDay || !currentIds.length || hasInvalidIds;
   const freeRefreshUsed = sameDay ? Boolean(current.freeRefreshUsed) : false;
   const paidRefreshCount = sameDay ? Number(current.paidRefreshCount || 0) : 0;
+  const rerollCount = sameDay ? Number(current.rerollCount || 0) : 0;
 
   if (!shouldRefresh) {
     nextState.dailyCommissions = {
@@ -259,14 +286,16 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
       ids: currentIds,
       freeRefreshUsed,
       paidRefreshCount,
+      rerollCount,
     };
-    return { changed: false, date: today, ids: currentIds, freeRefreshUsed, paidRefreshCount };
+    return { changed: false, date: today, ids: currentIds, freeRefreshUsed, paidRefreshCount, rerollCount };
   }
 
   resetDailyCommissionRecords(nextState, poolIds);
 
   const nextFreeRefreshUsed = markFreeUsed ? true : freeRefreshUsed;
   const nextPaidRefreshCount = incrementPaid ? paidRefreshCount + 1 : paidRefreshCount;
+  const nextRerollCount = incrementReroll ? rerollCount + 1 : rerollCount;
   const ids = pickDailyCommissionIds(poolIds);
 
   nextState.dailyCommissions = {
@@ -274,6 +303,7 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
     ids,
     freeRefreshUsed: sameDay ? nextFreeRefreshUsed : Boolean(markFreeUsed),
     paidRefreshCount: sameDay ? nextPaidRefreshCount : Number(incrementPaid ? 1 : 0),
+    rerollCount: sameDay ? nextRerollCount : Number(incrementReroll ? 1 : 0),
   };
 
   return {
@@ -282,6 +312,7 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
     ids,
     freeRefreshUsed: nextState.dailyCommissions.freeRefreshUsed,
     paidRefreshCount: nextState.dailyCommissions.paidRefreshCount,
+    rerollCount: nextState.dailyCommissions.rerollCount,
   };
 }
 
@@ -290,6 +321,8 @@ function migrateSave(saved) {
   if (!saved) {
     normalizePlayerProgress(fresh, null);
     normalizeFairyState(fresh);
+    normalizeGachaState(fresh);
+    normalizeDailyState(fresh);
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
     applyLevelUnlocksToState(fresh);
@@ -302,6 +335,8 @@ function migrateSave(saved) {
   const migrated = mergeDeep(fresh, saved);
   normalizePlayerProgress(migrated, saved);
   normalizeFairyState(migrated);
+  normalizeGachaState(migrated);
+  normalizeDailyState(migrated);
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
   applyLevelUnlocksToState(migrated);
@@ -368,6 +403,10 @@ export function getState() {
   return state;
 }
 
+export function getTodayKey() {
+  return getLocalDateKey();
+}
+
 export function persistState(reason = 'manual') {
   saveSave(state);
   emitStateChanged(reason);
@@ -397,10 +436,33 @@ export function usePaidDailyCommissionRefresh() {
   return { ok: true, ...result };
 }
 
+export function useStarSugarCommissionReroll() {
+  ensureDailyCommissions(state);
+  const result = ensureDailyCommissions(state, { force: true, incrementReroll: true });
+  if (result.changed) persistState('daily-commissions:reroll');
+  return { ok: true, ...result };
+}
+
 export function getActiveCommissionIds() {
   const result = ensureDailyCommissions(state);
   if (result.changed) persistState('daily-commissions');
   return result.ids;
+}
+
+export function ensureDailyShopPurchases() {
+  normalizeDailyState(state);
+  return state.daily.shopPurchases;
+}
+
+export function getShopPurchaseCount(shopItemId) {
+  ensureDailyShopPurchases();
+  return Number(state.daily.shopPurchases?.[shopItemId] || 0);
+}
+
+export function addShopPurchaseCount(shopItemId, qty = 1) {
+  ensureDailyShopPurchases();
+  state.daily.shopPurchases[shopItemId] = getShopPurchaseCount(shopItemId) + Math.max(1, Number(qty || 1));
+  return state.daily.shopPurchases[shopItemId];
 }
 
 export function resetState() {
@@ -408,6 +470,8 @@ export function resetState() {
   state = createDefaultState();
   normalizePlayerProgress(state, null);
   normalizeFairyState(state);
+  normalizeGachaState(state);
+  normalizeDailyState(state);
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
   applyLevelUnlocksToState(state);
