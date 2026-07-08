@@ -126,6 +126,12 @@ function scrollToScene(index) {
   setActiveScene(scenes.indexOf(scene));
 }
 
+export function goToScene(sceneId = 'backyard') {
+  const scenes = $all('.scene-card');
+  const index = scenes.findIndex((scene) => scene.id === sceneId);
+  scrollToScene(index >= 0 ? index : 0);
+}
+
 function bindHomeEvents() {
   $('#prevScene')?.addEventListener('click', () => scrollToScene(activeIndex - 1));
   $('#nextScene')?.addEventListener('click', () => scrollToScene(activeIndex + 1));
