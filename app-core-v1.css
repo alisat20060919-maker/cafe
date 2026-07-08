@@ -114,6 +114,23 @@
 .core-filter-tabs button{border:1px solid rgba(126,84,34,.22);border-radius:999px;background:rgba(255,255,255,.68);color:#6a4b21;font-weight:900;padding:8px 10px;font-size:12px;box-shadow:0 4px 10px rgba(45,32,14,.08)}
 .core-filter-tabs button span{margin-right:3px}
 .core-filter-tabs button.active{background:linear-gradient(180deg,#fff2bd,#d9a441);color:#3d2a18;border-color:rgba(217,164,65,.62)}
+#page-inventory #inventory-list{
+  max-height:clamp(280px,44vh,430px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+  padding:8px;
+  margin-top:10px;
+  border:1px solid rgba(126,84,34,.22);
+  border-radius:22px;
+  background:rgba(255,255,246,.42);
+  box-shadow:inset 0 0 18px rgba(255,255,255,.28);
+  scroll-padding:10px;
+}
+#page-inventory #inventory-list::-webkit-scrollbar{width:8px}
+#page-inventory #inventory-list::-webkit-scrollbar-thumb{background:rgba(126,84,34,.34);border-radius:999px}
+#page-inventory #inventory-list::-webkit-scrollbar-track{background:rgba(255,255,255,.35);border-radius:999px}
+#page-inventory #inventory-list .core-empty{grid-column:1/-1}
 #inventory-list[data-current-filter="material"] .core-item-card:not([data-category="material"]),
 #inventory-list[data-current-filter="refined_material"] .core-item-card:not([data-category="refined_material"]),
 #inventory-list[data-current-filter="sweet"] .core-item-card:not([data-category="sweet"]),
@@ -140,5 +157,5 @@ body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
 
 @media(max-width:520px){
   .top-bar{display:grid!important;grid-template-columns:1fr;gap:8px!important}
-  .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px;margin:10px;min-height:500px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}.bottom-dock button{font-size:20px!important}.bottom-dock button::before{display:none!important}.bottom-dock button span{font-size:10px!important}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
+  .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px;margin:10px;min-height:500px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}#page-inventory #inventory-list{max-height:38vh;padding:7px;border-radius:20px}.bottom-dock button{font-size:20px!important}.bottom-dock button::before{display:none!important}.bottom-dock button span{font-size:10px!important}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
 }
