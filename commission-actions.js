@@ -1,5 +1,12 @@
 import { GameDB } from '@db';
-import { getState, canAffordItems, spendItems, addReward, persistState } from '@state';
+import {
+  getState,
+  canAffordItems,
+  spendItems,
+  addReward,
+  persistState,
+  refreshDailyCommissions,
+} from '@state';
 import { formatReward } from '@utils';
 
 function getRequirements(commission) {
@@ -16,6 +23,15 @@ export function canCompleteCommission(commissionId) {
   if (!commission) return false;
   if (isCommissionCompleted(state.commissions[commissionId])) return false;
   return canAffordItems(getRequirements(commission));
+}
+
+export function refreshDailyCommissionList() {
+  const result = refreshDailyCommissions();
+  if (result.changed) {
+    return { ok: true, refreshed: true, message: `今日委託已刷新：${result.ids.length} 件。` };
+  }
+
+  return { ok: true, refreshed: false, message: '今天的委託已經是最新的。' };
 }
 
 export function completeCommission(commissionId) {
