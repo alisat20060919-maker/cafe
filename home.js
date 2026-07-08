@@ -81,6 +81,10 @@ function getStationRecipes(stationId) {
   return Object.values(GameDB.recipes || {}).filter((recipe) => recipe.station === stationId);
 }
 
+function isRecipeStation(sceneId) {
+  return Boolean(GameDB.stations?.[sceneId]);
+}
+
 function renderRecipeCost(cost = {}) {
   const state = getState();
   const entries = Object.entries(cost || {});
@@ -111,7 +115,8 @@ function renderRecipeButton(recipe) {
 function renderRecipeCards(stationId) {
   const recipes = getStationRecipes(stationId);
   if (!recipes.length) {
-    return '<p>這裡還沒有登錄配方。之後可以從 GameDB.recipes 新增。</p>';
+    const stationName = GameDB.stations?.[stationId]?.label || stationId;
+    return `<p>${stationName}目前還沒有登錄配方。之後可以從 GameDB.recipes 新增 station = ${stationId} 的配方。</p>`;
   }
 
   return `
@@ -279,7 +284,7 @@ function showRecipeListModal(scene) {
   const title = station?.label ? `${station.label}配方` : `${scene.dataset.title}配方`;
   const message = recipes.length
     ? `目前可以查看 ${recipes.length} 份配方；素材足夠時可以製作成品。`
-    : '這裡之後會開放製作配方，目前還沒有可顯示的資料。';
+    : `${station?.label || scene.dataset.title}目前還沒有可製作配方，之後會從 GameDB.recipes 開放。`;
 
   showModal(`
     <div class="core-modal-card compact location-hint-modal recipe-list-modal">
@@ -402,7 +407,7 @@ function bindHomeEvents() {
         return;
       }
 
-      if (getStationRecipes(scene.id).length) {
+      if (isRecipeStation(scene.id)) {
         showRecipeListModal(scene);
         return;
       }
