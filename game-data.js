@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 10,
+  version: 11,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -150,6 +150,21 @@ export const GameDB = {
     ]);
   },
 
+  getRecipeSearchText(recipeId) {
+    const recipe = typeof recipeId === 'string' ? this.recipes?.[recipeId] : recipeId;
+    if (!recipe) return '';
+
+    return this.buildSearchText([
+      recipe.id,
+      recipe.name,
+      recipe.station,
+      recipe.category,
+      recipe.description,
+      recipe.cost && Object.keys(recipe.cost),
+      recipe.output?.itemId,
+    ]);
+  },
+
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
     leafCoin: { name: '葉幣', icon: '🪙' },
@@ -269,6 +284,30 @@ export const GameDB = {
       use: '安定系飲品，可用於溫柔、祝福、月光主題委託。',
       description: '溫柔發光的奶泡像一層薄薄月色，喝下後心情會慢慢安定。',
     },
+    star_berry_tart: {
+      id: 'star_berry_tart',
+      name: '星星莓奶油塔',
+      icon: '🥧',
+      type: 'sweet',
+      typeName: '甜點',
+      rarity: 'R',
+      stars: 4,
+      source: ['廚房製作（規劃中）', '委託獎勵'],
+      use: '好運與活力主題委託常用甜點。',
+      description: '星星莓鋪在奶油塔上，切開時會掉出一點金色糖屑。',
+    },
+    dream_cocoa: {
+      id: 'dream_cocoa',
+      name: '夜空碎片可可',
+      icon: '🍫',
+      type: 'drink',
+      typeName: '飲品',
+      rarity: 'SR',
+      stars: 5,
+      source: ['廚房製作（規劃中）', '委託獎勵'],
+      use: '夢境、夜晚與安眠主題委託常用飲品。',
+      description: '把夜空碎片融進可可裡，杯面會浮出一小片安靜星空。',
+    },
   },
 
   itemSources: {
@@ -278,6 +317,8 @@ export const GameDB = {
     forest_cookie: { type: 'scene', id: 'backyard' },
     stardew_water: { type: 'scene', id: 'backyard' },
     moon_latte: { type: 'station', id: 'kitchen' },
+    star_berry_tart: { type: 'station', id: 'kitchen' },
+    dream_cocoa: { type: 'station', id: 'kitchen' },
   },
 
   gatherConfig: {
@@ -341,6 +382,36 @@ export const GameDB = {
           bonus: { items: { stardew_water: 1 } },
         },
       ],
+    },
+  },
+
+  recipes: {
+    recipe_moon_latte: {
+      id: 'recipe_moon_latte',
+      name: '月光花瓣拿鐵',
+      station: 'kitchen',
+      category: 'drink',
+      cost: { moon_petals: 1, stardew_water: 1 },
+      output: { itemId: 'moon_latte', qty: 1 },
+      description: '把月光花瓣泡進星露水裡，再加入柔和奶泡，做成安定系飲品。',
+    },
+    recipe_star_berry_tart: {
+      id: 'recipe_star_berry_tart',
+      name: '星星莓奶油塔',
+      station: 'kitchen',
+      category: 'sweet',
+      cost: { star_berry: 2, forest_cookie: 1 },
+      output: { itemId: 'star_berry_tart', qty: 1 },
+      description: '把森林餅乾壓成塔皮，鋪上星星莓與奶油，做成會掉金色糖屑的小塔。',
+    },
+    recipe_dream_cocoa: {
+      id: 'recipe_dream_cocoa',
+      name: '夜空碎片可可',
+      station: 'kitchen',
+      category: 'drink',
+      cost: { night_sky_fragment: 1, stardew_water: 1 },
+      output: { itemId: 'dream_cocoa', qty: 1 },
+      description: '把夜空碎片溶進熱可可，讓杯面浮出一片安靜的星空。',
     },
   },
 
