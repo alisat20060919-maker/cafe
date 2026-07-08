@@ -82,6 +82,12 @@
 7. 未解鎖採集地點不可扣次數、不可掉落、不可寫入 inventory。
 8. 未解鎖採集地點不顯示剩餘次數與掉落預覽，只顯示解鎖提示。
 9. 掉落表、掉落機率、素材名稱、圖示與描述都從 GameDB 讀取，不寫入 state。
+10. 採集特殊事件只允許在成功掉落後抽取；未解鎖、次數用完或錯誤狀態都不可觸發。
+11. 採集特殊事件資料只能放在 `GameDB.gatherTables[sceneId].specialEvents`，不可寫死在 Page。
+12. 特殊事件的額外掉落必須由 `gather-actions.js` 透過既有 `addItem()` 和 `persistState()` 流程處理。
+13. 特殊事件不得新增 state 欄位；UI 只能讀取 action 回傳的 `specialEvent` 顯示文字與額外獎勵。
+14. 特殊事件不額外扣採集次數；一次採集永遠只讓該地點 count +1。
+15. 特殊事件機率必須維持低機率；action 端會把 `specialEventChance` 上限壓在 5%。
 
 ## 事件流
 
