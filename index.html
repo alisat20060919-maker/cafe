@@ -11,31 +11,31 @@
   <link rel="stylesheet" href="game-ui.css?v=inside16" />
   <link rel="stylesheet" href="mobile-fix.css?v=inside16" />
   <link rel="stylesheet" href="game-interior.css?v=inside16" />
-  <link rel="stylesheet" href="app-core-v1.css?v=ui05" />
+  <link rel="stylesheet" href="app-core-v1.css?v=ui06" />
   <script type="importmap">
     {
       "imports": {
-        "@main": "./main.js?v=core54",
-        "@db": "./game-data.js?v=core54",
-        "@data/items": "./data-items.js?v=core54",
-        "@data/recipes": "./data-recipes.js?v=core54",
-        "@validator": "./game-db-validator.js?v=core54",
-        "@state": "./game-state.js?v=core54",
-        "@save": "./save.js?v=core54",
-        "@ui": "./ui.js?v=core54",
-        "@home": "./home.js?v=core54",
-        "@router": "./router.js?v=core54",
-        "@eventBus": "./event-bus.js?v=core54",
-        "@utils": "./utils.js?v=core54",
-        "@actions/daily": "./daily-actions.js?v=core54",
-        "@actions/gacha": "./gacha-actions.js?v=core54",
-        "@actions/commission": "./commission-actions.js?v=core54",
-        "@actions/gather": "./gather-actions.js?v=core54",
-        "@actions/craft": "./craft-actions.js?v=core54",
-        "@pages/gacha": "./pages-gacha.js?v=core54",
-        "@pages/inventory": "./pages-inventory.js?v=core54",
-        "@pages/collection": "./pages-collection.js?v=core54",
-        "@pages/commissions": "./pages-commissions.js?v=core54"
+        "@main": "./main.js?v=core55",
+        "@db": "./game-data.js?v=core55",
+        "@data/items": "./data-items.js?v=core55",
+        "@data/recipes": "./data-recipes.js?v=core55",
+        "@validator": "./game-db-validator.js?v=core55",
+        "@state": "./game-state.js?v=core55",
+        "@save": "./save.js?v=core55",
+        "@ui": "./ui.js?v=core55",
+        "@home": "./home.js?v=core55",
+        "@router": "./router.js?v=core55",
+        "@eventBus": "./event-bus.js?v=core55",
+        "@utils": "./utils.js?v=core55",
+        "@actions/daily": "./daily-actions.js?v=core55",
+        "@actions/gacha": "./gacha-actions.js?v=core55",
+        "@actions/commission": "./commission-actions.js?v=core55",
+        "@actions/gather": "./gather-actions.js?v=core55",
+        "@actions/craft": "./craft-actions.js?v=core55",
+        "@pages/gacha": "./pages-gacha.js?v=core55",
+        "@pages/inventory": "./pages-inventory.js?v=core55",
+        "@pages/collection": "./pages-collection.js?v=core55",
+        "@pages/commissions": "./pages-commissions.js?v=core55"
       }
     }
   </script>
@@ -45,8 +45,13 @@
     <section class="game-window" aria-label="精靈咖啡屋遊戲介面" data-current-page="home">
       <header class="top-bar">
         <div class="profile-card">
-          <div class="avatar">🧁</div>
-          <div><p class="save-label">LV. 01 / EXP 0/60 / Save v12</p><h1>精靈咖啡屋</h1></div>
+          <div class="level-ring" aria-label="等級 1，EXP 0/60" style="--exp-deg:0deg">
+            <div class="level-ring-inner">
+              <span id="levelRingSub">LV</span>
+              <strong id="levelRingValue">01</strong>
+            </div>
+          </div>
+          <div><p class="save-label">EXP 0/60 / Save v12</p><h1>精靈咖啡屋</h1></div>
         </div>
         <div class="status-pills" aria-label="玩家狀態列"><span>☀️ 森林午後</span><span>✦ 星糖 128</span><span>🪙 葉幣 320</span></div>
         <div class="top-actions" aria-label="快速功能"><button type="button" data-action="daily">🎁<span>簽到</span></button></div>
