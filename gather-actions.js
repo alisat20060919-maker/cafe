@@ -1,5 +1,6 @@
 import { GameDB } from '@db';
 import { getState, addItem, persistState, isSceneUnlocked } from '@state';
+import { getTotalFairyBuffValue, getOwnedFairyBuffs } from '@actions/fairy';
 
 const locationHints = {
   cafe: {
@@ -23,10 +24,28 @@ function getDailyGatherLimit() {
   return Number(GameDB.gatherConfig?.dailyLimit || 5);
 }
 
-function getSpecialEventChance() {
+function getSpecialEventChance(locationId = 'all') {
   const configuredChance = Number(GameDB.gatherConfig?.specialEventChance ?? 0.05);
   if (!Number.isFinite(configuredChance) || configuredChance <= 0) return 0;
-  return Math.min(configuredChance, 0.05);
+  const buffBonus = getTotalFairyBuffValue('rareDropBonus', locationId);
+  return Math.min(configuredChance + buffBonus, 0.25);
+}
+
+function getGatherQtyMultiplier(locationId = 'backyard') {
+  return 1 + getTotalFairyBuffValue('gatherQtyBonus', locationId);
+}
+
+function getAppliedBuffLabels(locationId = 'backyard') {
+  return [
+    ...getOwnedFairyBuffs('gatherQtyBonus', locationId),
+    ...getOwnedFairyBuffs('rareDropBonus', locationId),
+  ].map((buff) => `${buff.fairyName}：${buff.label}`);
+}
+
+function getBuffedQty(qty = 1, locationId = 'backyard') {
+  const base = Math.max(1, Number(qty || 1));
+  const boosted = Math.floor(base * getGatherQtyMultiplier(locationId));
+  return Math.max(base, boosted);
 }
 
 function getGatherTable(locationId) {
@@ -95,13 +114,13 @@ function getBonusRewardViews(bonus = {}) {
 
 function formatGatherDrop(drop) {
   const view = getDropView(drop);
-  return `${view.icon}${view.name} ×${view.qty}`;
+  return `${view.icon}${view.name} ×${drop.qty || view.qty}`;
 }
 
-function rollSpecialEvent(table) {
+function rollSpecialEvent(table, locationId) {
   const events = table.specialEvents || [];
   if (!events.length) return null;
-  if (Math.random() >= getSpecialEventChance()) return null;
+  if (Math.random() >= getSpecialEventChance(locationId)) return null;
 
   const event = pickWeighted(events);
   Object.entries(event.bonus?.items || {}).forEach(([itemId, qty]) => {
@@ -179,6 +198,7 @@ export function getGatherStatus(locationId = 'backyard') {
   const today = localDateString();
   const used = record.lastDate === today ? Number(record.count || 0) : 0;
   const remaining = Math.max(0, limit - used);
+  const buffLabels = getAppliedBuffLabels(locationId);
 
   return {
     locationId,
@@ -187,6 +207,7 @@ export function getGatherStatus(locationId = 'backyard') {
     remaining,
     limit,
     isDepleted: remaining <= 0,
+    buffLabels,
     label: remaining > 0 ? `今日剩餘 ${remaining}/${limit}` : '今日已採完',
   };
 }
@@ -223,11 +244,13 @@ export function gatherAt(locationId = 'backyard') {
     };
   }
 
-  const drop = pickWeighted(table.drops);
+  const drop = { ...pickWeighted(table.drops) };
+  drop.qty = getBuffedQty(drop.qty || 1, locationId);
   const totalWeight = table.drops.reduce((sum, item) => sum + Number(item.weight || 0), 0);
-  const dropView = getDropView(drop, totalWeight);
+  const dropView = { ...getDropView(drop, totalWeight), qty: drop.qty };
   addItem(drop.itemId, drop.qty || 1);
-  const specialEvent = rollSpecialEvent(table);
+  const specialEvent = rollSpecialEvent(table, locationId);
+  const buffLabels = getAppliedBuffLabels(locationId);
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
 
@@ -240,11 +263,12 @@ export function gatherAt(locationId = 'backyard') {
     drop,
     dropView,
     specialEvent,
+    buffLabels,
     remaining,
     limit,
     used: record.count,
     isDepleted: remaining <= 0,
     preview: getGatherDropPreview(locationId),
-    message: `你找到了 ${formatGatherDrop(drop)}。${specialEvent ? ` ${specialEvent.title}！` : ''}今日還能採集 ${remaining} 次。`,
+    message: `你找到了 ${formatGatherDrop(drop)}。${specialEvent ? ` ${specialEvent.title}！` : ''}${buffLabels.length ? ` Buff：${buffLabels.join('、')}。` : ''}今日還能採集 ${remaining} 次。`,
   };
 }
