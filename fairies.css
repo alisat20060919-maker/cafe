@@ -32,7 +32,7 @@
   justify-items:center;
   gap:7px;
   min-width:0;
-  min-height:166px;
+  min-height:178px;
   border:1px solid rgba(255,225,155,.42);
   border-radius:22px;
   padding:12px 9px 10px;
@@ -127,12 +127,35 @@
   border-color:rgba(255,225,160,.36)!important;
 }
 
-.fairy-profile-modal h2{color:#fff1cc!important}
+.fairy-profile-modal h2,.fairy-profile-modal h3{color:#fff1cc!important}
 .fairy-profile-modal p,.fairy-profile-modal dd{color:#ead0a0!important}
 .fairy-profile-modal .core-detail-list div,.fairy-profile-modal .core-detail-quote{background:rgba(255,244,214,.1);border-color:rgba(255,225,160,.16)}
 
+.fairy-modal-actions,.fairy-gift-list{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
+
+.fairy-modal-actions button,.fairy-gift-list button{
+  border:1px solid rgba(255,225,160,.32);
+  border-radius:999px;
+  padding:9px 12px;
+  background:rgba(255,244,214,.13);
+  color:#fff1cc;
+  font-weight:900;
+}
+
+.fairy-modal-actions button:not(:disabled),.fairy-gift-list button:not(:disabled){cursor:pointer}
+
+.fairy-gift-title{
+  margin:16px 0 6px!important;
+  font-size:16px!important;
+}
+
 @media(max-width:520px){
   .fairy-card-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-  .fairy-character-card{min-height:154px;border-radius:20px;padding:10px 8px}
+  .fairy-character-card{min-height:166px;border-radius:20px;padding:10px 8px}
   .fairy-card-portrait{width:58px;height:58px;border-radius:20px;font-size:34px}
 }
