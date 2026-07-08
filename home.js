@@ -1,3 +1,5 @@
+import { GameDB } from '@db';
+import { getState } from '@state';
 import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { showModal } from '@ui';
 
@@ -61,6 +63,64 @@ function applyHotspotPositions() {
     hotspot.style.right = 'auto';
     hotspot.style.bottom = 'auto';
   });
+}
+
+function itemView(itemId) {
+  const item = GameDB.items?.[itemId];
+  return {
+    itemId,
+    name: item?.name || itemId,
+    icon: item?.icon || '◇',
+    rarity: item?.rarity || 'N',
+    typeLabel: GameDB.getItemTypeLabel(item?.type),
+  };
+}
+
+function getStationRecipes(stationId) {
+  return Object.values(GameDB.recipes || {}).filter((recipe) => recipe.station === stationId);
+}
+
+function renderRecipeCost(cost = {}) {
+  const state = getState();
+  const entries = Object.entries(cost || {});
+  if (!entries.length) return '<span>不需素材</span>';
+
+  return entries.map(([itemId, qty]) => {
+    const item = itemView(itemId);
+    const owned = Number(state.inventory?.[itemId] || 0);
+    const lackClass = owned < qty ? ' class="is-lacking"' : '';
+    return `<span${lackClass}>${item.icon} ${item.name} ${owned}/${qty}</span>`;
+  }).join('、');
+}
+
+function renderRecipeOutput(output = {}) {
+  const item = itemView(output.itemId);
+  return `${item.icon} ${item.name} ×${output.qty || 1}`;
+}
+
+function renderRecipeCards(stationId) {
+  const recipes = getStationRecipes(stationId);
+  if (!recipes.length) {
+    return '<p>這裡還沒有登錄配方。之後可以從 GameDB.recipes 新增。</p>';
+  }
+
+  return `
+    <div class="core-quest-list recipe-list">
+      ${recipes.map((recipe) => `
+        <article class="core-quest-card recipe-card">
+          <div class="core-quest-top">
+            <span>${recipe.category || 'recipe'}</span>
+            <strong>${GameDB.stations?.[recipe.station]?.label || recipe.station}</strong>
+          </div>
+          <h3>${recipe.name}</h3>
+          <p>${recipe.description || '尚未撰寫配方說明。'}</p>
+          <div class="core-recipe"><b>需要：</b>${renderRecipeCost(recipe.cost)}</div>
+          <div class="core-reward"><b>產出：</b>${renderRecipeOutput(recipe.output)}</div>
+          <button type="button" disabled>製作功能下一步開放</button>
+        </article>
+      `).join('')}
+    </div>
+  `;
 }
 
 function renderPreviewText(locationId) {
@@ -175,6 +235,28 @@ function showLocationHintModal(scene) {
   setDialogue(scene.dataset.speaker || '小店長', scene.dataset.title, hint.message);
 }
 
+function showRecipeListModal(scene) {
+  const station = GameDB.stations?.[scene.id];
+  const recipes = getStationRecipes(scene.id);
+  const title = station?.label ? `${station.label}配方` : `${scene.dataset.title}配方`;
+  const message = recipes.length
+    ? `目前可以查看 ${recipes.length} 份配方；正式製作、扣素材與產出成品會在下一步開放。`
+    : '這裡之後會開放製作配方，目前還沒有可顯示的資料。';
+
+  showModal(`
+    <div class="core-modal-card compact location-hint-modal recipe-list-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">RECIPE LIST</span>
+      <div class="gather-result-icon">🍳</div>
+      <h2>${title}</h2>
+      <p>${message}</p>
+      ${renderRecipeCards(scene.id)}
+    </div>
+  `);
+
+  setDialogue(scene.dataset.speaker || '甜點精靈', scene.dataset.title, message);
+}
+
 export function setActiveScene(index) {
   const scenes = $all('.scene-card');
   const tabs = $all('.tab');
@@ -278,6 +360,11 @@ function bindHomeEvents() {
 
       if (scene.id === 'cafe') {
         openCafeInside();
+        return;
+      }
+
+      if (getStationRecipes(scene.id).length) {
+        showRecipeListModal(scene);
         return;
       }
 
