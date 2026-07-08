@@ -271,6 +271,9 @@ export function renderInventory() {
 
   page.innerHTML = `
     ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，排序只調整畫面順序，不改存檔。')}
+    <div class="core-actions-row collection-entry-actions">
+      <button type="button" data-route="collection">打開圖鑑</button>
+    </div>
     <div class="core-search-box">
       <label for="inventory-search">搜尋背包</label>
       <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度、來源或用途" autocomplete="off" />
