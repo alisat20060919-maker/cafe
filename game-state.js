@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 8;
+export const SAVE_VERSION = 9;
 
 function createDefaultState() {
   return {
@@ -38,6 +38,8 @@ function createDefaultState() {
     dailyCommissions: {
       date: null,
       ids: [],
+      freeRefreshUsed: false,
+      paidRefreshCount: 0,
     },
     daily: {
       lastCheckIn: null,
@@ -96,6 +98,15 @@ function getDailyCommissionPoolIds() {
     .filter(Boolean);
 }
 
+function getDailyCommissionLimit() {
+  return Math.max(1, Number(GameDB.commissionConfig?.dailyCount || 3));
+}
+
+function pickDailyCommissionIds(poolIds = []) {
+  const shuffled = [...poolIds].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, Math.min(getDailyCommissionLimit(), shuffled.length));
+}
+
 function syncCollectionFromOwned(nextState) {
   if (!nextState.collection) nextState.collection = {};
   if (!nextState.collection.discoveredItems) nextState.collection.discoveredItems = {};
@@ -137,35 +148,56 @@ function normalizeCommissionState(nextState) {
   nextState.commissions = normalized;
 }
 
-function ensureDailyCommissions(nextState, { force = false } = {}) {
-  const today = getLocalDateKey();
-  const poolIds = getDailyCommissionPoolIds();
-  const current = isPlainObject(nextState.dailyCommissions) ? nextState.dailyCommissions : {};
-  const currentIds = Array.isArray(current.ids) ? current.ids.filter((id) => GameDB.commissions?.[id]) : [];
-  const missingIds = poolIds.some((id) => !currentIds.includes(id));
-  const shouldRefresh = force || current.date !== today || !currentIds.length || missingIds;
-
-  if (!shouldRefresh) {
-    nextState.dailyCommissions = {
-      date: current.date,
-      ids: currentIds,
-    };
-    return { changed: false, date: current.date, ids: currentIds };
-  }
-
-  const idsToReset = new Set([...currentIds, ...poolIds]);
-  idsToReset.forEach((commissionId) => {
+function resetDailyCommissionRecords(nextState, poolIds = []) {
+  poolIds.forEach((commissionId) => {
     if (GameDB.commissions?.[commissionId]?.category !== 'main') {
       delete nextState.commissions[commissionId];
     }
   });
+}
+
+function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false, incrementPaid = false } = {}) {
+  const today = getLocalDateKey();
+  const poolIds = getDailyCommissionPoolIds();
+  const current = isPlainObject(nextState.dailyCommissions) ? nextState.dailyCommissions : {};
+  const rawIds = Array.isArray(current.ids) ? current.ids : [];
+  const currentIds = rawIds.filter((id) => GameDB.commissions?.[id]);
+  const hasInvalidIds = rawIds.length !== currentIds.length;
+  const sameDay = current.date === today;
+  const shouldRefresh = force || !sameDay || !currentIds.length || hasInvalidIds;
+  const freeRefreshUsed = sameDay ? Boolean(current.freeRefreshUsed) : false;
+  const paidRefreshCount = sameDay ? Number(current.paidRefreshCount || 0) : 0;
+
+  if (!shouldRefresh) {
+    nextState.dailyCommissions = {
+      date: today,
+      ids: currentIds,
+      freeRefreshUsed,
+      paidRefreshCount,
+    };
+    return { changed: false, date: today, ids: currentIds, freeRefreshUsed, paidRefreshCount };
+  }
+
+  resetDailyCommissionRecords(nextState, poolIds);
+
+  const nextFreeRefreshUsed = markFreeUsed ? true : freeRefreshUsed;
+  const nextPaidRefreshCount = incrementPaid ? paidRefreshCount + 1 : paidRefreshCount;
+  const ids = pickDailyCommissionIds(poolIds);
 
   nextState.dailyCommissions = {
     date: today,
-    ids: poolIds,
+    ids,
+    freeRefreshUsed: sameDay ? nextFreeRefreshUsed : Boolean(markFreeUsed),
+    paidRefreshCount: sameDay ? nextPaidRefreshCount : Number(incrementPaid ? 1 : 0),
   };
 
-  return { changed: true, date: today, ids: poolIds };
+  return {
+    changed: true,
+    date: today,
+    ids,
+    freeRefreshUsed: nextState.dailyCommissions.freeRefreshUsed,
+    paidRefreshCount: nextState.dailyCommissions.paidRefreshCount,
+  };
 }
 
 function migrateSave(saved) {
@@ -206,6 +238,24 @@ export function refreshDailyCommissions(options = {}) {
   const result = ensureDailyCommissions(state, options);
   if (result.changed) persistState('daily-commissions');
   return result;
+}
+
+export function useFreeDailyCommissionRefresh() {
+  ensureDailyCommissions(state);
+  if (state.dailyCommissions?.freeRefreshUsed) {
+    return { ok: false, changed: false, reason: 'free-used', message: '今天的免費刷新已經用過了。' };
+  }
+
+  const result = ensureDailyCommissions(state, { force: true, markFreeUsed: true });
+  if (result.changed) persistState('daily-commissions:free');
+  return { ok: true, ...result };
+}
+
+export function usePaidDailyCommissionRefresh() {
+  ensureDailyCommissions(state);
+  const result = ensureDailyCommissions(state, { force: true, incrementPaid: true });
+  if (result.changed) persistState('daily-commissions:paid');
+  return { ok: true, ...result };
 }
 
 export function getActiveCommissionIds() {
