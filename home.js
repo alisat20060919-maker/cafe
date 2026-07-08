@@ -1,4 +1,4 @@
-import { gatherAt } from '@actions/gather';
+import { canGatherAt, gatherAt } from '@actions/gather';
 import { emitNotice } from '@eventBus';
 
 let activeIndex = 0;
@@ -21,6 +21,12 @@ const interiorDialogue = {
     place: '客人訂單',
     text: '訂單會依照待確認、製作中、已完成分類。之後這裡可以變成真正的排單紀錄。',
   },
+};
+
+const gatherSpeakers = {
+  backyard: '採集精靈',
+  greenhouse: '花園精靈',
+  alchemy: '煉金助手',
 };
 
 const hotspotPositions = {
@@ -106,10 +112,10 @@ function openCafeInside() {
   setInteriorPanel('menu');
 }
 
-function handleBackyardGather() {
-  const result = gatherAt('backyard');
-  emitNotice(result.ok ? result.title : '採集失敗', result.message);
-  setDialogue('採集精靈', '後山', result.message);
+function handleGatherScene(scene) {
+  const result = gatherAt(scene.id);
+  emitNotice(result.ok ? result.title : result.title || '採集失敗', result.message);
+  setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
 }
 
 function scrollToScene(index) {
@@ -162,8 +168,8 @@ function bindHomeEvents() {
         return;
       }
 
-      if (scene.id === 'backyard') {
-        handleBackyardGather();
+      if (canGatherAt(scene.id)) {
+        handleGatherScene(scene);
         return;
       }
 
