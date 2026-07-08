@@ -3,9 +3,7 @@ import { getState } from '@state';
 import { drawGacha } from '@actions/gacha';
 import { emitNotice } from '@eventBus';
 
-function $all(selector, root = document) {
-  return [...root.querySelectorAll(selector)];
-}
+let lastResults = [];
 
 function pageHeader(kicker, title, body) {
   return `
@@ -21,13 +19,42 @@ function renderDrop(record) {
   if (!record) return '';
   if (record.kind === 'fairy') {
     const fairy = GameDB.fairies[record.id];
+    if (!fairy) return '';
     return `<article class="core-result-card ssr"><b>${fairy.icon} ${fairy.name}</b><span>${fairy.rarity}</span><p>「${fairy.quote}」</p></article>`;
   }
   const item = GameDB.items[record.id];
+  if (!item) return '';
   return `<article class="core-result-card"><b>${item.icon} ${item.name} ×${record.qty}</b><span>${item.rarity} / ${item.typeName}</span><p>${item.description}</p></article>`;
 }
 
-export function renderGacha(results = []) {
+function handleGachaClick(event) {
+  const button = event.target.closest('[data-draw]');
+  const page = document.querySelector('#page-gacha');
+  if (!button || !page?.contains(button)) return;
+
+  const times = Number(button.dataset.draw || 1);
+  const drawn = [];
+  for (let i = 0; i < times; i += 1) {
+    const result = drawGacha('standard');
+    if (!result.ok) {
+      emitNotice('祈願失敗', result.message);
+      break;
+    }
+    drawn.push(result.drop);
+  }
+
+  lastResults = drawn;
+  renderGacha(lastResults);
+}
+
+function bindGachaEvents() {
+  const page = document.querySelector('#page-gacha');
+  if (!page || page.dataset.eventsBound === 'true') return;
+  page.dataset.eventsBound = 'true';
+  page.addEventListener('click', handleGachaClick);
+}
+
+export function renderGacha(results = lastResults) {
   const page = document.querySelector('#page-gacha');
   if (!page) return;
 
@@ -56,20 +83,8 @@ export function renderGacha(results = []) {
       </div>
     </section>
   `;
+}
 
-  $all('[data-draw]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      const times = Number(button.dataset.draw || 1);
-      const drawn = [];
-      for (let i = 0; i < times; i += 1) {
-        const result = drawGacha('standard');
-        if (!result.ok) {
-          emitNotice('祈願失敗', result.message);
-          break;
-        }
-        drawn.push(result.drop);
-      }
-      renderGacha(drawn);
-    });
-  });
+export function initGachaPage() {
+  bindGachaEvents();
 }
