@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 9;
+export const SAVE_VERSION = 10;
 
 function createDefaultState() {
   return {
@@ -30,7 +30,7 @@ function createDefaultState() {
       cafe: true,
       backyard: true,
       greenhouse: true,
-      kitchen: false,
+      kitchen: true,
       alchemy: false,
     },
     gachaHistory: [],
@@ -128,6 +128,7 @@ function syncCollectionFromOwned(nextState) {
 function syncUnlockedScenes(nextState) {
   const fresh = createDefaultState();
   nextState.unlockedScenes = mergeDeep(fresh.unlockedScenes, nextState.unlockedScenes || {});
+  nextState.unlockedScenes.kitchen = true;
 }
 
 function normalizeCommissionState(nextState) {
@@ -146,6 +147,25 @@ function normalizeCommissionState(nextState) {
   });
 
   nextState.commissions = normalized;
+}
+
+function applyCommissionUnlocksToState(nextState, commissionId) {
+  const commission = GameDB.commissions?.[commissionId];
+  const unlocked = [];
+
+  (commission?.unlocks?.scenes || []).forEach((sceneId) => {
+    if (!GameDB.scenes?.[sceneId]) return;
+    nextState.unlockedScenes[sceneId] = true;
+    unlocked.push({ type: 'scene', id: sceneId, label: GameDB.scenes[sceneId].label || sceneId });
+  });
+
+  return unlocked;
+}
+
+function syncCompletedCommissionUnlocks(nextState) {
+  Object.entries(nextState.commissions || {}).forEach(([commissionId, record]) => {
+    if (record?.status === 'completed') applyCommissionUnlocksToState(nextState, commissionId);
+  });
 }
 
 function resetDailyCommissionRecords(nextState, poolIds = []) {
@@ -206,6 +226,7 @@ function migrateSave(saved) {
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
     normalizeCommissionState(fresh);
+    syncCompletedCommissionUnlocks(fresh);
     ensureDailyCommissions(fresh);
     return fresh;
   }
@@ -214,6 +235,7 @@ function migrateSave(saved) {
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
   normalizeCommissionState(migrated);
+  syncCompletedCommissionUnlocks(migrated);
   ensureDailyCommissions(migrated);
   migrated.saveVersion = SAVE_VERSION;
   return migrated;
@@ -270,6 +292,7 @@ export function resetState() {
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
   normalizeCommissionState(state);
+  syncCompletedCommissionUnlocks(state);
   ensureDailyCommissions(state);
   persistState();
   return state;
@@ -300,6 +323,11 @@ export function unlockScene(sceneId) {
   if (!GameDB.scenes?.[sceneId]) return false;
   state.unlockedScenes[sceneId] = true;
   return true;
+}
+
+export function applyCommissionUnlocks(commissionId) {
+  const unlocked = applyCommissionUnlocksToState(state, commissionId);
+  return unlocked.filter((entry) => entry.type !== 'scene' || entry.id === 'kitchen' || state.unlockedScenes?.[entry.id]);
 }
 
 export function markItemDiscovered(itemId) {
