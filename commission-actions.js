@@ -9,6 +9,7 @@ import {
   refreshDailyCommissions,
   useFreeDailyCommissionRefresh,
   usePaidDailyCommissionRefresh,
+  useStarSugarCommissionReroll,
   isUnlocked,
   getUnlockRequirementText,
 } from '@state';
@@ -17,6 +18,10 @@ import { formatReward } from '@utils';
 
 function getPaidRefreshCost() {
   return GameDB.commissionConfig?.refreshCost || { currency: 'tickets', amount: 1 };
+}
+
+function getRerollCost() {
+  return GameDB.commissionConfig?.rerollCost || { currency: 'starSugar', amount: 25 };
 }
 
 function getRequirements(commission) {
@@ -55,6 +60,10 @@ function currencyLabel(currencyId) {
   return GameDB.currencies?.[currencyId]?.name || currencyId;
 }
 
+function formatCost(cost) {
+  return `${currencyLabel(cost.currency)} ×${cost.amount}`;
+}
+
 function formatUnlocks(unlocks = []) {
   if (!unlocks.length) return '';
   return `｜新解鎖：${unlocks.map((entry) => entry.label).join('、')}`;
@@ -76,8 +85,11 @@ function mergeUnlocks(...groups) {
 }
 
 export function getPaidRefreshCostText() {
-  const cost = getPaidRefreshCost();
-  return `${currencyLabel(cost.currency)} ×${cost.amount}`;
+  return formatCost(getPaidRefreshCost());
+}
+
+export function getRerollCostText() {
+  return formatCost(getRerollCost());
 }
 
 export function getCommissionDisplayReward(commission) {
@@ -138,6 +150,26 @@ export function refreshDailyCommissionPaid() {
     ok: true,
     refreshed: true,
     message: `已花費${getPaidRefreshCostText()}刷新今日委託：${result.ids.length} 件。`,
+  };
+}
+
+export function rerollDifficultCommissions() {
+  const state = getState();
+  const cost = getRerollCost();
+  const current = Number(state.player?.[cost.currency] || 0);
+  if (current < cost.amount) {
+    return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
+  }
+
+  if (!spendCurrency(cost.currency, cost.amount)) {
+    return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
+  }
+
+  const result = useStarSugarCommissionReroll();
+  return {
+    ok: true,
+    refreshed: true,
+    message: `已花費${getRerollCostText()}重抽今日委託：${result.ids.length} 件。`,
   };
 }
 
