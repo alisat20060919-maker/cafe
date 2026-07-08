@@ -27,6 +27,9 @@
 13. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
 14. 新委託的 `requiredItems` 必須指向產品類 item，例如 `moon_latte`、`star_berry_tart`、`dream_cocoa`。
 15. `GameDB.getCommissionRequiredItems()` 必須能讀取新 `requiredItems`，並保留舊 `cost` 相容。
+16. `GameDB.commissionConfig.dailyCount` 必須是正整數。
+17. `GameDB.commissionConfig.difficultyRules` 必須包含目前使用的委託星級。
+18. 每個 difficulty rule 都必須有 `rank`、`label`、`requiredProductQty` 與 `reward` 區間。
 
 ## 3. 首頁 / 地圖測試
 
@@ -124,6 +127,12 @@
 19. 狀態排序時，順序應為可交付、商品不足、已完成。
 20. 難度高到低排序時，星等較高的委託應排在前面。
 21. 分類後若沒有符合的委託，應顯示空狀態，不可白屏。
+22. 每日委託應使用玩家本地日期刷新，不使用網路時間。
+23. 免費刷新每天只能使用一次。
+24. 付費刷新應扣除 `靈感券 ×1`，不足時不可刷新。
+25. 委託難度必須登錄在 `GameDB.commissionConfig.difficultyRules`。
+26. 委託需求總數必須符合該難度的 `requiredProductQty` 區間。
+27. 委託葉幣與星糖獎勵必須符合該難度的 reward 區間。
 
 ## 7. 祈願測試
 
@@ -154,7 +163,7 @@
 8. `state.commissions` 只保存 `completed` 或 `in_progress`。
 9. `state.commissions` 不保存 `available`、`ready`、`locked` 這種可計算狀態。
 10. 舊 `claimed` 委託狀態會被 migration 轉成 `completed`。
-11. 本步已更新 `SAVE_VERSION`，舊存檔載入後 `saveVersion` 應為最新版。
+11. 舊存檔載入後 `saveVersion` 應為最新版。
 
 ## 10. 手機 UI 測試
 
@@ -174,6 +183,8 @@
 背包
 委託
 委託分類 / 排序
+委託每日刷新 / 免費刷新 / 付費刷新
+委託難度與獎勵平衡 validator
 後山採集
 溫室採集
 採集結果彈窗
