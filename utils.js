@@ -3,6 +3,10 @@ import { GameDB } from '@db';
 export function formatReward(reward = {}) {
   const parts = [];
 
+  if (Number(reward.exp || 0) > 0) {
+    parts.push(`EXP +${Number(reward.exp)}`);
+  }
+
   Object.entries(reward.currencies || {}).forEach(([currencyId, amount]) => {
     const meta = GameDB.currencies[currencyId];
     parts.push(`${meta?.icon || ''}${meta?.name || currencyId} +${amount}`);
