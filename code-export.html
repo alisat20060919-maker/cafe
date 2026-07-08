@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>精靈咖啡屋｜程式碼匯出</title>
+  <style>
+    :root{color-scheme:dark;--bg:#24170f;--panel:#3d2819;--ink:#fff2d3;--muted:#d7bd8d;--gold:#e6b661;--line:rgba(255,222,164,.24)}
+    *{box-sizing:border-box}body{margin:0;font-family:ui-sans-serif,system-ui,"Noto Sans TC",sans-serif;background:radial-gradient(circle at top,#6b4326,#24170f 54%,#120b07);color:var(--ink);min-height:100vh;padding:18px}.shell{max-width:980px;margin:auto}.card{border:1px solid var(--line);border-radius:24px;background:rgba(61,40,25,.92);box-shadow:0 18px 44px rgba(0,0,0,.28);padding:18px;margin-bottom:14px}h1{margin:0 0 8px;font-size:28px}p{line-height:1.7;color:var(--muted)}button{border:1px solid rgba(255,226,154,.5);border-radius:999px;background:linear-gradient(180deg,#ffe6a6,#c98b3c);color:#2a170c;font-weight:900;padding:10px 16px;margin:4px;cursor:pointer}button.secondary{background:rgba(255,244,214,.08);color:var(--ink)}textarea{width:100%;min-height:58vh;border-radius:18px;border:1px solid var(--line);background:#130c08;color:#f8e8c1;padding:14px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;white-space:pre;tab-size:2}.status{font-size:13px;color:var(--gold);font-weight:800}.file-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:6px;margin-top:10px}.file-list span{border:1px solid rgba(255,226,154,.14);border-radius:12px;padding:6px 8px;color:#ead0a0;background:rgba(255,244,214,.06);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="card">
+      <h1>精靈咖啡屋｜程式碼匯出</h1>
+      <p>這頁會把主要 HTML / CSS / JS / 測試文件合併成一份 Markdown，方便貼給 Gemini 或其他 AI 做整體審查。它只讀取專案檔案，不會讀取或修改玩家存檔。</p>
+      <button type="button" id="exportBtn">產生程式碼文檔</button>
+      <button type="button" class="secondary" id="copyBtn">複製全文</button>
+      <button type="button" class="secondary" id="downloadBtn">下載 .md</button>
+      <p class="status" id="statusText">等待匯出。</p>
+    </section>
+
+    <section class="card">
+      <textarea id="output" spellcheck="false" placeholder="按下「產生程式碼文檔」後，內容會出現在這裡。"></textarea>
+      <div class="file-list" id="fileList"></div>
+    </section>
+  </main>
+
+  <script>
+    const files = [
+      'index.html',
+      'main.js',
+      'game-data.js',
+      'data-items.js',
+      'data-recipes.js',
+      'game-state.js',
+      'save.js',
+      'ui.js',
+      'home.js',
+      'router.js',
+      'event-bus.js',
+      'utils.js',
+      'daily-actions.js',
+      'gacha-actions.js',
+      'commission-actions.js',
+      'gather-actions.js',
+      'craft-actions.js',
+      'pages-gacha.js',
+      'pages-inventory.js',
+      'pages-fairies.js',
+      'pages-collection.js',
+      'pages-commissions.js',
+      'game-db-validator.js',
+      'style.css',
+      'game-ui.css',
+      'mobile-fix.css',
+      'game-interior.css',
+      'app-core-v1.css',
+      'fairies.css',
+      'TESTING.md',
+      'AGENTS.md',
+    ];
+
+    const output = document.querySelector('#output');
+    const statusText = document.querySelector('#statusText');
+    const fileList = document.querySelector('#fileList');
+
+    function languageFor(path){
+      if(path.endsWith('.js')) return 'js';
+      if(path.endsWith('.css')) return 'css';
+      if(path.endsWith('.html')) return 'html';
+      if(path.endsWith('.md')) return 'md';
+      return 'text';
+    }
+
+    function renderFileList(){
+      fileList.innerHTML = files.map((file)=>`<span>${file}</span>`).join('');
+    }
+
+    async function exportCode(){
+      statusText.textContent = '匯出中…';
+      const version = new Date().toISOString();
+      const chunks = [
+        '# 精靈咖啡屋：完整程式碼匯出',
+        '',
+        `匯出時間：${version}`,
+        `來源網址：${location.href}`,
+        '',
+        '## 檔案清單',
+        '',
+        ...files.map((file)=>`- ${file}`),
+        '',
+      ];
+
+      let ok = 0;
+      let failed = 0;
+      for (const file of files) {
+        try {
+          const response = await fetch(`${file}?export=${Date.now()}`);
+          if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
+          const text = await response.text();
+          chunks.push(`\n---\n\n## ${file}\n\n\`\`\`${languageFor(file)}\n${text}\n\`\`\`\n`);
+          ok += 1;
+        } catch (error) {
+          chunks.push(`\n---\n\n## ${file}\n\n> 讀取失敗：${error.message}\n`);
+          failed += 1;
+        }
+      }
+
+      output.value = chunks.join('\n');
+      statusText.textContent = `完成：成功 ${ok} 個，失敗 ${failed} 個。`;
+    }
+
+    async function copyText(){
+      if(!output.value) await exportCode();
+      await navigator.clipboard.writeText(output.value);
+      statusText.textContent = '已複製到剪貼簿。';
+    }
+
+    async function downloadMarkdown(){
+      if(!output.value) await exportCode();
+      const blob = new Blob([output.value], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `elf-cafe-code-export-${new Date().toISOString().slice(0,10)}.md`;
+      link.click();
+      URL.revokeObjectURL(url);
+      statusText.textContent = '已準備下載。';
+    }
+
+    document.querySelector('#exportBtn').addEventListener('click', exportCode);
+    document.querySelector('#copyBtn').addEventListener('click', copyText);
+    document.querySelector('#downloadBtn').addEventListener('click', downloadMarkdown);
+    renderFileList();
+  </script>
+</body>
+</html>
