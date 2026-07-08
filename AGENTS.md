@@ -4,7 +4,7 @@
 
 ## 基本原則
 
-1. 不要生成圖片。只處理文字、程式碼、資料與網站結構。
+1. 不生成圖片，只處理文字、程式碼、資料與網站結構。
 2. 每次只修改一個小範圍，避免一次大改造成白屏。
 3. 優先保持網站可用，再追求漂亮重構。
 4. 不要同時大改 `main.js`、`game-state.js`、`ui.js`。
@@ -19,17 +19,15 @@
 5. Page 模組只負責畫面渲染與按鈕事件，不直接管理複雜遊戲規則。
 6. `persistState()` 是狀態更新通知的核心，修改它時必須確認狀態列會更新。
 
-## ES Modules 快取版本規則
+## Import Map 規則
 
-這個專案目前是 GitHub Pages + 原生 ES Modules，沒有使用 Vite / Webpack 等打包工具。
+這個專案使用 GitHub Pages + 原生 ES Modules，並用 `index.html` 的 import map 集中管理 JS 版本。
 
-1. 所有 JS 模組 import 都必須保留一致的 query 版本號，例如 `?v=core07`。
-2. 不要只版本化 `index.html` 裡的 `main.js`，同時移除內部 import 的 query string。這會讓手機瀏覽器可能吃到舊子模組快取。
-3. 不要混用不同版本號，例如同時存在 `game-state.js?v=core07` 與 `game-state.js?v=core08`。瀏覽器會把它們視為兩個不同 module instance，可能造成 state 分裂。
-4. 暫時不要導入 Import Maps。它比較優雅，但對非常舊的 iOS Safari 有相容性風險；在這個專案未導入打包工具前，保守方案優先。
-5. 每次需要升版時，必須使用全域搜尋取代，把舊版本號一次改成新版本號。
-6. 升版後一定要搜尋舊版本號，例如 `core07`、`core06`，確認沒有殘留。
-7. 不要每個小修改都升版。可以累積一小批功能後，再一次性升版，減少等待時間與同步成本。
+1. JS 檔案內部 import 應使用固定別名，例如 `@state`、`@db`、`@eventBus`、`@actions/gather`。
+2. 不要在 JS 檔案內部寫 `./game-state.js?v=coreXX` 這種版本化相對路徑。
+3. 需要破快取時，只改 `index.html` 裡 import map 的版本值。
+4. 同一個模組只能有一個對應 URL，避免 state 被載成兩份。
+5. 新增 JS 模組時，先在 import map 加別名，再從其他模組引用。
 
 ## 事件流
 
