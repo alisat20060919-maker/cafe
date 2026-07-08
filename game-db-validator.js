@@ -8,6 +8,17 @@ function pushIssue(list, scope, message) {
   list.push(`[${scope}] ${message}`);
 }
 
+function validateEnum(errors, values = [], scope = 'enum') {
+  if (!Array.isArray(values) || !values.length) {
+    pushIssue(errors, scope, '必須是非空陣列。');
+    return;
+  }
+
+  values.forEach((value, index) => {
+    if (typeof value !== 'string' || !value.trim()) pushIssue(errors, `${scope}[${index}]`, '必須是非空字串。');
+  });
+}
+
 function validateRegistry(errors, registry = {}, scope = 'registry') {
   Object.entries(registry || {}).forEach(([id, entry]) => {
     if (!entry || typeof entry !== 'object') {
@@ -21,14 +32,10 @@ function validateRegistry(errors, registry = {}, scope = 'registry') {
 }
 
 function getSourceRegistry(sourceType) {
-  return {
-    route: GameDB.routes,
-    scene: GameDB.scenes,
-    station: GameDB.stations,
-  }[sourceType] || null;
+  return GameDB.getSourceRegistry?.(sourceType) || null;
 }
 
-function validateItems(errors, warnings) {
+function validateItems(errors) {
   Object.entries(GameDB.items || {}).forEach(([itemId, item]) => {
     if (!item || typeof item !== 'object') {
       pushIssue(errors, `items.${itemId}`, 'item 必須是物件。');
@@ -37,12 +44,21 @@ function validateItems(errors, warnings) {
 
     if (item.id !== itemId) pushIssue(errors, `items.${itemId}`, `item.id 應為 ${itemId}，目前是 ${item.id || '空值'}。`);
     if (!item.name) pushIssue(errors, `items.${itemId}`, '缺少 name。');
-    if (!item.type) pushIssue(errors, `items.${itemId}`, '缺少 type。');
-    if (!item.rarity) pushIssue(warnings, `items.${itemId}`, '缺少 rarity，背包篩選可能不完整。');
+    if (!item.type) {
+      pushIssue(errors, `items.${itemId}`, '缺少 type。');
+    } else if (!GameDB.itemTypes?.includes(item.type)) {
+      pushIssue(errors, `items.${itemId}`, `未知 type：${item.type}。請先登錄到 GameDB.itemTypes。`);
+    }
+
+    if (!item.rarity) {
+      pushIssue(errors, `items.${itemId}`, '缺少 rarity。');
+    } else if (!GameDB.rarities?.includes(item.rarity)) {
+      pushIssue(errors, `items.${itemId}`, `未知 rarity：${item.rarity}。請先登錄到 GameDB.rarities。`);
+    }
   });
 }
 
-function validateFairies(errors, warnings) {
+function validateFairies(errors) {
   Object.entries(GameDB.fairies || {}).forEach(([fairyId, fairy]) => {
     if (!fairy || typeof fairy !== 'object') {
       pushIssue(errors, `fairies.${fairyId}`, 'fairy 必須是物件。');
@@ -51,7 +67,11 @@ function validateFairies(errors, warnings) {
 
     if (fairy.id !== fairyId) pushIssue(errors, `fairies.${fairyId}`, `fairy.id 應為 ${fairyId}，目前是 ${fairy.id || '空值'}。`);
     if (!fairy.name) pushIssue(errors, `fairies.${fairyId}`, '缺少 name。');
-    if (!fairy.rarity) pushIssue(warnings, `fairies.${fairyId}`, '缺少 rarity。');
+    if (!fairy.rarity) {
+      pushIssue(errors, `fairies.${fairyId}`, '缺少 rarity。');
+    } else if (!GameDB.rarities?.includes(fairy.rarity)) {
+      pushIssue(errors, `fairies.${fairyId}`, `未知 rarity：${fairy.rarity}。請先登錄到 GameDB.rarities。`);
+    }
   });
 }
 
@@ -182,11 +202,13 @@ export function validateGameDB() {
   const errors = [];
   const warnings = [];
 
+  validateEnum(errors, GameDB.itemTypes, 'itemTypes');
+  validateEnum(errors, GameDB.rarities, 'rarities');
   validateRegistry(errors, GameDB.routes, 'routes');
   validateRegistry(errors, GameDB.scenes, 'scenes');
   validateRegistry(errors, GameDB.stations, 'stations');
-  validateItems(errors, warnings);
-  validateFairies(errors, warnings);
+  validateItems(errors);
+  validateFairies(errors);
   validateItemSources(errors, warnings);
   validateGatherTables(errors);
   validateGachaPools(errors);
