@@ -312,6 +312,59 @@ function validateRewardFields(errors, reward = {}, scope = 'reward') {
   validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
 }
 
+function validateRangeRule(errors, range, scope) {
+  if (!isRecord(range)) {
+    pushIssue(errors, scope, '必須是 { min, max } 物件。');
+    return;
+  }
+
+  const min = Number(range.min);
+  const max = Number(range.max);
+  if (!Number.isFinite(min) || !Number.isFinite(max)) pushIssue(errors, scope, 'min / max 必須是數字。');
+  if (min < 0 || max < 0) pushIssue(errors, scope, 'min / max 不可小於 0。');
+  if (max < min) pushIssue(errors, scope, 'max 不可小於 min。');
+}
+
+function validateCommissionBalanceConfig(errors) {
+  const config = GameDB.commissionConfig;
+  const scope = 'commissionConfig';
+  if (!isRecord(config)) {
+    pushIssue(errors, scope, '缺少委託平衡設定。');
+    return;
+  }
+
+  const dailyCount = Number(config.dailyCount);
+  if (!Number.isInteger(dailyCount) || dailyCount <= 0) pushIssue(errors, `${scope}.dailyCount`, '每日委託數量必須是正整數。');
+
+  if (!isRecord(config.difficultyRules)) {
+    pushIssue(errors, `${scope}.difficultyRules`, '難度規則必須是物件。');
+    return;
+  }
+
+  Object.entries(config.difficultyRules).forEach(([difficulty, rule]) => {
+    const ruleScope = `${scope}.difficultyRules.${difficulty}`;
+    if (!isRecord(rule)) {
+      pushIssue(errors, ruleScope, '難度規則必須是物件。');
+      return;
+    }
+
+    if (!difficulty.includes('★')) pushIssue(errors, ruleScope, 'difficulty key 應使用星級字串。');
+    if (!Number.isInteger(Number(rule.rank)) || Number(rule.rank) <= 0) pushIssue(errors, `${ruleScope}.rank`, 'rank 必須是正整數。');
+    if (!rule.label) pushIssue(errors, `${ruleScope}.label`, '缺少 label。');
+    validateRangeRule(errors, rule.requiredProductQty, `${ruleScope}.requiredProductQty`);
+
+    if (!isRecord(rule.reward)) {
+      pushIssue(errors, `${ruleScope}.reward`, 'reward 區間必須是物件。');
+      return;
+    }
+
+    Object.entries(rule.reward).forEach(([currencyId, range]) => {
+      if (!hasOwn(GameDB.currencies, currencyId)) pushIssue(errors, `${ruleScope}.reward`, `currency ${currencyId} 不存在。`);
+      validateRangeRule(errors, range, `${ruleScope}.reward.${currencyId}`);
+    });
+  });
+}
+
 function validateRecipeOutput(errors, output = {}, scope = 'recipe.output') {
   if (!isRecord(output)) {
     pushIssue(errors, scope, 'output 必須是物件。');
@@ -403,6 +456,34 @@ function validateCommissionProductSource(errors, itemId, scope) {
   }
 }
 
+function getRequirementTotal(requirements = {}) {
+  return Object.values(requirements).reduce((sum, qty) => sum + Number(qty || 0), 0);
+}
+
+function validateCommissionBalance(errors, quest, scope) {
+  const rule = GameDB.getCommissionDifficultyRule?.(quest);
+  if (!rule) {
+    pushIssue(errors, `${scope}.difficulty`, `未知委託難度：${quest.difficulty || '空值'}。`);
+    return;
+  }
+
+  const totalRequired = getRequirementTotal(GameDB.getCommissionRequiredItems?.(quest) || {});
+  const minRequired = Number(rule.requiredProductQty?.min ?? 0);
+  const maxRequired = Number(rule.requiredProductQty?.max ?? Number.POSITIVE_INFINITY);
+  if (totalRequired < minRequired || totalRequired > maxRequired) {
+    pushIssue(errors, `${scope}.requiredItems`, `${quest.difficulty} 需求總數應在 ${minRequired}～${maxRequired} 之間，目前是 ${totalRequired}。`);
+  }
+
+  Object.entries(rule.reward || {}).forEach(([currencyId, range]) => {
+    const amount = Number(quest.reward?.currencies?.[currencyId] || 0);
+    const min = Number(range.min ?? 0);
+    const max = Number(range.max ?? 0);
+    if (amount < min || amount > max) {
+      pushIssue(errors, `${scope}.reward.currencies`, `${quest.difficulty} 的 ${currencyId} 獎勵應在 ${min}～${max} 之間，目前是 ${amount}。`);
+    }
+  });
+}
+
 function validateCommissionRequirements(errors, warnings, quest, scope) {
   const requirements = GameDB.getCommissionRequiredItems?.(quest) || {};
   if (!Object.keys(requirements).length) {
@@ -440,6 +521,7 @@ function validateCommissions(errors, warnings) {
     if (quest.id !== questId) pushIssue(errors, scope, `quest.id 應為 ${questId}，目前是 ${quest.id || '空值'}。`);
     validateCommissionRequirements(errors, warnings, quest, scope);
     validateRewardObject(errors, quest.reward, `${scope}.reward`);
+    validateCommissionBalance(errors, quest, scope);
   });
 }
 
@@ -467,6 +549,7 @@ export function validateGameDB() {
   validateGatherTables(errors);
   validateGachaPools(errors);
   validateRecipes(errors);
+  validateCommissionBalanceConfig(errors);
   validateCommissions(errors, warnings);
   validateKitchenProductWorkflow(errors);
   validateDailyRewards(errors);
