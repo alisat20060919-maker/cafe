@@ -49,8 +49,22 @@ function getStationRequirement(recipe) {
   return recipe?.station ? { station: recipe.station } : {};
 }
 
+function getRecipeRequirement(recipe) {
+  if (!recipe) return {};
+  return {
+    all: [
+      getStationRequirement(recipe),
+      recipe.unlockRequirement || {},
+    ],
+  };
+}
+
 function getStationRequirementText(recipe) {
   return getUnlockRequirementText(getStationRequirement(recipe)) || '需要解鎖製作站';
+}
+
+function getRecipeRequirementText(recipe) {
+  return getUnlockRequirementText(getRecipeRequirement(recipe)) || '需要解鎖配方';
 }
 
 export function canCraft(recipeId) {
@@ -73,6 +87,18 @@ export function canCraft(recipeId) {
       unlockRequirementText: getStationRequirementText(recipe),
       missingItems: [],
       message: `${GameDB.stations?.[recipe.station]?.label || recipe.station}尚未解鎖。${getStationRequirementText(recipe)}。`,
+    };
+  }
+
+  if (!isUnlocked(getRecipeRequirement(recipe))) {
+    return {
+      ok: false,
+      status: 'locked_recipe',
+      recipe,
+      unlockRequirement: getRecipeRequirement(recipe),
+      unlockRequirementText: getRecipeRequirementText(recipe),
+      missingItems: [],
+      message: `${recipe.name}尚未解鎖。${getRecipeRequirementText(recipe)}。`,
     };
   }
 
@@ -129,10 +155,10 @@ export function craftRecipe(recipeId) {
   }
 
   const craftStatus = canCraft(recipeId);
-  if (craftStatus.status === 'locked_station') {
+  if (craftStatus.status === 'locked_station' || craftStatus.status === 'locked_recipe') {
     return {
       ok: false,
-      status: 'locked_station',
+      status: craftStatus.status,
       title: '尚未解鎖',
       recipe,
       message: craftStatus.message,
