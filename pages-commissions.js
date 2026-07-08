@@ -2,7 +2,25 @@ import { GameDB } from '@db';
 import { getState } from '@state';
 import { canCompleteCommission, completeCommission } from '@actions/commission';
 import { formatReward } from '@utils';
+import { navigate } from '@router';
+import { goToScene } from '@home';
 import { Events, on, emitNotice } from '@eventBus';
+
+const itemSourceScene = {
+  moon_petals: 'greenhouse',
+  star_berry: 'backyard',
+  night_sky_fragment: 'alchemy',
+  forest_cookie: 'backyard',
+  stardew_water: 'backyard',
+};
+
+const sceneNames = {
+  cafe: '咖啡廳',
+  backyard: '後山',
+  kitchen: '廚房',
+  alchemy: '煉金室',
+  greenhouse: '溫室',
+};
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
@@ -47,13 +65,43 @@ function statusLabel(status) {
   }[status] || status;
 }
 
+function findMissingItem(cost = {}) {
+  const state = getState();
+  return Object.entries(cost).find(([itemId, qty]) => Number(state.inventory[itemId] || 0) < qty)?.[0] || null;
+}
+
+function getCollectionScene(quest) {
+  const missingItem = findMissingItem(quest.cost);
+  return itemSourceScene[missingItem] || 'backyard';
+}
+
+function renderQuestButton(quest, status) {
+  if (status === 'claimed') {
+    return '<button type="button" disabled>已完成</button>';
+  }
+
+  if (status === 'ready') {
+    return `<button type="button" data-complete="${quest.id}">完成委託</button>`;
+  }
+
+  const targetScene = getCollectionScene(quest);
+  return `<button type="button" data-collect="${targetScene}">前往收集</button>`;
+}
+
+function goCollect(targetScene = 'backyard') {
+  navigate('home');
+  window.requestAnimationFrame(() => {
+    goToScene(targetScene);
+    emitNotice('前往收集', `已帶你前往${sceneNames[targetScene] || '後山'}。`);
+  });
+}
+
 export function renderCommissions() {
   const page = document.querySelector('#page-commissions');
   if (!page) return;
 
   const cards = Object.values(GameDB.commissions).map((quest) => {
     const status = getQuestStatus(quest);
-    const disabled = status !== 'ready';
     return `
       <article class="core-quest-card status-${status}">
         <div class="core-quest-top">
@@ -65,13 +113,13 @@ export function renderCommissions() {
         <p>${quest.description}</p>
         <div class="core-recipe"><b>需要：</b>${renderCost(quest.cost)}</div>
         <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
-        <button type="button" data-complete="${quest.id}" ${disabled ? 'disabled' : ''}>${status === 'claimed' ? '已完成' : status === 'ready' ? '完成委託' : '前往收集'}</button>
+        ${renderQuestButton(quest, status)}
       </article>
     `;
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '委託邏輯已經移出頁面，這裡只負責顯示任務與按鈕。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時可以直接跳回地圖收集，不再只是不能點的按鈕。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
@@ -81,6 +129,10 @@ export function renderCommissions() {
       emitNotice(result.ok ? '委託完成' : '還不能完成', result.message);
       renderCommissions();
     });
+  });
+
+  $all('[data-collect]', page).forEach((button) => {
+    button.addEventListener('click', () => goCollect(button.dataset.collect));
   });
 }
 
