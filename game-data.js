@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 15,
+  version: 16,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -205,10 +205,55 @@ export const GameDB = {
     return commission?.requiredItems || commission?.cost || {};
   },
 
+  getCommissionDifficultyRule(commissionOrDifficulty) {
+    const difficulty = typeof commissionOrDifficulty === 'string'
+      ? commissionOrDifficulty
+      : commissionOrDifficulty?.difficulty;
+    return this.commissionConfig?.difficultyRules?.[difficulty] || null;
+  },
+
+  getCommissionDifficultyRank(commissionOrDifficulty) {
+    return Number(this.getCommissionDifficultyRule(commissionOrDifficulty)?.rank || 0);
+  },
+
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
     leafCoin: { name: '葉幣', icon: '🪙' },
     tickets: { name: '靈感券', icon: '🎟️' },
+  },
+
+  commissionConfig: {
+    dailyCount: 3,
+    difficultyRules: {
+      '★☆☆': {
+        rank: 1,
+        label: '簡單',
+        requiredProductQty: { min: 1, max: 1 },
+        reward: {
+          leafCoin: { min: 80, max: 140 },
+          starSugar: { min: 10, max: 25 },
+        },
+      },
+      '★★☆': {
+        rank: 2,
+        label: '普通',
+        requiredProductQty: { min: 1, max: 2 },
+        reward: {
+          leafCoin: { min: 150, max: 240 },
+          starSugar: { min: 25, max: 45 },
+        },
+      },
+      '★★★': {
+        rank: 3,
+        label: '困難',
+        requiredProductQty: { min: 2, max: 3 },
+        reward: {
+          leafCoin: { min: 260, max: 420 },
+          starSugar: { min: 45, max: 80 },
+          tickets: { min: 0, max: 1 },
+        },
+      },
+    },
   },
 
   routes: {
