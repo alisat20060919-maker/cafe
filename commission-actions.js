@@ -19,6 +19,12 @@ function getRequirements(commission) {
   return GameDB.getCommissionRequiredItems(commission);
 }
 
+function getEffectiveReward(commission) {
+  if (commission?.category === 'fairy') return commission.reward || {};
+  const { affection, ...reward } = commission?.reward || {};
+  return reward;
+}
+
 function isCommissionCompleted(record) {
   return record?.status === 'completed' || record?.status === 'claimed';
 }
@@ -49,6 +55,10 @@ function mergeUnlocks(...groups) {
 
 export function getPaidRefreshCostText() {
   return `${currencyLabel(PAID_REFRESH_COST.currency)} ×${PAID_REFRESH_COST.amount}`;
+}
+
+export function getCommissionDisplayReward(commission) {
+  return getEffectiveReward(commission);
 }
 
 export function canCompleteCommission(commissionId) {
@@ -106,7 +116,8 @@ export function completeCommission(commissionId) {
     return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
   }
 
-  const growth = addReward(commission.reward);
+  const reward = getEffectiveReward(commission);
+  const growth = addReward(reward);
   state.commissions[commissionId] = {
     status: 'completed',
     completedAt: new Date().toISOString(),
@@ -118,6 +129,6 @@ export function completeCommission(commissionId) {
 
   return {
     ok: true,
-    message: `委託完成：${formatReward(commission.reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}`,
+    message: `委託完成：${formatReward(reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}`,
   };
 }
