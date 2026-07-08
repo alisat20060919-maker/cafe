@@ -1,5 +1,6 @@
 import { GameDB } from './game-data.js?v=core04';
-import { getState, canCompleteCommission, completeCommission, formatReward } from './game-state.js?v=core04';
+import { getState, formatReward } from './game-state.js?v=core04';
+import { canCompleteCommission, completeCommission } from './commission-actions.js?v=core04';
 import { Events, on, emitNotice } from './event-bus.js?v=core04';
 
 function $all(selector, root = document) {
@@ -69,7 +70,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / CORE LOOP', '委託', '委託會檢查同一份背包資料，成功後扣素材並給獎勵。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '委託邏輯已經移出頁面，這裡只負責顯示任務與按鈕。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
