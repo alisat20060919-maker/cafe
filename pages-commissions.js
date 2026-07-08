@@ -54,8 +54,22 @@ function statusLabel(status) {
   }[status] || status;
 }
 
+function getSourceRegistry(sourceType) {
+  return {
+    route: GameDB.routes,
+    scene: GameDB.scenes,
+    station: GameDB.stations,
+  }[sourceType] || {};
+}
+
+function getSourceLabel(source) {
+  if (!source) return '後山';
+  return source.label || getSourceRegistry(source.type)?.[source.id]?.label || source.id || '後山';
+}
+
 function getItemSource(itemId) {
-  return GameDB.itemSources?.[itemId] || { type: 'scene', id: 'backyard', label: '後山' };
+  const source = GameDB.itemSources?.[itemId] || { type: 'scene', id: 'backyard' };
+  return { ...source, label: getSourceLabel(source) };
 }
 
 function getMissingItems(cost = {}) {
@@ -72,7 +86,7 @@ function getMissingItems(cost = {}) {
 
 function getFirstSource(quest) {
   const missingItems = getMissingItems(quest.cost);
-  return missingItems[0]?.source || { type: 'scene', id: 'backyard', label: '後山' };
+  return missingItems[0]?.source || getItemSource('star_berry');
 }
 
 function renderMissingHint(quest, status) {
@@ -88,6 +102,12 @@ function renderMissingHint(quest, status) {
   return `<p class="core-missing-hint">缺少素材：<br>${hint}</p>`;
 }
 
+function sourceButtonText(source) {
+  if (source.type === 'station') return `前往${source.label}製作`;
+  if (source.type === 'scene') return `前往${source.label}收集`;
+  return `前往${source.label}`;
+}
+
 function renderQuestButton(quest, status) {
   if (status === 'claimed') {
     return '<button type="button" disabled>已完成</button>';
@@ -98,26 +118,30 @@ function renderQuestButton(quest, status) {
   }
 
   const source = getFirstSource(quest);
-  return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">前往${source.label}</button>`;
+  return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">${sourceButtonText(source)}</button>`;
 }
 
-function findSourceByScene(sourceId) {
-  return Object.values(GameDB.itemSources || {}).find((item) => item.type === 'scene' && item.id === sourceId);
-}
-
-function goToSource(sourceType = 'scene', sourceId = 'backyard') {
-  if (sourceType === 'route') {
-    navigate(sourceId);
-    emitNotice('前往祈願', '夜空碎片目前先透過祈願取得；之後會把煉金室做成二階素材與商品製作。');
-    return;
-  }
-
+function goToSceneSource(sourceType = 'scene', sourceId = 'backyard') {
+  const source = { type: sourceType, id: sourceId, label: getSourceLabel({ type: sourceType, id: sourceId }) };
   navigate('home');
   window.requestAnimationFrame(() => {
     goToScene(sourceId);
-    const source = findSourceByScene(sourceId);
-    emitNotice('前往收集', `已帶你前往${source?.label || '後山'}。`);
+    emitNotice(sourceType === 'station' ? '前往製作' : '前往收集', `已帶你前往${source.label}。`);
   });
+}
+
+function goToSource(sourceType = 'scene', sourceId = 'backyard') {
+  const source = { type: sourceType, id: sourceId, label: getSourceLabel({ type: sourceType, id: sourceId }) };
+
+  if (sourceType === 'route') {
+    navigate(sourceId);
+    emitNotice(`前往${source.label}`, `${source.label}是目前可取得部分稀有素材的功能頁。`);
+    return;
+  }
+
+  if (sourceType === 'station' || sourceType === 'scene') {
+    goToSceneSource(sourceType, sourceId);
+  }
 }
 
 export function renderCommissions() {
@@ -144,7 +168,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會從 GameDB 讀取來源，按鈕可直接跳到收集地點或祈願頁。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會從 GameDB 讀取來源，按鈕可直接跳到收集地點、製作站或祈願頁。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
