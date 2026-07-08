@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 function createDefaultState() {
   return {
@@ -22,6 +22,10 @@ function createDefaultState() {
       stardew_water: 0,
     },
     fairies: {},
+    collection: {
+      discoveredItems: {},
+      discoveredFairies: {},
+    },
     gachaHistory: [],
     commissions: {},
     daily: {
@@ -67,11 +71,33 @@ function mergeDeep(base, saved) {
   return output;
 }
 
+function syncCollectionFromOwned(nextState) {
+  if (!nextState.collection) nextState.collection = {};
+  if (!nextState.collection.discoveredItems) nextState.collection.discoveredItems = {};
+  if (!nextState.collection.discoveredFairies) nextState.collection.discoveredFairies = {};
+
+  Object.entries(nextState.inventory || {}).forEach(([itemId, qty]) => {
+    if (GameDB.items[itemId] && Number(qty || 0) > 0) {
+      nextState.collection.discoveredItems[itemId] = true;
+    }
+  });
+
+  Object.entries(nextState.fairies || {}).forEach(([fairyId, data]) => {
+    if (GameDB.fairies[fairyId] && data?.owned) {
+      nextState.collection.discoveredFairies[fairyId] = true;
+    }
+  });
+}
+
 function migrateSave(saved) {
   const fresh = createDefaultState();
-  if (!saved) return fresh;
+  if (!saved) {
+    syncCollectionFromOwned(fresh);
+    return fresh;
+  }
 
   const migrated = mergeDeep(fresh, saved);
+  syncCollectionFromOwned(migrated);
   migrated.saveVersion = SAVE_VERSION;
   return migrated;
 }
@@ -94,6 +120,7 @@ export function persistState(reason = 'manual') {
 export function resetState() {
   clearSave();
   state = createDefaultState();
+  syncCollectionFromOwned(state);
   persistState();
   return state;
 }
@@ -115,9 +142,28 @@ export function spendCurrency(currencyId, amount) {
   return true;
 }
 
+export function markItemDiscovered(itemId) {
+  if (!GameDB.items[itemId]) return;
+  state.collection.discoveredItems[itemId] = true;
+}
+
+export function markFairyDiscovered(fairyId) {
+  if (!GameDB.fairies[fairyId]) return;
+  state.collection.discoveredFairies[fairyId] = true;
+}
+
+export function isItemDiscovered(itemId) {
+  return Boolean(state.collection?.discoveredItems?.[itemId]);
+}
+
+export function isFairyDiscovered(fairyId) {
+  return Boolean(state.collection?.discoveredFairies?.[fairyId]);
+}
+
 export function addItem(itemId, qty = 1) {
   if (!GameDB.items[itemId]) return;
   state.inventory[itemId] = Number(state.inventory[itemId] || 0) + qty;
+  if (qty > 0) markItemDiscovered(itemId);
 }
 
 export function spendItems(cost = {}) {
@@ -139,6 +185,7 @@ export function addFairy(fairyId) {
     affection: state.fairies[fairyId]?.affection || 0,
     obtainedAt: state.fairies[fairyId]?.obtainedAt || new Date().toISOString(),
   };
+  markFairyDiscovered(fairyId);
 }
 
 export function addReward(reward = {}) {
