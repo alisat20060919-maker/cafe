@@ -19,20 +19,22 @@
 1. 使用 `?dev=1` 開頁後確認 `validateGameDB()` 有執行。
 2. 使用 `?dev=1` 開頁後確認 MVP Smoke Test 有執行。
 3. 使用 `?dev=1` 開頁後確認 Player Progress Check 有執行。
-4. 正常資料不應顯示 error。
-5. warning 可以暫時存在，但必須確認不會導致白屏。
-6. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
-7. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
-8. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
-9. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
-10. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
-11. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
-12. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
-13. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
-14. `GameDB.levelConfig.thresholds[1]` 必須是 0。
-15. `GameDB.getLevelByExp(0)` 必須回傳 Lv.1。
-16. `GameDB.getLevelProgress({ level: 1, exp: 0 })` 必須能算出下一級需求。
-17. `GameDB.getLevelUnlocksFor(2).scenes` 必須包含 `alchemy`。
+4. 使用 `?dev=1` 開頁後確認 Commission EXP Check 有執行。
+5. 正常資料不應顯示 error。
+6. warning 可以暫時存在，但必須確認不會導致白屏。
+7. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
+8. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
+9. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
+10. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
+11. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
+12. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
+13. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
+14. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
+15. `GameDB.levelConfig.thresholds[1]` 必須是 0。
+16. `GameDB.getLevelByExp(0)` 必須回傳 Lv.1。
+17. `GameDB.getLevelProgress({ level: 1, exp: 0 })` 必須能算出下一級需求。
+18. `GameDB.getLevelUnlocksFor(2).scenes` 必須包含 `alchemy`。
+19. `category: daily` 或 `category: mvp` 的委託必須提供正數 `reward.exp`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -94,6 +96,8 @@
 18. 委託頁事件應使用 event delegation，不可每次 `renderCommissions()` 後對每個按鈕重新綁一輪 listener。
 19. 完成委託套用獎勵時，應由 `@actions/player` 的 `applyReward()` 處理，不直接從 `@state` 匯入 `addReward()`。
 20. 完成委託造成升級時，應發出 `Events.LEVEL_UP`。
+21. 每個 daily / mvp 委託都必須有正數 `reward.exp`。
+22. `?dev=1` 時 Console 應顯示 `[Commission EXP Check] ok`。
 
 ## 7. 祈願測試
 
@@ -152,7 +156,7 @@
 8. EXP 達標時會升等，Lv.2 應解鎖煉金室。
 9. 解鎖後煉金室可以進入配方列表，不可白屏。
 10. 完成一輪採集 -> 製作 -> 委託 -> 獎勵後，重新整理頁面，存檔仍能正常載入。
-11. 使用 `?dev=1` 時，`validateGameDB()`、MVP Smoke Test、Player Progress Check 不應出現 error。
+11. 使用 `?dev=1` 時，`validateGameDB()`、MVP Smoke Test、Player Progress Check、Commission EXP Check 不應出現 error。
 
 ## 12. 手機 UI 測試
 
@@ -190,7 +194,17 @@
 9. `addExp()` 單獨使用時應可自動 persist；`applyReward()` 在委託流程中不重複 persist。
 10. 本步不新增 state 欄位，因此不更新 `SAVE_VERSION`。
 
-## 15. 回歸測試
+## 15. 第 53 步委託 EXP 驗收
+
+1. 所有 `category: daily` 或 `category: mvp` 的委託都必須有正數 `reward.exp`。
+2. 委託完成時必須透過 `@actions/player.applyReward()` 套用 EXP。
+3. 委託完成時不可直接從 `@state` 匯入或呼叫 `addReward()`。
+4. 委託完成後訊息要能顯示 EXP 獎勵與升級資訊。
+5. 委託完成造成升級時，`player-actions.js` 會發出 `Events.LEVEL_UP`。
+6. `?dev=1` 時 Console 應顯示 `[Commission EXP Check] ok`。
+7. 本步不新增 state 欄位，因此不更新 `SAVE_VERSION`。
+
+## 16. 回歸測試
 
 每次改版後至少確認：
 
@@ -212,6 +226,7 @@
 煉金室配方列表
 煉金室製作成功 / 素材不足
 委託產品需求 / 完成扣成品
+委託 EXP 獎勵 / applyReward / LEVEL_UP event
 玩家 Lv / EXP / 升等 / Lv.2 解鎖煉金室
 player-actions.js / addExp / applyReward / LEVEL_UP event
 開場劇情從 GameDB.stories.opening 讀取
