@@ -2,12 +2,16 @@ import { GameDB } from '@db';
 import { getState, canAffordItems, spendItems, addReward, persistState } from '@state';
 import { formatReward } from '@utils';
 
+function getRequirements(commission) {
+  return GameDB.getCommissionRequiredItems(commission);
+}
+
 export function canCompleteCommission(commissionId) {
   const state = getState();
   const commission = GameDB.commissions[commissionId];
   if (!commission) return false;
   if (state.commissions[commissionId]?.status === 'claimed') return false;
-  return canAffordItems(commission.cost);
+  return canAffordItems(getRequirements(commission));
 }
 
 export function completeCommission(commissionId) {
@@ -18,8 +22,8 @@ export function completeCommission(commissionId) {
   if (state.commissions[commissionId]?.status === 'claimed') {
     return { ok: false, message: '這份委託已經完成過了。' };
   }
-  if (!spendItems(commission.cost)) {
-    return { ok: false, message: '素材不足，還不能完成這份委託。' };
+  if (!spendItems(getRequirements(commission))) {
+    return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
   }
 
   addReward(commission.reward);
