@@ -6,10 +6,12 @@ import {
   getCommissionDisplayReward,
   getCommissionUnlockText,
   getPaidRefreshCostText,
+  getRerollCostText,
   isCommissionUnlocked,
   refreshDailyCommissionList,
   refreshDailyCommissionFree,
   refreshDailyCommissionPaid,
+  rerollDifficultCommissions,
 } from '@actions/commission';
 import { formatReward } from '@utils';
 import { navigate } from '@router';
@@ -43,29 +45,12 @@ function pageHeader(kicker, title, body) {
   `;
 }
 
-function itemName(itemId) {
-  return GameDB.items[itemId]?.name || itemId;
-}
-
-function itemIcon(itemId) {
-  return GameDB.items[itemId]?.icon || '◇';
-}
-
-function stationName(stationId) {
-  return GameDB.stations?.[stationId]?.label || stationId || '製作站';
-}
-
-function getOwnedCount(itemId) {
-  return Number(getState().inventory?.[itemId] || 0);
-}
-
-function getRequirements(quest) {
-  return GameDB.getCommissionRequiredItems(quest);
-}
-
-function getRecipeForOutputItem(itemId) {
-  return Object.values(GameDB.recipes || {}).find((recipe) => recipe.output?.itemId === itemId) || null;
-}
+function itemName(itemId) { return GameDB.items[itemId]?.name || itemId; }
+function itemIcon(itemId) { return GameDB.items[itemId]?.icon || '◇'; }
+function stationName(stationId) { return GameDB.stations?.[stationId]?.label || stationId || '製作站'; }
+function getOwnedCount(itemId) { return Number(getState().inventory?.[itemId] || 0); }
+function getRequirements(quest) { return GameDB.getCommissionRequiredItems(quest); }
+function getRecipeForOutputItem(itemId) { return Object.values(GameDB.recipes || {}).find((recipe) => recipe.output?.itemId === itemId) || null; }
 
 function renderRequirements(quest) {
   return Object.entries(getRequirements(quest))
@@ -77,9 +62,7 @@ function renderRequirements(quest) {
     .join('、');
 }
 
-function isSavedCompleted(record) {
-  return record?.status === 'completed' || record?.status === 'claimed';
-}
+function isSavedCompleted(record) { return record?.status === 'completed' || record?.status === 'claimed'; }
 
 function getQuestViewStatus(quest) {
   const state = getState();
@@ -89,55 +72,30 @@ function getQuestViewStatus(quest) {
 }
 
 function statusLabel(status) {
-  return {
-    locked: '尚未解鎖',
-    available: '商品不足',
-    ready: '可交付',
-    completed: '已完成',
-  }[status] || status;
+  return { locked: '尚未解鎖', available: '商品不足', ready: '可交付', completed: '已完成' }[status] || status;
 }
 
-function statusRank(status) {
-  return { ready: 0, available: 1, locked: 2, completed: 3 }[status] ?? 99;
-}
-
-function difficultyRank(quest) {
-  return GameDB.getCommissionDifficultyRank?.(quest) || [...String(quest.difficulty || '')].filter((char) => char === '★').length;
-}
+function statusRank(status) { return { ready: 0, available: 1, locked: 2, completed: 3 }[status] ?? 99; }
+function difficultyRank(quest) { return GameDB.getCommissionDifficultyRank?.(quest) || [...String(quest.difficulty || '')].filter((char) => char === '★').length; }
 
 function getQuestEntries() {
   return getActiveCommissionIds()
     .map((commissionId, index) => ({ quest: GameDB.commissions[commissionId], index }))
     .filter((entry) => entry.quest)
-    .map((entry) => ({
-      ...entry,
-      status: getQuestViewStatus(entry.quest),
-    }));
+    .map((entry) => ({ ...entry, status: getQuestViewStatus(entry.quest) }));
 }
 
-function filterQuestEntries(entries) {
-  if (currentCommissionFilter === 'all') return entries;
-  return entries.filter((entry) => entry.status === currentCommissionFilter);
-}
+function filterQuestEntries(entries) { return currentCommissionFilter === 'all' ? entries : entries.filter((entry) => entry.status === currentCommissionFilter); }
 
 function sortQuestEntries(entries) {
   return [...entries].sort((a, b) => {
-    if (currentCommissionSort === 'status') {
-      return statusRank(a.status) - statusRank(b.status) || a.index - b.index;
-    }
-
-    if (currentCommissionSort === 'difficulty_desc') {
-      return difficultyRank(b.quest) - difficultyRank(a.quest) || a.index - b.index;
-    }
-
+    if (currentCommissionSort === 'status') return statusRank(a.status) - statusRank(b.status) || a.index - b.index;
+    if (currentCommissionSort === 'difficulty_desc') return difficultyRank(b.quest) - difficultyRank(a.quest) || a.index - b.index;
     return a.index - b.index;
   });
 }
 
-function countByStatus(entries, filterId) {
-  if (filterId === 'all') return entries.length;
-  return entries.filter((entry) => entry.status === filterId).length;
-}
+function countByStatus(entries, filterId) { return filterId === 'all' ? entries.length : entries.filter((entry) => entry.status === filterId).length; }
 
 function renderDailyRefreshBar() {
   const state = getState();
@@ -145,13 +103,15 @@ function renderDailyRefreshBar() {
   const count = Array.isArray(state.dailyCommissions?.ids) ? state.dailyCommissions.ids.length : 0;
   const freeRefreshUsed = Boolean(state.dailyCommissions?.freeRefreshUsed);
   const paidRefreshCount = Number(state.dailyCommissions?.paidRefreshCount || 0);
+  const rerollCount = Number(state.dailyCommissions?.rerollCount || 0);
 
   return `
     <div class="core-actions-row" aria-label="每日委託刷新">
-      <span>📅 今日委託 ${date}｜${count} 件｜付費刷新 ${paidRefreshCount} 次</span>
+      <span>📅 今日委託 ${date}｜${count} 件｜付費刷新 ${paidRefreshCount} 次｜星糖重抽 ${rerollCount} 次</span>
       <button type="button" data-refresh-daily-commissions>檢查每日刷新</button>
       <button type="button" data-refresh-free-commissions ${freeRefreshUsed ? 'disabled' : ''}>${freeRefreshUsed ? '免費刷新已用' : '免費刷新'}</button>
       <button type="button" data-refresh-paid-commissions>花費${getPaidRefreshCostText()}刷新</button>
+      <button type="button" data-reroll-commissions>花費${getRerollCostText()}重抽卡關委託</button>
     </div>
   `;
 }
@@ -176,9 +136,7 @@ function renderSortBox() {
     <div class="core-sort-box">
       <label for="commissionSort">排序</label>
       <select id="commissionSort" data-commission-sort>
-        ${COMMISSION_SORTS.map((sort) => `
-          <option value="${sort.id}" ${currentCommissionSort === sort.id ? 'selected' : ''}>${sort.label}</option>
-        `).join('')}
+        ${COMMISSION_SORTS.map((sort) => `<option value="${sort.id}" ${currentCommissionSort === sort.id ? 'selected' : ''}>${sort.label}</option>`).join('')}
       </select>
     </div>
   `;
@@ -186,12 +144,7 @@ function renderSortBox() {
 
 function getMissingItems(quest) {
   return Object.entries(getRequirements(quest))
-    .map(([itemId, qty]) => ({
-      itemId,
-      need: qty,
-      owned: getOwnedCount(itemId),
-      source: GameDB.getItemSource(itemId),
-    }))
+    .map(([itemId, qty]) => ({ itemId, need: qty, owned: getOwnedCount(itemId), source: GameDB.getItemSource(itemId) }))
     .filter((item) => item.owned < item.need);
 }
 
@@ -199,34 +152,19 @@ function getRecipeIngredientRows(recipe, multiplier = 1) {
   return Object.entries(recipe?.cost || {}).map(([itemId, qty]) => {
     const need = Number(qty || 0) * multiplier;
     const owned = getOwnedCount(itemId);
-    return {
-      itemId,
-      need,
-      owned,
-      source: GameDB.getItemSource(itemId),
-      isLacking: owned < need,
-    };
+    return { itemId, need, owned, source: GameDB.getItemSource(itemId), isLacking: owned < need };
   });
 }
 
 function renderIngredientRows(rows = []) {
   if (!rows.length) return '<span>這份配方目前沒有素材需求。</span>';
-
-  return rows.map((row) => `
-    <span class="${row.isLacking ? 'is-lacking' : ''}">
-      ${itemIcon(row.itemId)} ${itemName(row.itemId)} ${row.owned}/${row.need}｜${row.source.label}
-    </span>
-  `).join('');
+  return rows.map((row) => `<span class="${row.isLacking ? 'is-lacking' : ''}">${itemIcon(row.itemId)} ${itemName(row.itemId)} ${row.owned}/${row.need}｜${row.source.label}</span>`).join('');
 }
 
 function renderCraftPlan(item) {
   const recipe = getRecipeForOutputItem(item.itemId);
   if (!recipe) {
-    return `
-      <div class="core-recipe core-missing-plan">
-        <b>下一步：</b>前往${item.source.label}取得 ${itemName(item.itemId)}。
-      </div>
-    `;
+    return `<div class="core-recipe core-missing-plan"><b>下一步：</b>前往${item.source.label}取得 ${itemName(item.itemId)}。</div>`;
   }
 
   const shortage = Math.max(1, item.need - item.owned);
@@ -243,37 +181,19 @@ function renderCraftPlan(item) {
   `;
 }
 
-function getFirstSource(quest) {
-  const missingItems = getMissingItems(quest);
-  return missingItems[0]?.source || GameDB.getItemSource('star_berry');
-}
+function getFirstSource(quest) { return getMissingItems(quest)[0]?.source || GameDB.getItemSource('star_berry'); }
 
 function renderLockedHint(quest, status) {
   if (status !== 'locked') return '';
-  return `
-    <div class="core-missing-hint core-lock-hint">
-      <p>🔒 尚未解鎖：${getCommissionUnlockText(quest.id)}</p>
-      <small>先完成目前可交付的委託取得 EXP，升級後會自動開放。</small>
-    </div>
-  `;
+  return `<div class="core-missing-hint core-lock-hint"><p>🔒 尚未解鎖：${getCommissionUnlockText(quest.id)}</p><small>先完成目前可交付的委託取得 EXP，升級後會自動開放。</small></div>`;
 }
 
 function renderMissingHint(quest, status) {
   if (status !== 'available') return '';
-
   const missingItems = getMissingItems(quest);
   if (!missingItems.length) return '';
-
-  const hint = missingItems
-    .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${item.source.label}`)
-    .join('<br>');
-
-  return `
-    <div class="core-missing-hint">
-      <p>缺少商品：<br>${hint}</p>
-      ${missingItems.map(renderCraftPlan).join('')}
-    </div>
-  `;
+  const hint = missingItems.map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${item.source.label}`).join('<br>');
+  return `<div class="core-missing-hint"><p>缺少商品：<br>${hint}</p>${missingItems.map(renderCraftPlan).join('')}</div>`;
 }
 
 function sourceButtonText(source) {
@@ -283,18 +203,9 @@ function sourceButtonText(source) {
 }
 
 function renderQuestButton(quest, status) {
-  if (status === 'completed') {
-    return '<button type="button" disabled>已完成</button>';
-  }
-
-  if (status === 'locked') {
-    return `<button type="button" disabled>${getCommissionUnlockText(quest.id)}</button>`;
-  }
-
-  if (status === 'ready') {
-    return `<button type="button" data-complete="${quest.id}">完成委託</button>`;
-  }
-
+  if (status === 'completed') return '<button type="button" disabled>已完成</button>';
+  if (status === 'locked') return `<button type="button" data-show-lock="${quest.id}">查看解鎖條件</button>`;
+  if (status === 'ready') return `<button type="button" data-complete="${quest.id}">完成委託</button>`;
   const source = getFirstSource(quest);
   return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">${sourceButtonText(source)}</button>`;
 }
@@ -303,10 +214,7 @@ function renderQuestCard(entry) {
   const { quest, status } = entry;
   return `
     <article class="core-quest-card status-${status}">
-      <div class="core-quest-top">
-        <span>${quest.difficulty}</span>
-        <strong>${statusLabel(status)}</strong>
-      </div>
+      <div class="core-quest-top"><span>${quest.difficulty}</span><strong>${statusLabel(status)}</strong></div>
       <h3>${quest.title}</h3>
       <p class="core-customer">客人：${quest.customer}</p>
       <p>${quest.description}</p>
@@ -330,16 +238,12 @@ function goToSceneSource(sourceType = 'scene', sourceId = 'backyard') {
 
 function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   const source = { type: sourceType, id: sourceId, label: GameDB.getSourceLabel({ type: sourceType, id: sourceId }) };
-
   if (sourceType === 'route') {
     navigate(sourceId);
     emitNotice(`前往${source.label}`, `${source.label}是目前可取得部分稀有素材的功能頁。`);
     return;
   }
-
-  if (sourceType === 'station' || sourceType === 'scene') {
-    goToSceneSource(sourceType, sourceId);
-  }
+  if (sourceType === 'station' || sourceType === 'scene') goToSceneSource(sourceType, sourceId);
 }
 
 function handleRefreshResult(result, okTitle, failTitle) {
@@ -352,24 +256,19 @@ function handleCommissionClick(event) {
   const page = document.querySelector('#page-commissions');
   if (!button || !page?.contains(button)) return;
 
-  if (button.matches('[data-refresh-daily-commissions]')) {
-    handleRefreshResult(refreshDailyCommissionList(), '委託已刷新', '委託已是最新');
-    return;
-  }
-
-  if (button.matches('[data-refresh-free-commissions]')) {
-    handleRefreshResult(refreshDailyCommissionFree(), '免費刷新完成', '不能免費刷新');
-    return;
-  }
-
-  if (button.matches('[data-refresh-paid-commissions]')) {
-    handleRefreshResult(refreshDailyCommissionPaid(), '付費刷新完成', '不能付費刷新');
-    return;
-  }
+  if (button.matches('[data-refresh-daily-commissions]')) return handleRefreshResult(refreshDailyCommissionList(), '委託已刷新', '委託已是最新');
+  if (button.matches('[data-refresh-free-commissions]')) return handleRefreshResult(refreshDailyCommissionFree(), '免費刷新完成', '不能免費刷新');
+  if (button.matches('[data-refresh-paid-commissions]')) return handleRefreshResult(refreshDailyCommissionPaid(), '付費刷新完成', '不能付費刷新');
+  if (button.matches('[data-reroll-commissions]')) return handleRefreshResult(rerollDifficultCommissions(), '重抽完成', '不能重抽');
 
   if (button.dataset.commissionFilter) {
     currentCommissionFilter = button.dataset.commissionFilter || 'all';
     renderCommissions();
+    return;
+  }
+
+  if (button.dataset.showLock) {
+    emitNotice('尚未解鎖', getCommissionUnlockText(button.dataset.showLock));
     return;
   }
 
@@ -380,15 +279,12 @@ function handleCommissionClick(event) {
     return;
   }
 
-  if (button.dataset.sourceType) {
-    goToSource(button.dataset.sourceType, button.dataset.sourceId);
-  }
+  if (button.dataset.sourceType) goToSource(button.dataset.sourceType, button.dataset.sourceId);
 }
 
 function handleCommissionChange(event) {
   const page = document.querySelector('#page-commissions');
   if (!page?.contains(event.target)) return;
-
   if (event.target.matches('[data-commission-sort]')) {
     currentCommissionSort = event.target.value || 'default';
     renderCommissions();
@@ -409,12 +305,10 @@ export function renderCommissions() {
 
   const allEntries = getQuestEntries();
   const visibleEntries = sortQuestEntries(filterQuestEntries(allEntries));
-  const cards = visibleEntries.length
-    ? visibleEntries.map(renderQuestCard).join('')
-    : '<div class="core-empty">目前沒有符合分類的委託。</div>';
+  const cards = visibleEntries.length ? visibleEntries.map(renderQuestCard).join('') : '<div class="core-empty">目前沒有符合分類的委託。</div>';
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日自動刷新一次，也可以每天免費刷新一次；缺少商品時會提示製作配方與素材來源。')}
+    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日自動刷新一次。卡關時可以用免費刷新、靈感券刷新，或花少量星糖重抽。')}
     ${renderDailyRefreshBar()}
     ${renderFilterTabs(allEntries)}
     ${renderSortBox()}
