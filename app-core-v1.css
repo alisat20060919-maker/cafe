@@ -114,13 +114,33 @@
 .core-filter-tabs button{border:1px solid rgba(126,84,34,.22);border-radius:999px;background:rgba(255,255,255,.68);color:#6a4b21;font-weight:900;padding:8px 10px;font-size:12px;box-shadow:0 4px 10px rgba(45,32,14,.08)}
 .core-filter-tabs button span{margin-right:3px}
 .core-filter-tabs button.active{background:linear-gradient(180deg,#fff2bd,#d9a441);color:#3d2a18;border-color:rgba(217,164,65,.62)}
+#page-inventory.core-page-host{
+  display:grid;
+  grid-template-rows:auto auto auto auto auto minmax(0,1fr);
+  height:clamp(430px,58vh,560px);
+  min-height:0;
+  overflow:hidden;
+}
+#page-inventory .core-page-head{padding:8px 10px;margin-bottom:8px;border-radius:16px}
+#page-inventory .core-page-head h2{font-size:20px;margin:2px 0 0}
+#page-inventory .core-page-head p{display:none}
+#page-inventory .collection-entry-actions{margin:0 0 8px;justify-content:flex-start}
+#page-inventory .collection-entry-actions button{padding:7px 10px;border-radius:999px;font-size:12px}
+#page-inventory .core-search-box,#page-inventory .core-sort-box{margin:0 0 6px;padding:7px 8px;border-radius:14px}
+#page-inventory .core-search-box input,#page-inventory .core-sort-box select{padding:8px 10px;font-size:12px}
+#page-inventory .core-filter-group{margin:0 0 6px}
+#page-inventory .core-filter-tabs{flex-wrap:nowrap;overflow-x:auto;padding:6px;border-radius:14px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#page-inventory .core-filter-tabs::-webkit-scrollbar{display:none}
+#page-inventory .core-filter-tabs button{flex:0 0 auto;padding:7px 9px;font-size:12px}
 #page-inventory #inventory-list{
-  max-height:clamp(280px,44vh,430px);
+  min-height:0;
+  height:100%;
+  max-height:none;
   overflow-y:auto;
   overscroll-behavior:contain;
   -webkit-overflow-scrolling:touch;
   padding:8px;
-  margin-top:10px;
+  margin-top:0;
   border:1px solid rgba(126,84,34,.22);
   border-radius:22px;
   background:rgba(255,255,246,.42);
@@ -157,5 +177,14 @@ body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
 
 @media(max-width:520px){
   .top-bar{display:grid!important;grid-template-columns:1fr;gap:8px!important}
-  .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px;margin:10px;min-height:500px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}#page-inventory #inventory-list{max-height:38vh;padding:7px;border-radius:20px}.bottom-dock button{font-size:20px!important}.bottom-dock button::before{display:none!important}.bottom-dock button span{font-size:10px!important}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
+  .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px;margin:10px;min-height:500px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}.bottom-dock button{font-size:20px!important}.bottom-dock button::before{display:none!important}.bottom-dock button span{font-size:10px!important}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
+  #page-inventory.core-page-host{height:clamp(340px,calc(100svh - 250px),500px);min-height:0!important;padding:8px;margin:8px;border-radius:20px}
+  #page-inventory .core-page-head{padding:7px 9px;margin-bottom:6px}
+  #page-inventory .core-page-head h2{font-size:18px!important}
+  #page-inventory .collection-entry-actions{display:none}
+  #page-inventory .core-search-box,#page-inventory .core-sort-box{padding:6px 7px;margin-bottom:5px}
+  #page-inventory .core-search-box label,#page-inventory .core-sort-box label,#page-inventory .core-filter-group p{font-size:11px}
+  #page-inventory .core-filter-tabs{padding:5px;gap:6px}
+  #page-inventory .core-filter-tabs button{padding:6px 8px;font-size:11px}
+  #page-inventory #inventory-list{padding:6px;border-radius:18px}
 }
