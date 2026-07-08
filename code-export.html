@@ -19,122 +19,34 @@
       <button type="button" class="secondary" id="downloadBtn">下載 .md</button>
       <p class="status" id="statusText">等待匯出。</p>
     </section>
-
     <section class="card">
       <textarea id="output" spellcheck="false" placeholder="按下「產生程式碼文檔」後，內容會出現在這裡。"></textarea>
       <div class="file-list" id="fileList"></div>
     </section>
   </main>
-
   <script>
     const files = [
-      'index.html',
-      'main.js',
-      'dev-checks.js',
-      'game-data.js',
-      'data-items.js',
-      'data-recipes.js',
-      'data-story.js',
-      'game-state.js',
-      'save.js',
-      'ui.js',
-      'home.js',
-      'router.js',
-      'event-bus.js',
-      'utils.js',
-      'daily-actions.js',
-      'gacha-actions.js',
-      'commission-actions.js',
-      'gather-actions.js',
-      'craft-actions.js',
-      'player-actions.js',
-      'pages-gacha.js',
-      'pages-inventory.js',
-      'pages-fairies.js',
-      'pages-collection.js',
-      'pages-commissions.js',
-      'game-db-validator.js',
-      'style.css',
-      'game-ui.css',
-      'mobile-fix.css',
-      'game-interior.css',
-      'app-core-v1.css',
-      'progress.css',
-      'level-up.css',
-      'locks.css',
-      'fairies.css',
-      'TESTING.md',
-      'AGENTS.md',
+      'index.html','main.js','dev-checks.js','game-data.js','data-items.js','data-recipes.js','data-story.js','game-state.js','save.js','ui.js','home.js','router.js','event-bus.js','utils.js','daily-actions.js','gacha-actions.js','commission-actions.js','gather-actions.js','craft-actions.js','player-actions.js','fairy-actions.js','shop-actions.js','pages-gacha.js','pages-inventory.js','pages-fairies.js','pages-collection.js','pages-commissions.js','pages-shop.js','game-db-validator.js','style.css','game-ui.css','mobile-fix.css','game-interior.css','app-core-v1.css','progress.css','level-up.css','locks.css','gacha.css','shop.css','fairies.css','TESTING.md','AGENTS.md'
     ];
-
     const output = document.querySelector('#output');
     const statusText = document.querySelector('#statusText');
     const fileList = document.querySelector('#fileList');
-
-    function languageFor(path){
-      if(path.endsWith('.js')) return 'js';
-      if(path.endsWith('.css')) return 'css';
-      if(path.endsWith('.html')) return 'html';
-      if(path.endsWith('.md')) return 'md';
-      return 'text';
-    }
-
-    function renderFileList(){
-      fileList.innerHTML = files.map((file)=>`<span>${file}</span>`).join('');
-    }
-
+    function languageFor(path){ if(path.endsWith('.js')) return 'js'; if(path.endsWith('.css')) return 'css'; if(path.endsWith('.html')) return 'html'; if(path.endsWith('.md')) return 'md'; return 'text'; }
+    function renderFileList(){ fileList.innerHTML = files.map((file)=>`<span>${file}</span>`).join(''); }
     async function exportCode(){
       statusText.textContent = '匯出中…';
       const version = new Date().toISOString();
-      const chunks = [
-        '# 精靈咖啡屋：完整程式碼匯出',
-        '',
-        `匯出時間：${version}`,
-        `來源網址：${location.href}`,
-        '',
-        '## 檔案清單',
-        '',
-        ...files.map((file)=>`- ${file}`),
-        '',
-      ];
-
-      let ok = 0;
-      let failed = 0;
+      const chunks = ['# 精靈咖啡屋：完整程式碼匯出','',`匯出時間：${version}`,`來源網址：${location.href}`,'','## 檔案清單','',...files.map((file)=>`- ${file}`),''];
+      let ok = 0; let failed = 0;
       for (const file of files) {
-        try {
-          const response = await fetch(`${file}?export=${Date.now()}`);
-          if (!response.ok) throw new Error(`${response.status} ${response.statusText}`);
-          const text = await response.text();
-          chunks.push(`\n---\n\n## ${file}\n\n\`\`\`${languageFor(file)}\n${text}\n\`\`\`\n`);
-          ok += 1;
-        } catch (error) {
-          chunks.push(`\n---\n\n## ${file}\n\n> 讀取失敗：${error.message}\n`);
-          failed += 1;
-        }
+        try { const response = await fetch(`${file}?export=${Date.now()}`); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); const text = await response.text(); chunks.push(`\n---\n\n## ${file}\n\n\`\`\`${languageFor(file)}\n${text}\n\`\`\`\n`); ok += 1; }
+        catch (error) { chunks.push(`\n---\n\n## ${file}\n\n> 讀取失敗：${error.message}\n`); failed += 1; }
       }
-
       output.value = chunks.join('\n');
       statusText.textContent = `完成：成功 ${ok} 個，失敗 ${failed} 個。`;
     }
-
-    async function copyText(){
-      if(!output.value) await exportCode();
-      await navigator.clipboard.writeText(output.value);
-      statusText.textContent = '已複製到剪貼簿。';
-    }
-
-    async function downloadMarkdown(){
-      if(!output.value) await exportCode();
-      const blob = new Blob([output.value], { type: 'text/markdown;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `elf-cafe-code-export-${new Date().toISOString().slice(0,10)}.md`;
-      link.click();
-      URL.revokeObjectURL(url);
-      statusText.textContent = '已準備下載。';
-    }
-
+    async function copyText(){ if(!output.value) await exportCode(); await navigator.clipboard.writeText(output.value); statusText.textContent = '已複製到剪貼簿。'; }
+    async function downloadMarkdown(){ if(!output.value) await exportCode(); const blob = new Blob([output.value], { type: 'text/markdown;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.href = url; link.download = `elf-cafe-code-export-${new Date().toISOString().slice(0,10)}.md`; link.click(); URL.revokeObjectURL(url); statusText.textContent = '已準備下載。'; }
     document.querySelector('#exportBtn').addEventListener('click', exportCode);
     document.querySelector('#copyBtn').addEventListener('click', copyText);
     document.querySelector('#downloadBtn').addEventListener('click', downloadMarkdown);
