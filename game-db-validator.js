@@ -19,6 +19,21 @@ function validateEnum(errors, values = [], scope = 'enum') {
   });
 }
 
+function validateItemTypeMeta(errors) {
+  [...(GameDB.itemTypes || []), 'fairy'].forEach((typeId) => {
+    const meta = GameDB.itemTypeMeta?.[typeId];
+    const scope = `itemTypeMeta.${typeId}`;
+
+    if (!meta || typeof meta !== 'object') {
+      pushIssue(errors, scope, '缺少分類 meta。');
+      return;
+    }
+
+    if (meta.id !== typeId) pushIssue(errors, scope, `id 應為 ${typeId}，目前是 ${meta.id || '空值'}。`);
+    if (!meta.label) pushIssue(errors, scope, '缺少 label。');
+  });
+}
+
 function validateRegistry(errors, registry = {}, scope = 'registry') {
   Object.entries(registry || {}).forEach(([id, entry]) => {
     if (!entry || typeof entry !== 'object') {
@@ -204,6 +219,7 @@ export function validateGameDB() {
 
   validateEnum(errors, GameDB.itemTypes, 'itemTypes');
   validateEnum(errors, GameDB.rarities, 'rarities');
+  validateItemTypeMeta(errors);
   validateRegistry(errors, GameDB.routes, 'routes');
   validateRegistry(errors, GameDB.scenes, 'scenes');
   validateRegistry(errors, GameDB.stations, 'stations');
