@@ -69,6 +69,19 @@
 3. UI 渲染時用 ID 回查 `GameDB`，例如 `inventory` 只存 `{ itemId: count }`。
 4. 擴充 state 時只新增欄位，不刪舊欄位，不改舊欄位語意。
 5. 新增 state 欄位時必須確認 `migrateSave()` 能讓舊存檔自動補上預設值。
+6. `state.unlockedScenes` 只存 `{ sceneId: boolean }`，不可存場景名稱、描述、掉落表或解鎖文案。
+
+## 採集規則
+
+1. 採集表只允許定義在 `GameDB.gatherTables`。
+2. `gather-actions.js` 可以計算每日次數、掉落結果與掉落預覽，但不可自建靜態掉落表。
+3. 採集刷新使用玩家本地日期字串 `YYYY-MM-DD`。
+4. 每個採集地點各自保存 `state.gathering[sceneId].lastDate` 與 `state.gathering[sceneId].count`。
+5. 不同採集地點不可共用 count；後山與溫室必須分開計數。
+6. 採集次數上限讀 `GameDB.gatherConfig.dailyLimit`。
+7. 未解鎖採集地點不可扣次數、不可掉落、不可寫入 inventory。
+8. 未解鎖採集地點不顯示剩餘次數與掉落預覽，只顯示解鎖提示。
+9. 掉落表、掉落機率、素材名稱、圖示與描述都從 GameDB 讀取，不寫入 state。
 
 ## 事件流
 
