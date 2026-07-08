@@ -24,16 +24,6 @@ const gatherTables = {
       { itemId: 'star_berry', qty: 1, weight: 5 },
     ],
   },
-  alchemy: {
-    title: '煉金回收完成',
-    emptyTitle: '今天煉金回收完成',
-    drops: [
-      { itemId: 'night_sky_fragment', qty: 1, weight: 45 },
-      { itemId: 'stardew_water', qty: 1, weight: 30 },
-      { itemId: 'moon_petals', qty: 1, weight: 15 },
-      { itemId: 'night_sky_fragment', qty: 2, weight: 10 },
-    ],
-  },
 };
 
 function localDateString(date = new Date()) {
