@@ -1,4 +1,4 @@
-import { canGatherAt, gatherAt, getGatherStatus, getLocationHint } from '@actions/gather';
+import { canGatherAt, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { showModal } from '@ui';
 
 let activeIndex = 0;
@@ -63,9 +63,29 @@ function applyHotspotPositions() {
   });
 }
 
+function renderPreviewText(locationId) {
+  const preview = getGatherDropPreview(locationId).slice(0, 4);
+  if (!preview.length) return '';
+  return preview.map((drop) => `${drop.icon}${drop.name}`).join('、');
+}
+
+function renderPreviewList(preview = []) {
+  if (!preview.length) return '';
+
+  return `
+    <div class="gather-preview-list">
+      <b>可能掉落</b>
+      ${preview.map((drop) => `
+        <span>${drop.icon} ${drop.name} ×${drop.qty}｜${drop.chance}%</span>
+      `).join('')}
+    </div>
+  `;
+}
+
 function renderGatherStatusBadges() {
   $all('.scene-card').forEach((scene) => {
     scene.querySelector('.gather-status-badge')?.remove();
+    scene.querySelector('.gather-preview-line')?.remove();
 
     const status = getGatherStatus(scene.id);
     if (!status) return;
@@ -75,11 +95,19 @@ function renderGatherStatusBadges() {
     badge.dataset.depleted = status.isDepleted ? 'true' : 'false';
     badge.textContent = status.label;
 
-    scene.querySelector('.scene-info')?.appendChild(badge);
+    const previewLine = document.createElement('div');
+    previewLine.className = 'gather-preview-line';
+    previewLine.textContent = `可能掉落：${renderPreviewText(scene.id)}`;
+
+    const info = scene.querySelector('.scene-info');
+    info?.appendChild(badge);
+    info?.appendChild(previewLine);
   });
 }
 
 function showGatherResultModal(result) {
+  const previewHtml = renderPreviewList(result.preview || []);
+
   if (!result.ok) {
     showModal(`
       <div class="core-modal-card compact gather-result-modal is-empty">
@@ -89,6 +117,7 @@ function showGatherResultModal(result) {
         <h2>${result.title || '今天採集完成'}</h2>
         <p>${result.message}</p>
         <div class="gather-result-status">剩餘 ${result.remaining || 0}/${result.limit || 0}</div>
+        ${previewHtml}
       </div>
     `);
     return;
@@ -105,8 +134,10 @@ function showGatherResultModal(result) {
       <div class="gather-result-meta">
         <span>${drop.rarity}</span>
         <span>${drop.typeLabel}</span>
+        <span>${drop.chance}%</span>
       </div>
       <div class="gather-result-status">今日剩餘 ${result.remaining}/${result.limit}</div>
+      ${previewHtml}
     </div>
   `);
 }
