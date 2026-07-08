@@ -63,9 +63,11 @@ function updateCollectionSearch(page) {
     const searchMatch = !query || searchText.includes(query);
     const categoryMatch = currentFilter === 'all' || card.dataset.category === currentFilter;
     const rarityMatch = currentRarity === 'all' || card.dataset.rarity === currentRarity;
+    const isVisible = searchMatch && categoryMatch && rarityMatch;
 
     card.dataset.searchMatch = searchMatch ? 'true' : 'false';
-    if (searchMatch && categoryMatch && rarityMatch) visibleCount += 1;
+    card.hidden = !isVisible;
+    if (isVisible) visibleCount += 1;
   });
 
   if (empty) empty.hidden = cardCount === 0 || visibleCount > 0;
