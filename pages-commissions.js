@@ -3,6 +3,7 @@ import { getState, getActiveCommissionIds } from '@state';
 import {
   canCompleteCommission,
   completeCommission,
+  getCommissionDisplayReward,
   getPaidRefreshCostText,
   refreshDailyCommissionList,
   refreshDailyCommissionFree,
@@ -296,7 +297,7 @@ function renderQuestCard(entry) {
       <p>${quest.description}</p>
       <div class="core-recipe"><b>需要：</b>${renderRequirements(quest)}</div>
       ${renderMissingHint(quest, status)}
-      <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
+      <div class="core-reward"><b>獎勵：</b>${formatReward(getCommissionDisplayReward(quest))}</div>
       ${renderQuestButton(quest, status)}
     </article>
   `;
