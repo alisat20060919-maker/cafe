@@ -1,6 +1,6 @@
-import { GameDB } from './game-data.js?v=core04';
-import { getState, canAffordItems, spendItems, addReward, persistState } from './game-state.js?v=core04';
-import { formatReward } from './utils.js?v=core04';
+import { GameDB } from './game-data.js?v=core06';
+import { getState, canAffordItems, spendItems, addReward, persistState } from './game-state.js?v=core06';
+import { formatReward } from './utils.js?v=core06';
 
 export function canCompleteCommission(commissionId) {
   const state = getState();
