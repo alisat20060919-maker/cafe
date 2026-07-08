@@ -155,7 +155,8 @@ function handleLevelUp(event) {
 
 function showLevelUpModal(detail = {}) {
   const levelUps = detail.levelUps || [];
-  const lastLevel = Number(detail.newLevel || levelUps.at?.(-1) || getState().player.level);
+  const lastUnlockedLevel = levelUps[levelUps.length - 1];
+  const lastLevel = Number(detail.newLevel || lastUnlockedLevel || getState().player.level);
   const expGained = Number(detail.expGained || 0);
   const unlocked = detail.unlocked || [];
   const progress = detail.progress || GameDB.getLevelProgress(getState().player);
