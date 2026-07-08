@@ -5,6 +5,7 @@ import { initHome, renderHome } from '@home';
 import { initRouter } from '@router';
 import { renderGacha } from '@pages/gacha';
 import { initInventoryPage, renderInventory } from '@pages/inventory';
+import { initFairiesPage, renderFairies } from '@pages/fairies';
 import { renderCollection } from '@pages/collection';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 
@@ -14,6 +15,7 @@ function boot() {
   initUI();
   initHome();
   initInventoryPage();
+  initFairiesPage();
   initCommissionsPage();
 
   initRouter({
@@ -21,6 +23,7 @@ function boot() {
     gacha: { render: renderGacha },
     commissions: { render: renderCommissions },
     inventory: { render: renderInventory },
+    fairies: { render: renderFairies },
     collection: { render: renderCollection },
   }, 'home');
 
