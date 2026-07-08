@@ -6,11 +6,32 @@ const DAILY_GATHER_LIMIT = 5;
 const gatherTables = {
   backyard: {
     title: '後山採集完成',
+    emptyTitle: '今天後山採集完成',
     drops: [
       { itemId: 'star_berry', qty: 1, weight: 45 },
       { itemId: 'stardew_water', qty: 1, weight: 30 },
       { itemId: 'forest_cookie', qty: 1, weight: 20 },
       { itemId: 'star_berry', qty: 2, weight: 5 },
+    ],
+  },
+  greenhouse: {
+    title: '溫室照顧完成',
+    emptyTitle: '今天溫室照顧完成',
+    drops: [
+      { itemId: 'moon_petals', qty: 1, weight: 55 },
+      { itemId: 'stardew_water', qty: 1, weight: 30 },
+      { itemId: 'moon_petals', qty: 2, weight: 10 },
+      { itemId: 'star_berry', qty: 1, weight: 5 },
+    ],
+  },
+  alchemy: {
+    title: '煉金回收完成',
+    emptyTitle: '今天煉金回收完成',
+    drops: [
+      { itemId: 'night_sky_fragment', qty: 1, weight: 45 },
+      { itemId: 'stardew_water', qty: 1, weight: 30 },
+      { itemId: 'moon_petals', qty: 1, weight: 15 },
+      { itemId: 'night_sky_fragment', qty: 2, weight: 10 },
     ],
   },
 };
@@ -55,6 +76,10 @@ function formatGatherDrop(drop) {
   return `${item?.icon || ''}${item?.name || drop.itemId} ×${drop.qty || 1}`;
 }
 
+export function canGatherAt(locationId = 'backyard') {
+  return Boolean(gatherTables[locationId]);
+}
+
 export function gatherAt(locationId = 'backyard') {
   const table = gatherTables[locationId];
   if (!table) return { ok: false, message: '這個地點還不能採集。' };
@@ -66,7 +91,7 @@ export function gatherAt(locationId = 'backyard') {
     persistState(`gather:${locationId}:limit`);
     return {
       ok: false,
-      title: '今天採集完成',
+      title: table.emptyTitle || '今天採集完成',
       message: `今天這裡的素材已經採完了。明天再來吧。(${DAILY_GATHER_LIMIT}/${DAILY_GATHER_LIMIT})`,
       remaining: 0,
       limit: DAILY_GATHER_LIMIT,
