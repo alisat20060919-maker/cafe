@@ -10,12 +10,23 @@ import { initFairiesPage, renderFairies } from '@pages/fairies';
 import { renderCollection } from '@pages/collection';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 
+function shouldRunDevChecks() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('dev') === '1'
+    || params.get('checks') === '1'
+    || ['localhost', '127.0.0.1'].includes(window.location.hostname);
+}
+
 function addMvpIssue(issues, scope, message) {
   issues.push(`[${scope}] ${message}`);
 }
 
 function getRecipeForOutput(itemId) {
   return Object.values(GameDB.recipes || {}).find((recipe) => recipe.output?.itemId === itemId) || null;
+}
+
+function getMvpCommissions() {
+  return Object.values(GameDB.commissions || {}).filter((commission) => ['daily', 'mvp'].includes(commission.category));
 }
 
 function validateMvpSmokeTest() {
@@ -27,7 +38,10 @@ function validateMvpSmokeTest() {
     if (!Array.isArray(table?.drops) || !table.drops.length) addMvpIssue(issues, `gather.${sceneId}`, '採集表沒有 drops。');
   });
 
-  Object.values(GameDB.commissions || {}).forEach((commission) => {
+  const commissions = getMvpCommissions();
+  if (!commissions.length) addMvpIssue(issues, 'commissions', 'MVP 至少需要一個 daily 或 mvp 委託。');
+
+  commissions.forEach((commission) => {
     Object.keys(GameDB.getCommissionRequiredItems?.(commission) || {}).forEach((itemId) => {
       const scope = `commissions.${commission.id}.requiredItems.${itemId}`;
       if (!GameDB.items?.[itemId]) addMvpIssue(issues, scope, '委託要求的產品不存在。');
@@ -67,8 +81,11 @@ function validateMvpSmokeTest() {
 }
 
 function boot() {
-  validateGameDB();
-  validateMvpSmokeTest();
+  if (shouldRunDevChecks()) {
+    validateGameDB();
+    validateMvpSmokeTest();
+  }
+
   initState();
   initUI();
   initHome();
