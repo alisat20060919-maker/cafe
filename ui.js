@@ -6,6 +6,7 @@ import { Events, on } from '@eventBus';
 
 let modalHost;
 let lockedScrollY = 0;
+let levelUpTimer = null;
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -32,6 +33,24 @@ function getExpText(progress) {
   return progress.isMax
     ? `EXP ${progress.exp}`
     : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`;
+}
+
+function getUnlockLabel(entry = {}) {
+  if (entry.label) return entry.label;
+  if (entry.type === 'scene') return GameDB.scenes?.[entry.id]?.name || entry.id;
+  if (entry.type === 'recipe') return GameDB.recipes?.[entry.id]?.name || entry.id;
+  return entry.id || '新內容';
+}
+
+function renderLevelUnlocks(unlocked = []) {
+  if (!unlocked.length) return '<p class="level-up-note">新的魔法正在準備中，繼續完成委託累積經驗吧。</p>';
+
+  return `
+    <div class="level-up-unlocks">
+      <span>NEW UNLOCK</span>
+      ${unlocked.map((entry) => `<b>🔓 ${getUnlockLabel(entry)}</b>`).join('')}
+    </div>
+  `;
 }
 
 function lockBodyScroll() {
@@ -75,6 +94,7 @@ export function initUI() {
   $('[data-action="settings"]')?.addEventListener('click', openSettings);
 
   on(Events.STATE_CHANGED, updateStatus);
+  on(Events.LEVEL_UP, handleLevelUp);
   on(Events.NOTICE, (event) => {
     showNotice(event.detail?.title || '提示', event.detail?.body || '');
   });
@@ -125,6 +145,39 @@ export function updateStatus() {
 function handleDaily() {
   const result = claimDailyReward();
   showNotice(result.ok ? `連續簽到 Day ${result.streak}` : '今日簽到', result.message);
+}
+
+function handleLevelUp(event) {
+  const detail = event.detail || {};
+  window.clearTimeout(levelUpTimer);
+  levelUpTimer = window.setTimeout(() => showLevelUpModal(detail), 650);
+}
+
+function showLevelUpModal(detail = {}) {
+  const levelUps = detail.levelUps || [];
+  const lastLevel = Number(detail.newLevel || levelUps.at?.(-1) || getState().player.level);
+  const expGained = Number(detail.expGained || 0);
+  const unlocked = detail.unlocked || [];
+  const progress = detail.progress || GameDB.getLevelProgress(getState().player);
+  const expText = getExpText(progress);
+
+  showModal(`
+    <div class="core-modal-card level-up-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">LEVEL UP</span>
+      <div class="level-up-orb">✦</div>
+      <p class="level-up-label">恭喜升級</p>
+      <h2>Lv.${lastLevel}</h2>
+      <p class="level-up-copy">咖啡屋的魔力變得更穩定了。${expGained ? `這次獲得 ${expGained} EXP。` : ''}</p>
+      <div class="level-up-progress">
+        <b>${expText}</b>
+        <span>${getProgressPercent(progress)}%</span>
+        <em><strong style="width:${getProgressPercent(progress)}%"></strong></em>
+      </div>
+      ${renderLevelUnlocks(unlocked)}
+      <button type="button" data-close-modal>繼續經營</button>
+    </div>
+  `);
 }
 
 function renderOpeningStoryStep(index = 0) {
