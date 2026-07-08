@@ -21,6 +21,10 @@
 7. 新增煉成素材時，`item.type` 必須是已登錄的 `refined_material`。
 8. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes` 仍必須存在且結構不變。
 9. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
+10. `GameDB.materialTypes` 與 `GameDB.productTypes` 都必須是非空陣列，且只能包含已登錄的 `itemTypes`。
+11. `GameDB.materialTypes` 與 `GameDB.productTypes` 不可重疊。
+12. 每個 `GameDB.items` 都必須能被 `GameDB.getItemRole()` 判定為 `material` 或 `product`。
+13. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
 
 ## 3. 首頁 / 地圖測試
 
@@ -162,6 +166,7 @@
 煉金室製作成功/素材不足
 配方資料 validator
 GameDB Facade 拆檔後仍能讀 items/recipes
+產品/原料分類規則
 未解鎖地點提示
 簽到
 設定
