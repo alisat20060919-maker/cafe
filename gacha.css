@@ -1,0 +1,93 @@
+.gacha-stage .core-gacha-machine{
+  position:relative;
+  overflow:hidden;
+}
+
+.gacha-stage .core-gacha-machine::before{
+  content:"";
+  position:absolute;
+  inset:-40%;
+  background:conic-gradient(from 0deg,transparent,rgba(255,230,151,.34),transparent,rgba(145,240,208,.22),transparent);
+  animation:gachaMist 7s linear infinite;
+  pointer-events:none;
+}
+
+.gacha-magic-circle{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  width:112px;
+  height:112px;
+  margin:0 auto 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,226,145,.35);
+  background:radial-gradient(circle,rgba(255,248,208,.22),rgba(75,43,25,.12));
+  box-shadow:0 0 28px rgba(255,226,145,.24),inset 0 0 18px rgba(255,255,255,.08);
+}
+
+.gacha-magic-circle::before,
+.gacha-magic-circle::after{
+  content:"✦ ✧ ✦";
+  position:absolute;
+  inset:14px;
+  display:grid;
+  place-items:center;
+  border:1px dashed rgba(255,226,145,.36);
+  border-radius:999px;
+  color:rgba(255,226,145,.42);
+  font-size:14px;
+  letter-spacing:4px;
+  animation:gachaCircle 5.5s linear infinite;
+}
+
+.gacha-magic-circle::after{
+  inset:25px;
+  animation-direction:reverse;
+  opacity:.7;
+}
+
+.gacha-pity-box{
+  position:relative;
+  z-index:1;
+  display:grid;
+  gap:5px;
+  margin:12px 0;
+  padding:10px;
+  border:1px solid rgba(255,226,145,.25);
+  border-radius:18px;
+  background:rgba(255,244,214,.1);
+}
+
+.gacha-pity-box b,.gacha-pity-box span,.gacha-pity-box small{color:#fff1cc}
+.gacha-pity-box span,.gacha-pity-box small{font-size:12px;color:#e6c99a}
+
+.gacha-pity-box em{
+  display:block;
+  height:8px;
+  border-radius:999px;
+  overflow:hidden;
+  background:rgba(255,244,214,.14);
+}
+
+.gacha-pity-box strong{
+  display:block;
+  height:100%;
+  min-width:4px;
+  border-radius:inherit;
+  background:linear-gradient(90deg,#91f0d0,#f7d87b,#fff1cc);
+  box-shadow:0 0 14px rgba(247,216,123,.56);
+}
+
+.core-result-card.pity-hit{
+  animation:pityGlow 1.4s ease-in-out infinite alternate;
+}
+
+.gacha-history-panel{margin-top:14px}
+.gacha-history-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gacha-history-list span{border:1px solid rgba(255,226,145,.22);border-radius:999px;padding:6px 9px;background:rgba(255,244,214,.1);color:#ead0a0;font-size:12px;font-weight:800}
+.gacha-history-list span.pity-hit{background:rgba(255,225,150,.2);color:#fff1cc;box-shadow:0 0 14px rgba(247,216,123,.22)}
+
+@keyframes gachaMist{to{transform:rotate(360deg)}}
+@keyframes gachaCircle{to{transform:rotate(360deg)}}
+@keyframes pityGlow{from{box-shadow:0 0 0 rgba(247,216,123,0)}to{box-shadow:0 0 22px rgba(247,216,123,.7)}}
