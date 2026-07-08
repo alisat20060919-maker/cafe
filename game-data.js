@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 14,
+  version: 15,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
