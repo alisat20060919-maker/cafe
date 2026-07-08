@@ -2,9 +2,11 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 12,
+  version: 13,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
+  materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
+  productTypes: ['sweet', 'drink', 'product'],
   itemTypeMeta: {
     material: { id: 'material', label: '素材', icon: '🌿' },
     refined_material: { id: 'refined_material', label: '煉成素材', icon: '✨' },
@@ -14,6 +16,11 @@ export const GameDB = {
     rare_material: { id: 'rare_material', label: '稀有素材', icon: '💎' },
     event_material: { id: 'event_material', label: '活動素材', icon: '🎟️' },
     fairy: { id: 'fairy', label: '精靈', icon: '🧚' },
+  },
+  itemRoleMeta: {
+    material: { id: 'material', label: '原料', description: '採集、祈願或煉金得到，用於製作。' },
+    product: { id: 'product', label: '產品', description: '廚房或煉金室製作出的交付品，可用於委託。' },
+    unknown: { id: 'unknown', label: '未分類', description: '尚未定義用途角色。' },
   },
   rarities: ['N', 'R', 'SR', 'SSR'],
   rarityMeta: {
@@ -37,6 +44,30 @@ export const GameDB = {
 
   buildSearchText(parts = []) {
     return this.normalizeSearchText(parts.flat().filter(Boolean).join(' '));
+  },
+
+  getItemRecord(itemOrId) {
+    return typeof itemOrId === 'string' ? this.items?.[itemOrId] : itemOrId;
+  },
+
+  getItemRole(itemOrId) {
+    const item = this.getItemRecord(itemOrId);
+    if (!item?.type) return 'unknown';
+    if (this.productTypes.includes(item.type)) return 'product';
+    if (this.materialTypes.includes(item.type)) return 'material';
+    return 'unknown';
+  },
+
+  getItemRoleLabel(itemOrId) {
+    return this.itemRoleMeta?.[this.getItemRole(itemOrId)]?.label || '未分類';
+  },
+
+  isMaterialItem(itemOrId) {
+    return this.getItemRole(itemOrId) === 'material';
+  },
+
+  isProductItem(itemOrId) {
+    return this.getItemRole(itemOrId) === 'product';
   },
 
   getItemTypeLabel(typeId) {
@@ -127,6 +158,7 @@ export const GameDB = {
       item.type,
       item.typeName,
       this.getItemTypeLabel(item.type),
+      this.getItemRoleLabel(item),
       item.rarity,
       this.getRarityLabel(item.rarity),
       item.source,
