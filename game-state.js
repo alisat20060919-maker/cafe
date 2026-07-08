@@ -155,8 +155,9 @@ function applyCommissionUnlocksToState(nextState, commissionId) {
 
   (commission?.unlocks?.scenes || []).forEach((sceneId) => {
     if (!GameDB.scenes?.[sceneId]) return;
+    const wasUnlocked = Boolean(nextState.unlockedScenes?.[sceneId]);
     nextState.unlockedScenes[sceneId] = true;
-    unlocked.push({ type: 'scene', id: sceneId, label: GameDB.scenes[sceneId].label || sceneId });
+    if (!wasUnlocked) unlocked.push({ type: 'scene', id: sceneId, label: GameDB.scenes[sceneId].label || sceneId });
   });
 
   return unlocked;
@@ -326,8 +327,7 @@ export function unlockScene(sceneId) {
 }
 
 export function applyCommissionUnlocks(commissionId) {
-  const unlocked = applyCommissionUnlocksToState(state, commissionId);
-  return unlocked.filter((entry) => entry.type !== 'scene' || entry.id === 'kitchen' || state.unlockedScenes?.[entry.id]);
+  return applyCommissionUnlocksToState(state, commissionId);
 }
 
 export function markItemDiscovered(itemId) {
