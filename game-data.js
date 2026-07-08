@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 8,
+  version: 9,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -19,6 +19,14 @@ export const GameDB = {
     SR: { id: 'SR', label: 'SR', icon: '✦' },
     SSR: { id: 'SSR', label: 'SSR', icon: '✧' },
   },
+  inventorySorts: [
+    { id: 'default', label: '預設順序', icon: '🧺' },
+    { id: 'rarity_desc', label: '稀有度高到低', icon: '✧' },
+    { id: 'rarity_asc', label: '稀有度低到高', icon: '◇' },
+    { id: 'count_desc', label: '持有數量多到少', icon: '×' },
+    { id: 'type_asc', label: '分類排序', icon: '🌿' },
+    { id: 'name_asc', label: '名稱排序', icon: 'あ' },
+  ],
 
   normalizeSearchText(value) {
     return String(value ?? '').toLowerCase().trim();
@@ -34,6 +42,21 @@ export const GameDB = {
 
   getRarityLabel(rarityId) {
     return this.rarityMeta?.[rarityId]?.label || rarityId || '未知稀有度';
+  },
+
+  getRarityRank(rarityId) {
+    const index = this.rarities.indexOf(rarityId);
+    return index < 0 ? -1 : index;
+  },
+
+  getItemTypeRank(typeId) {
+    if (typeId === 'fairy') return this.itemTypes.length;
+    const index = this.itemTypes.indexOf(typeId);
+    return index < 0 ? this.itemTypes.length + 1 : index;
+  },
+
+  getInventorySortOptions() {
+    return this.inventorySorts;
   },
 
   getInventoryCategories() {
