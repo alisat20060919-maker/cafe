@@ -1,6 +1,24 @@
 import { GameDB } from '@db';
 import { getState, addItem, persistState } from '@state';
 
+const locationHints = {
+  cafe: {
+    kind: 'home',
+    title: '咖啡廳',
+    message: '這裡是店鋪主區，可以查看菜單、委託和商品櫃。採集請前往後山或溫室。',
+  },
+  kitchen: {
+    kind: 'station',
+    title: '廚房尚未開放',
+    message: '廚房之後會用來把素材製作成甜點、飲品和正式商品。現在還不能製作。',
+  },
+  alchemy: {
+    kind: 'station',
+    title: '煉金室尚未開放',
+    message: '煉金室之後會用來把一階素材煉成二階、三階素材，或製作魔法產品。現在還不能煉成。',
+  },
+};
+
 function getDailyGatherLimit() {
   return Number(GameDB.gatherConfig?.dailyLimit || 5);
 }
@@ -65,6 +83,28 @@ export function canGatherAt(locationId = 'backyard') {
   return Boolean(getGatherTable(locationId));
 }
 
+export function getLocationHint(locationId) {
+  const table = getGatherTable(locationId);
+  if (table) {
+    return {
+      kind: 'gather',
+      isOpen: true,
+      title: table.title,
+      message: '這裡可以採集素材。每日採集次數會在地圖上顯示。',
+    };
+  }
+
+  const scene = GameDB.scenes?.[locationId];
+  const fallbackTitle = scene?.label ? `${scene.label}尚未開放` : '地點尚未開放';
+
+  return locationHints[locationId] || {
+    kind: 'locked',
+    isOpen: false,
+    title: fallbackTitle,
+    message: '這個地點之後會開放更多互動功能，目前還不能採集或製作。',
+  };
+}
+
 export function getGatherStatus(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table) return null;
@@ -88,7 +128,17 @@ export function getGatherStatus(locationId = 'backyard') {
 
 export function gatherAt(locationId = 'backyard') {
   const table = getGatherTable(locationId);
-  if (!table) return { ok: false, message: '這個地點還不能採集。' };
+  if (!table) {
+    const hint = getLocationHint(locationId);
+    return {
+      ok: false,
+      title: hint.title,
+      message: hint.message,
+      remaining: 0,
+      limit: 0,
+      isLocked: true,
+    };
+  }
 
   const limit = getDailyGatherLimit();
   const record = refreshDailyRecord(getGatherRecord(locationId));
