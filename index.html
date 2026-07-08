@@ -9,6 +9,28 @@
   <link rel="stylesheet" href="mobile-fix.css?v=inside16" />
   <link rel="stylesheet" href="game-interior.css?v=inside16" />
   <link rel="stylesheet" href="app-core-v1.css?v=core03" />
+  <script type="importmap">
+    {
+      "imports": {
+        "@main": "./main.js?v=core08",
+        "@db": "./game-data.js?v=core08",
+        "@state": "./game-state.js?v=core08",
+        "@save": "./save.js?v=core08",
+        "@ui": "./ui.js?v=core08",
+        "@home": "./home.js?v=core08",
+        "@router": "./router.js?v=core08",
+        "@eventBus": "./event-bus.js?v=core08",
+        "@utils": "./utils.js?v=core08",
+        "@actions/daily": "./daily-actions.js?v=core08",
+        "@actions/gacha": "./gacha-actions.js?v=core08",
+        "@actions/commission": "./commission-actions.js?v=core08",
+        "@actions/gather": "./gather-actions.js?v=core08",
+        "@pages/gacha": "./pages-gacha.js?v=core08",
+        "@pages/inventory": "./pages-inventory.js?v=core08",
+        "@pages/commissions": "./pages-commissions.js?v=core08"
+      }
+    }
+  </script>
 </head>
 <body>
   <main class="game-shell">
@@ -71,6 +93,6 @@
     </section>
   </main>
   <div class="core-modal-host" id="modalHost" hidden></div>
-  <script type="module" src="main.js?v=core07"></script>
+  <script type="module">import '@main';</script>
 </body>
 </html>
