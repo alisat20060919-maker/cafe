@@ -53,6 +53,27 @@ export function canGatherAt(locationId = 'backyard') {
   return Boolean(getGatherTable(locationId));
 }
 
+export function getGatherStatus(locationId = 'backyard') {
+  const table = getGatherTable(locationId);
+  if (!table) return null;
+
+  const limit = getDailyGatherLimit();
+  const record = getState().gathering?.[locationId] || { lastDate: null, count: 0 };
+  const today = localDateString();
+  const used = record.lastDate === today ? Number(record.count || 0) : 0;
+  const remaining = Math.max(0, limit - used);
+
+  return {
+    locationId,
+    title: table.title,
+    used,
+    remaining,
+    limit,
+    isDepleted: remaining <= 0,
+    label: remaining > 0 ? `今日剩餘 ${remaining}/${limit}` : '今日已採完',
+  };
+}
+
 export function gatherAt(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table) return { ok: false, message: '這個地點還不能採集。' };
