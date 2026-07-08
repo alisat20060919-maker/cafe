@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 function createDefaultState() {
   return {
@@ -25,6 +25,13 @@ function createDefaultState() {
     collection: {
       discoveredItems: {},
       discoveredFairies: {},
+    },
+    unlockedScenes: {
+      cafe: true,
+      backyard: true,
+      greenhouse: true,
+      kitchen: false,
+      alchemy: false,
     },
     gachaHistory: [],
     commissions: {},
@@ -89,15 +96,22 @@ function syncCollectionFromOwned(nextState) {
   });
 }
 
+function syncUnlockedScenes(nextState) {
+  const fresh = createDefaultState();
+  nextState.unlockedScenes = mergeDeep(fresh.unlockedScenes, nextState.unlockedScenes || {});
+}
+
 function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
     syncCollectionFromOwned(fresh);
+    syncUnlockedScenes(fresh);
     return fresh;
   }
 
   const migrated = mergeDeep(fresh, saved);
   syncCollectionFromOwned(migrated);
+  syncUnlockedScenes(migrated);
   migrated.saveVersion = SAVE_VERSION;
   return migrated;
 }
@@ -121,6 +135,7 @@ export function resetState() {
   clearSave();
   state = createDefaultState();
   syncCollectionFromOwned(state);
+  syncUnlockedScenes(state);
   persistState();
   return state;
 }
@@ -139,6 +154,16 @@ export function spendCurrency(currencyId, amount) {
   const current = Number(state.player[currencyId] || 0);
   if (current < amount) return false;
   state.player[currencyId] = current - amount;
+  return true;
+}
+
+export function isSceneUnlocked(sceneId) {
+  return Boolean(state.unlockedScenes?.[sceneId]);
+}
+
+export function unlockScene(sceneId) {
+  if (!GameDB.scenes?.[sceneId]) return false;
+  state.unlockedScenes[sceneId] = true;
   return true;
 }
 
