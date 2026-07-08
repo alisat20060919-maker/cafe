@@ -3,11 +3,16 @@ import {
   getState,
   canAffordItems,
   spendItems,
+  spendCurrency,
   addReward,
   persistState,
   refreshDailyCommissions,
+  useFreeDailyCommissionRefresh,
+  usePaidDailyCommissionRefresh,
 } from '@state';
 import { formatReward } from '@utils';
+
+const PAID_REFRESH_COST = { currency: 'tickets', amount: 1 };
 
 function getRequirements(commission) {
   return GameDB.getCommissionRequiredItems(commission);
@@ -15,6 +20,14 @@ function getRequirements(commission) {
 
 function isCommissionCompleted(record) {
   return record?.status === 'completed' || record?.status === 'claimed';
+}
+
+function currencyLabel(currencyId) {
+  return GameDB.currencies?.[currencyId]?.name || currencyId;
+}
+
+export function getPaidRefreshCostText() {
+  return `${currencyLabel(PAID_REFRESH_COST.currency)} ×${PAID_REFRESH_COST.amount}`;
 }
 
 export function canCompleteCommission(commissionId) {
@@ -32,6 +45,32 @@ export function refreshDailyCommissionList() {
   }
 
   return { ok: true, refreshed: false, message: '今天的委託已經是最新的。' };
+}
+
+export function refreshDailyCommissionFree() {
+  const result = useFreeDailyCommissionRefresh();
+  if (!result.ok) return { ok: false, refreshed: false, message: result.message || '免費刷新失敗。' };
+
+  return { ok: true, refreshed: true, message: `已使用今日免費刷新：${result.ids.length} 件委託。` };
+}
+
+export function refreshDailyCommissionPaid() {
+  const state = getState();
+  const current = Number(state.player?.[PAID_REFRESH_COST.currency] || 0);
+  if (current < PAID_REFRESH_COST.amount) {
+    return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
+  }
+
+  if (!spendCurrency(PAID_REFRESH_COST.currency, PAID_REFRESH_COST.amount)) {
+    return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
+  }
+
+  const result = usePaidDailyCommissionRefresh();
+  return {
+    ok: true,
+    refreshed: true,
+    message: `已花費${getPaidRefreshCostText()}刷新今日委託：${result.ids.length} 件。`,
+  };
 }
 
 export function completeCommission(commissionId) {
