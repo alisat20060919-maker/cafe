@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 function createDefaultState() {
   return {
@@ -27,6 +27,12 @@ function createDefaultState() {
     daily: {
       lastCheckIn: null,
       streak: 0,
+    },
+    gathering: {
+      backyard: {
+        lastDate: null,
+        count: 0,
+      },
     },
     settings: {
       animation: true,
