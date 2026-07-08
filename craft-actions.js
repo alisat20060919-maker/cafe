@@ -1,5 +1,13 @@
 import { GameDB } from '@db';
-import { getState, canAffordItems, spendItems, addItem, persistState } from '@state';
+import {
+  getState,
+  canAffordItems,
+  spendItems,
+  addItem,
+  persistState,
+  isUnlocked,
+  getUnlockRequirementText,
+} from '@state';
 
 function getRecipe(recipeId) {
   return GameDB.recipes?.[recipeId] || null;
@@ -37,6 +45,14 @@ function getOutputView(output = {}) {
   };
 }
 
+function getStationRequirement(recipe) {
+  return recipe?.station ? { station: recipe.station } : {};
+}
+
+function getStationRequirementText(recipe) {
+  return getUnlockRequirementText(getStationRequirement(recipe)) || '需要解鎖製作站';
+}
+
 export function canCraft(recipeId) {
   const recipe = getRecipe(recipeId);
   if (!recipe) {
@@ -45,6 +61,18 @@ export function canCraft(recipeId) {
       status: 'missing_recipe',
       message: '找不到這份配方。',
       missingItems: [],
+    };
+  }
+
+  if (!isUnlocked(getStationRequirement(recipe))) {
+    return {
+      ok: false,
+      status: 'locked_station',
+      recipe,
+      unlockRequirement: getStationRequirement(recipe),
+      unlockRequirementText: getStationRequirementText(recipe),
+      missingItems: [],
+      message: `${GameDB.stations?.[recipe.station]?.label || recipe.station}尚未解鎖。${getStationRequirementText(recipe)}。`,
     };
   }
 
@@ -85,6 +113,7 @@ export function getRecipeCraftView(recipeId) {
     canCraft: craftStatus.ok,
     status: craftStatus.status,
     message: craftStatus.message,
+    unlockRequirementText: craftStatus.unlockRequirementText || '',
   };
 }
 
@@ -96,6 +125,17 @@ export function craftRecipe(recipeId) {
       status: 'missing_recipe',
       title: '製作失敗',
       message: '找不到這份配方。',
+    };
+  }
+
+  const craftStatus = canCraft(recipeId);
+  if (craftStatus.status === 'locked_station') {
+    return {
+      ok: false,
+      status: 'locked_station',
+      title: '尚未解鎖',
+      recipe,
+      message: craftStatus.message,
     };
   }
 
