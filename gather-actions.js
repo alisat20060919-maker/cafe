@@ -31,8 +31,8 @@ function getSpecialEventChance(locationId = 'all') {
   return Math.min(configuredChance + buffBonus, 0.25);
 }
 
-function getGatherQtyMultiplier(locationId = 'backyard') {
-  return 1 + getTotalFairyBuffValue('gatherQtyBonus', locationId);
+function getGatherQtyBonus(locationId = 'backyard') {
+  return Math.max(0, getTotalFairyBuffValue('gatherQtyBonus', locationId));
 }
 
 function getAppliedBuffLabels(locationId = 'backyard') {
@@ -44,8 +44,11 @@ function getAppliedBuffLabels(locationId = 'backyard') {
 
 function getBuffedQty(qty = 1, locationId = 'backyard') {
   const base = Math.max(1, Number(qty || 1));
-  const boosted = Math.floor(base * getGatherQtyMultiplier(locationId));
-  return Math.max(base, boosted);
+  const bonus = getGatherQtyBonus(locationId);
+  const guaranteedBonus = Math.floor(bonus);
+  const fractionalBonus = bonus - guaranteedBonus;
+  const extra = Math.random() < fractionalBonus ? 1 : 0;
+  return base + guaranteedBonus + extra;
 }
 
 function getGatherTable(locationId) {
@@ -82,12 +85,10 @@ function refreshDailyRecord(record) {
 function pickWeighted(drops) {
   const total = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
   let roll = Math.random() * total;
-
   for (const drop of drops) {
     roll -= Number(drop.weight || 0);
     if (roll <= 0) return drop;
   }
-
   return drops[drops.length - 1];
 }
 
@@ -95,7 +96,6 @@ function getDropView(drop, totalWeight = 0) {
   const item = GameDB.items[drop.itemId];
   const weight = Number(drop.weight || 0);
   const chance = totalWeight > 0 ? Math.round((weight / totalWeight) * 100) : 0;
-
   return {
     itemId: drop.itemId,
     name: item?.name || drop.itemId,
@@ -129,7 +129,6 @@ function rollSpecialEvent(table, locationId) {
   });
 
   const bonusItems = getBonusRewardViews(event.bonus);
-
   return {
     id: event.id,
     type: event.type || (bonusItems.length ? 'bonus_drop' : 'flavor_text'),
@@ -152,39 +151,20 @@ export function canEnterGatherArea(locationId = 'backyard') {
 export function getLocationHint(locationId) {
   const table = getGatherTable(locationId);
   if (table && isSceneUnlocked(locationId)) {
-    return {
-      kind: 'gather',
-      isOpen: true,
-      title: table.title,
-      message: '這裡可以採集素材。每日採集次數會在地圖上顯示。',
-    };
+    return { kind: 'gather', isOpen: true, title: table.title, message: '這裡可以採集素材。每日採集次數會在地圖上顯示。' };
   }
-
   if (table && !isSceneUnlocked(locationId)) {
     const label = getSceneLabel(locationId);
-    return {
-      kind: 'locked',
-      isOpen: false,
-      title: `${label}尚未解鎖`,
-      message: `這裡之後會開放採集，目前還不能進入${label}。`,
-    };
+    return { kind: 'locked', isOpen: false, title: `${label}尚未解鎖`, message: `這裡之後會開放採集，目前還不能進入${label}。` };
   }
-
   const scene = GameDB.scenes?.[locationId];
   const fallbackTitle = scene?.label ? `${scene.label}尚未開放` : '地點尚未開放';
-
-  return locationHints[locationId] || {
-    kind: 'locked',
-    isOpen: false,
-    title: fallbackTitle,
-    message: '這個地點之後會開放更多互動功能，目前還不能採集或製作。',
-  };
+  return locationHints[locationId] || { kind: 'locked', isOpen: false, title: fallbackTitle, message: '這個地點之後會開放更多互動功能，目前還不能採集或製作。' };
 }
 
 export function getGatherDropPreview(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table || !isSceneUnlocked(locationId)) return [];
-
   const totalWeight = table.drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
   return table.drops.map((drop) => getDropView(drop, totalWeight));
 }
@@ -192,56 +172,28 @@ export function getGatherDropPreview(locationId = 'backyard') {
 export function getGatherStatus(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table || !isSceneUnlocked(locationId)) return null;
-
   const limit = getDailyGatherLimit();
   const record = getState().gathering?.[locationId] || { lastDate: null, count: 0 };
   const today = localDateString();
   const used = record.lastDate === today ? Number(record.count || 0) : 0;
   const remaining = Math.max(0, limit - used);
   const buffLabels = getAppliedBuffLabels(locationId);
-
-  return {
-    locationId,
-    title: table.title,
-    used,
-    remaining,
-    limit,
-    isDepleted: remaining <= 0,
-    buffLabels,
-    label: remaining > 0 ? `今日剩餘 ${remaining}/${limit}` : '今日已採完',
-  };
+  return { locationId, title: table.title, used, remaining, limit, isDepleted: remaining <= 0, buffLabels, label: remaining > 0 ? `今日剩餘 ${remaining}/${limit}` : '今日已採完' };
 }
 
 export function gatherAt(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table || !isSceneUnlocked(locationId)) {
     const hint = getLocationHint(locationId);
-    return {
-      ok: false,
-      title: hint.title,
-      message: hint.message,
-      remaining: 0,
-      limit: 0,
-      isLocked: true,
-    };
+    return { ok: false, title: hint.title, message: hint.message, remaining: 0, limit: 0, isLocked: true };
   }
 
   const limit = getDailyGatherLimit();
   const record = refreshDailyRecord(getGatherRecord(locationId));
   const currentCount = Number(record.count || 0);
-
   if (currentCount >= limit) {
     persistState(`gather:${locationId}:limit`);
-    return {
-      ok: false,
-      title: table.emptyTitle || '今天採集完成',
-      message: `今天這裡的素材已經採完了。明天再來吧。(${limit}/${limit})`,
-      remaining: 0,
-      limit,
-      used: limit,
-      isDepleted: true,
-      preview: getGatherDropPreview(locationId),
-    };
+    return { ok: false, title: table.emptyTitle || '今天採集完成', message: `今天這裡的素材已經採完了。明天再來吧。(${limit}/${limit})`, remaining: 0, limit, used: limit, isDepleted: true, preview: getGatherDropPreview(locationId) };
   }
 
   const drop = { ...pickWeighted(table.drops) };
@@ -253,7 +205,6 @@ export function gatherAt(locationId = 'backyard') {
   const buffLabels = getAppliedBuffLabels(locationId);
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
-
   const remaining = Math.max(0, limit - record.count);
 
   return {
