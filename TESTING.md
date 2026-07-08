@@ -92,6 +92,8 @@
 16. 一般委託不可顯示、保存或發放精靈好感度。
 17. 只有 `category: 'fairy'` 的精靈專屬委託才可以透過 `reward.affection` 發放好感。
 18. 委託頁事件應使用 event delegation，不可每次 `renderCommissions()` 後對每個按鈕重新綁一輪 listener。
+19. 完成委託套用獎勵時，應由 `@actions/player` 的 `applyReward()` 處理，不直接從 `@state` 匯入 `addReward()`。
+20. 完成委託造成升級時，應發出 `Events.LEVEL_UP`。
 
 ## 7. 祈願測試
 
@@ -171,11 +173,24 @@
 3. `GameDB.levelConfig.thresholds` 是唯一等級需求資料來源，不新增第二份重複表。
 4. `GameDB.getLevelByExp(0)` 回傳 1。
 5. `GameDB.getLevelProgress({ level: 1, exp: 0 })` 能回傳下一級所需 EXP。
-6. 完成委託時，`addReward()` 會處理 `reward.exp`。
+6. 完成委託時，`@actions/player.applyReward()` 會處理 `reward.exp`。
 7. EXP 達到 Lv.2 門檻時，`applyLevelUnlocksToState()` 會解鎖煉金室。
 8. `?dev=1` 時 Console 應顯示 `[Player Progress Check] ok`。
 
-## 14. 回歸測試
+## 14. 第 52 步 player-actions 驗收
+
+1. `player-actions.js` 必須存在。
+2. importmap 必須包含 `@actions/player`。
+3. `player-actions.js` 必須匯出 `addExp(amount)`。
+4. `player-actions.js` 必須匯出 `applyReward(reward)`。
+5. `player-actions.js` 必須匯出 `getPlayerProgress()`。
+6. `event-bus.js` 必須有 `Events.LEVEL_UP` 與 `emitLevelUp()`。
+7. `commission-actions.js` 不可直接從 `@state` 匯入 `addReward`。
+8. 完成委託發放 EXP 時，必須經由 `applyReward()`。
+9. `addExp()` 單獨使用時應可自動 persist；`applyReward()` 在委託流程中不重複 persist。
+10. 本步不新增 state 欄位，因此不更新 `SAVE_VERSION`。
+
+## 15. 回歸測試
 
 每次改版後至少確認：
 
@@ -198,11 +213,12 @@
 煉金室製作成功 / 素材不足
 委託產品需求 / 完成扣成品
 玩家 Lv / EXP / 升等 / Lv.2 解鎖煉金室
+player-actions.js / addExp / applyReward / LEVEL_UP event
 開場劇情從 GameDB.stories.opening 讀取
 設定匯入 / 匯出 / 清除存檔
 無原生 alert / prompt / confirm
 main.js 只負責啟動
-code-export.html 包含 dev-checks.js
+code-export.html 包含 dev-checks.js 與 player-actions.js
 ```
 
 全部正常後，才進下一步開發。
