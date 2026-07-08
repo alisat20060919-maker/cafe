@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 function createDefaultState() {
   return {
@@ -30,6 +30,14 @@ function createDefaultState() {
     },
     gathering: {
       backyard: {
+        lastDate: null,
+        count: 0,
+      },
+      greenhouse: {
+        lastDate: null,
+        count: 0,
+      },
+      alchemy: {
         lastDate: null,
         count: 0,
       },
