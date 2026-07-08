@@ -9,6 +9,8 @@ import {
   refreshDailyCommissions,
   useFreeDailyCommissionRefresh,
   usePaidDailyCommissionRefresh,
+  isUnlocked,
+  getUnlockRequirementText,
 } from '@state';
 import { applyReward } from '@actions/player';
 import { formatReward } from '@utils';
@@ -19,6 +21,24 @@ function getPaidRefreshCost() {
 
 function getRequirements(commission) {
   return GameDB.getCommissionRequiredItems(commission);
+}
+
+function getRecipeForOutputItem(itemId) {
+  return Object.values(GameDB.recipes || {}).find((recipe) => recipe.output?.itemId === itemId) || null;
+}
+
+function getCommissionUnlockRequirement(commission) {
+  const recipeRequirements = Object.keys(getRequirements(commission))
+    .map((itemId) => getRecipeForOutputItem(itemId))
+    .filter(Boolean)
+    .map((recipe) => recipe.unlockRequirement || (recipe.station ? { station: recipe.station } : {}));
+
+  return {
+    all: [
+      commission?.unlockRequirement || {},
+      ...recipeRequirements,
+    ],
+  };
 }
 
 function getEffectiveReward(commission) {
@@ -64,11 +84,24 @@ export function getCommissionDisplayReward(commission) {
   return getEffectiveReward(commission);
 }
 
+export function isCommissionUnlocked(commissionId) {
+  const commission = GameDB.commissions[commissionId];
+  if (!commission) return false;
+  return isUnlocked(getCommissionUnlockRequirement(commission));
+}
+
+export function getCommissionUnlockText(commissionId) {
+  const commission = GameDB.commissions[commissionId];
+  if (!commission) return '找不到委託';
+  return getUnlockRequirementText(getCommissionUnlockRequirement(commission)) || '需要解鎖前置內容';
+}
+
 export function canCompleteCommission(commissionId) {
   const state = getState();
   const commission = GameDB.commissions[commissionId];
   if (!commission) return false;
   if (isCommissionCompleted(state.commissions[commissionId])) return false;
+  if (!isCommissionUnlocked(commissionId)) return false;
   return canAffordItems(getRequirements(commission));
 }
 
@@ -115,6 +148,9 @@ export function completeCommission(commissionId) {
   if (!commission) return { ok: false, message: '找不到委託。' };
   if (isCommissionCompleted(state.commissions[commissionId])) {
     return { ok: false, message: '這份委託已經完成過了。' };
+  }
+  if (!isCommissionUnlocked(commissionId)) {
+    return { ok: false, message: `這份委託尚未解鎖：${getCommissionUnlockText(commissionId)}。` };
   }
   if (!spendItems(getRequirements(commission))) {
     return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
