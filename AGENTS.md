@@ -82,6 +82,10 @@
 4. 擴充 state 時只新增欄位，不刪舊欄位，不改舊欄位語意。
 5. 新增 state 欄位時必須確認 `migrateSave()` 能讓舊存檔自動補上預設值。
 6. `state.unlockedScenes` 只存 `{ sceneId: boolean }`，不可存場景名稱、描述、掉落表或解鎖文案。
+7. `state.commissions[questId].status` 只允許保存 `completed` 或 `in_progress`。
+8. `available`、`ready`、`locked` 這種委託畫面狀態必須即時計算，不可寫進 state。
+9. 舊存檔的 `status: 'claimed'` 必須在 migration 中轉為 `completed`。
+10. 更動 state 結構或 migration 規則時必須更新 `SAVE_VERSION`。
 
 ## 採集規則
 
