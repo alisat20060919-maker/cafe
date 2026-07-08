@@ -1,6 +1,13 @@
 import { GameDB } from '@db';
 import { getState, getActiveCommissionIds } from '@state';
-import { canCompleteCommission, completeCommission, refreshDailyCommissionList } from '@actions/commission';
+import {
+  canCompleteCommission,
+  completeCommission,
+  getPaidRefreshCostText,
+  refreshDailyCommissionList,
+  refreshDailyCommissionFree,
+  refreshDailyCommissionPaid,
+} from '@actions/commission';
 import { formatReward } from '@utils';
 import { navigate } from '@router';
 import { goToScene } from '@home';
@@ -123,11 +130,15 @@ function renderDailyRefreshBar() {
   const state = getState();
   const date = state.dailyCommissions?.date || '尚未刷新';
   const count = Array.isArray(state.dailyCommissions?.ids) ? state.dailyCommissions.ids.length : 0;
+  const freeRefreshUsed = Boolean(state.dailyCommissions?.freeRefreshUsed);
+  const paidRefreshCount = Number(state.dailyCommissions?.paidRefreshCount || 0);
 
   return `
     <div class="core-actions-row" aria-label="每日委託刷新">
-      <span>📅 今日委託 ${date}｜${count} 件</span>
-      <button type="button" data-refresh-daily-commissions>檢查刷新</button>
+      <span>📅 今日委託 ${date}｜${count} 件｜付費刷新 ${paidRefreshCount} 次</span>
+      <button type="button" data-refresh-daily-commissions>檢查每日刷新</button>
+      <button type="button" data-refresh-free-commissions ${freeRefreshUsed ? 'disabled' : ''}>${freeRefreshUsed ? '免費刷新已用' : '免費刷新'}</button>
+      <button type="button" data-refresh-paid-commissions>花費${getPaidRefreshCostText()}刷新</button>
     </div>
   `;
 }
@@ -262,7 +273,7 @@ export function renderCommissions() {
     : '<div class="core-empty">目前沒有符合分類的委託。</div>';
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日委託會依玩家本地日期刷新；刷新只保存今日委託 ID，不保存文案。')}
+    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日自動刷新一次，也可以每天免費刷新一次；額外刷新會消耗靈感券。')}
     ${renderDailyRefreshBar()}
     ${renderFilterTabs(allEntries)}
     ${renderSortBox()}
@@ -272,6 +283,18 @@ export function renderCommissions() {
   page.querySelector('[data-refresh-daily-commissions]')?.addEventListener('click', () => {
     const result = refreshDailyCommissionList();
     emitNotice(result.refreshed ? '委託已刷新' : '委託已是最新', result.message);
+    renderCommissions();
+  });
+
+  page.querySelector('[data-refresh-free-commissions]')?.addEventListener('click', () => {
+    const result = refreshDailyCommissionFree();
+    emitNotice(result.refreshed ? '免費刷新完成' : '不能免費刷新', result.message);
+    renderCommissions();
+  });
+
+  page.querySelector('[data-refresh-paid-commissions]')?.addEventListener('click', () => {
+    const result = refreshDailyCommissionPaid();
+    emitNotice(result.refreshed ? '付費刷新完成' : '不能付費刷新', result.message);
     renderCommissions();
   });
 
