@@ -1,0 +1,170 @@
+#page-fairies.core-page-host{
+  background:
+    radial-gradient(circle at 18% 8%,rgba(226,176,92,.32),transparent 28%),
+    radial-gradient(circle at 82% 14%,rgba(119,73,35,.42),transparent 30%),
+    linear-gradient(180deg,#8b5b32 0%,#5f3b23 48%,#3d2518 100%)!important;
+  border:1px solid rgba(255,219,151,.28)!important;
+  box-shadow:inset 0 0 32px rgba(255,226,160,.14),0 16px 30px rgba(35,20,12,.22)!important;
+  color:#f9edcf;
+}
+
+#page-fairies .fairy-page-head{
+  background:linear-gradient(180deg,rgba(93,54,28,.94),rgba(61,37,24,.9));
+  border-color:rgba(255,222,164,.28);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),0 10px 22px rgba(35,20,12,.18);
+}
+
+#page-fairies .fairy-page-head span{color:#f4cf86}
+#page-fairies .fairy-page-head h2{color:#fff1cc}
+#page-fairies .fairy-page-head p{color:#e6c99a}
+
+.fairy-card-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
+  gap:14px;
+  padding:2px;
+}
+
+.fairy-character-card{
+  position:relative;
+  min-width:0;
+  border-radius:28px;
+  padding:1px;
+  background:linear-gradient(145deg,rgba(255,225,155,.82),rgba(117,69,33,.28),rgba(41,24,16,.7));
+  box-shadow:0 14px 28px rgba(34,19,10,.28);
+}
+
+.fairy-card-frame{
+  position:relative;
+  overflow:hidden;
+  min-height:320px;
+  border-radius:27px;
+  padding:14px;
+  background:
+    radial-gradient(circle at 50% 12%,rgba(255,241,199,.32),transparent 30%),
+    linear-gradient(180deg,rgba(106,62,31,.96),rgba(59,35,23,.97));
+  border:1px solid rgba(255,235,186,.15);
+}
+
+.fairy-card-frame::before{
+  content:"";
+  position:absolute;
+  inset:10px;
+  border-radius:22px;
+  border:1px solid rgba(255,224,160,.18);
+  pointer-events:none;
+}
+
+.fairy-card-badge{
+  position:absolute;
+  top:12px;
+  right:12px;
+  z-index:2;
+  border:1px solid rgba(255,225,160,.38);
+  border-radius:999px;
+  padding:5px 9px;
+  background:rgba(50,29,19,.72);
+  color:#ffe0a0;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.04em;
+}
+
+.fairy-card-portrait{
+  position:relative;
+  display:grid;
+  place-items:center;
+  height:128px;
+  margin:10px 0 12px;
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 44%,rgba(255,232,173,.92),rgba(214,151,78,.34) 45%,rgba(70,39,24,.18) 70%),
+    linear-gradient(180deg,rgba(255,246,219,.18),rgba(255,255,255,.03));
+  box-shadow:inset 0 0 0 1px rgba(255,239,198,.28),inset 0 -20px 38px rgba(45,25,15,.3);
+}
+
+.fairy-card-portrait span{
+  font-size:62px;
+  filter:drop-shadow(0 8px 12px rgba(37,21,12,.34));
+}
+
+.fairy-card-body{position:relative;z-index:1}
+.fairy-card-title-row{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.fairy-card-title-row small{display:block;color:#efc878;font-size:10px;font-weight:900;letter-spacing:.12em}
+.fairy-card-title-row h3{margin:3px 0 0;color:#fff1cc;font-size:19px;line-height:1.2}
+.fairy-card-title-row strong{flex:0 0 auto;border-radius:999px;background:rgba(255,225,150,.14);border:1px solid rgba(255,225,150,.24);color:#f8d99a;padding:5px 8px;font-size:11px}
+
+.fairy-card-quote{
+  margin:10px 0 9px;
+  min-height:42px;
+  color:#f3dfb8;
+  line-height:1.55;
+  font-size:13px;
+}
+
+.fairy-card-stats{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:6px;
+  margin:9px 0;
+}
+
+.fairy-card-stats span{
+  border-radius:14px;
+  background:rgba(255,244,214,.1);
+  border:1px solid rgba(255,230,168,.13);
+  color:#ffe8b6;
+  padding:7px 9px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.fairy-card-note{
+  min-height:42px;
+  margin:8px 0 12px;
+  color:#d8bd8d;
+  font-size:12px;
+  line-height:1.55;
+}
+
+.fairy-card-button{
+  width:100%;
+  border:1px solid rgba(255,225,151,.55);
+  border-radius:999px;
+  background:linear-gradient(180deg,#ffe7aa,#c4893f);
+  color:#3d2518;
+  font-weight:1000;
+  padding:10px 12px;
+  box-shadow:0 8px 16px rgba(30,17,10,.22);
+}
+
+.fairy-character-card.is-locked{
+  filter:saturate(.72);
+}
+
+.fairy-character-card.is-locked .fairy-card-frame{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(210,185,150,.18),transparent 30%),
+    linear-gradient(180deg,rgba(82,64,51,.96),rgba(51,39,33,.97));
+}
+
+.fairy-character-card.is-locked .fairy-card-portrait span{
+  filter:grayscale(.85) drop-shadow(0 8px 12px rgba(20,14,10,.34));
+  opacity:.62;
+}
+
+.fairy-profile-modal{
+  background:linear-gradient(180deg,#6d4529,#3d2518)!important;
+  color:#f9edcf!important;
+  border-color:rgba(255,225,160,.36)!important;
+}
+
+.fairy-profile-modal h2{color:#fff1cc!important}
+.fairy-profile-modal p,.fairy-profile-modal dd{color:#ead0a0!important}
+.fairy-profile-modal .core-detail-list div,.fairy-profile-modal .core-detail-quote{background:rgba(255,244,214,.1);border-color:rgba(255,225,160,.16)}
+
+@media(max-width:520px){
+  .fairy-card-grid{grid-template-columns:1fr;gap:12px}
+  .fairy-card-frame{min-height:300px;padding:13px}
+  .fairy-card-portrait{height:118px}
+}
