@@ -51,15 +51,26 @@ function itemIcon(itemId) {
   return GameDB.items[itemId]?.icon || '◇';
 }
 
+function stationName(stationId) {
+  return GameDB.stations?.[stationId]?.label || stationId || '製作站';
+}
+
+function getOwnedCount(itemId) {
+  return Number(getState().inventory?.[itemId] || 0);
+}
+
 function getRequirements(quest) {
   return GameDB.getCommissionRequiredItems(quest);
 }
 
+function getRecipeForOutputItem(itemId) {
+  return Object.values(GameDB.recipes || {}).find((recipe) => recipe.output?.itemId === itemId) || null;
+}
+
 function renderRequirements(quest) {
-  const state = getState();
   return Object.entries(getRequirements(quest))
     .map(([itemId, qty]) => {
-      const owned = Number(state.inventory[itemId] || 0);
+      const owned = getOwnedCount(itemId);
       const lackClass = owned < qty ? ' class="is-lacking"' : '';
       return `<span${lackClass}>${itemIcon(itemId)} ${itemName(itemId)} ${owned}/${qty}</span>`;
     })
@@ -89,7 +100,7 @@ function statusRank(status) {
 }
 
 function difficultyRank(quest) {
-  return [...String(quest.difficulty || '')].filter((char) => char === '★').length;
+  return GameDB.getCommissionDifficultyRank?.(quest) || [...String(quest.difficulty || '')].filter((char) => char === '★').length;
 }
 
 function getQuestEntries() {
@@ -172,15 +183,62 @@ function renderSortBox() {
 }
 
 function getMissingItems(quest) {
-  const state = getState();
   return Object.entries(getRequirements(quest))
     .map(([itemId, qty]) => ({
       itemId,
       need: qty,
-      owned: Number(state.inventory[itemId] || 0),
+      owned: getOwnedCount(itemId),
       source: GameDB.getItemSource(itemId),
     }))
     .filter((item) => item.owned < item.need);
+}
+
+function getRecipeIngredientRows(recipe, multiplier = 1) {
+  return Object.entries(recipe?.cost || {}).map(([itemId, qty]) => {
+    const need = Number(qty || 0) * multiplier;
+    const owned = getOwnedCount(itemId);
+    return {
+      itemId,
+      need,
+      owned,
+      source: GameDB.getItemSource(itemId),
+      isLacking: owned < need,
+    };
+  });
+}
+
+function renderIngredientRows(rows = []) {
+  if (!rows.length) return '<span>這份配方目前沒有素材需求。</span>';
+
+  return rows.map((row) => `
+    <span class="${row.isLacking ? 'is-lacking' : ''}">
+      ${itemIcon(row.itemId)} ${itemName(row.itemId)} ${row.owned}/${row.need}｜${row.source.label}
+    </span>
+  `).join('');
+}
+
+function renderCraftPlan(item) {
+  const recipe = getRecipeForOutputItem(item.itemId);
+  if (!recipe) {
+    return `
+      <div class="core-recipe core-missing-plan">
+        <b>下一步：</b>前往${item.source.label}取得 ${itemName(item.itemId)}。
+      </div>
+    `;
+  }
+
+  const shortage = Math.max(1, item.need - item.owned);
+  const ingredientRows = getRecipeIngredientRows(recipe, shortage);
+  const recipeSource = GameDB.getItemSource(item.itemId);
+
+  return `
+    <div class="core-recipe core-missing-plan">
+      <b>製作提示：</b>${itemIcon(item.itemId)} ${itemName(item.itemId)} 還差 ${shortage} 個。<br>
+      <small>配方：${recipe.name}｜${stationName(recipe.station)}</small>
+      <div class="core-missing-ingredients">${renderIngredientRows(ingredientRows)}</div>
+      <small>下一步：前往${recipeSource.label}製作；若素材不足，先依上方來源收集。</small>
+    </div>
+  `;
 }
 
 function getFirstSource(quest) {
@@ -198,7 +256,12 @@ function renderMissingHint(quest, status) {
     .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${item.source.label}`)
     .join('<br>');
 
-  return `<p class="core-missing-hint">缺少商品：<br>${hint}</p>`;
+  return `
+    <div class="core-missing-hint">
+      <p>缺少商品：<br>${hint}</p>
+      ${missingItems.map(renderCraftPlan).join('')}
+    </div>
+  `;
 }
 
 function sourceButtonText(source) {
@@ -273,7 +336,7 @@ export function renderCommissions() {
     : '<div class="core-empty">目前沒有符合分類的委託。</div>';
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日自動刷新一次，也可以每天免費刷新一次；額外刷新會消耗靈感券。')}
+    ${pageHeader('QUEST BOARD / DAILY DELIVERY', '委託', '每日自動刷新一次，也可以每天免費刷新一次；缺少商品時會提示製作配方與素材來源。')}
     ${renderDailyRefreshBar()}
     ${renderFilterTabs(allEntries)}
     ${renderSortBox()}
@@ -300,7 +363,7 @@ export function renderCommissions() {
 
   $all('[data-commission-filter]', page).forEach((button) => {
     button.addEventListener('click', () => {
-      currentCommissionFilter = button.dataset.commissionFilter || 'all';
+      currentCommissionFilter = button.datasetCommissionFilter || button.dataset.commissionFilter || 'all';
       renderCommissions();
     });
   });
