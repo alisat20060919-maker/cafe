@@ -89,7 +89,7 @@
 14. 特殊事件不額外扣採集次數；一次採集永遠只讓該地點 count +1。
 15. 特殊事件機率必須維持低機率；action 端會把 `specialEventChance` 上限壓在 5%。
 
-## 配方資料規則
+## 配方資料與製作規則
 
 1. 配方資料只允許定義在 `GameDB.recipes`。
 2. recipe id 必須使用 `recipe_` 前綴，例如 `recipe_moon_latte`。
@@ -99,8 +99,11 @@
 6. `output` 必須是 `{ itemId, qty }`，且 itemId 必須存在於 `GameDB.items`。
 7. 新增配方資料本身不需要更新 `SAVE_VERSION`，除非新增玩家持久化欄位。
 8. UI 顯示配方時必須用 recipe 的 id 回查 `GameDB`，不可把配方資料複製到 page。
-9. 配方列表 UI 可以讀取 `state.inventory` 顯示目前持有數，但不可扣素材、不可產出成品。
-10. 正式製作功能開放前，配方列表裡的製作按鈕必須維持 disabled。
+9. 配方列表 UI 可以讀取 `state.inventory` 顯示目前持有數，但不可直接扣素材、不可直接產出成品。
+10. 正式製作邏輯只能放在 `craft-actions.js`。
+11. `craft-actions.js` 可以呼叫 `canAffordItems()`、`spendItems()`、`addItem()` 與 `persistState()`。
+12. 製作失敗時不可改動 inventory；製作成功時必須先扣 cost，再加 output，最後 `persistState()`。
+13. UI 只能呼叫 `canCraft()` / `craftRecipe()`，不可自行修改 `state.inventory`。
 
 ## 事件流
 
