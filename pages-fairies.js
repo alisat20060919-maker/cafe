@@ -9,7 +9,7 @@ function $all(selector, root = document) {
 
 function pageHeader(kicker, title, body) {
   return `
-    <div class="core-page-head">
+    <div class="core-page-head fairy-page-head">
       <span>${kicker}</span>
       <h2>${title}</h2>
       <p>${body}</p>
@@ -51,7 +51,7 @@ function openFairyDetail(fairyId) {
   if (!fairy) return;
 
   showModal(`
-    <div class="core-modal-card core-detail-modal">
+    <div class="core-modal-card core-detail-modal fairy-profile-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">FAIRY PROFILE</span>
       <div class="core-detail-head">
@@ -76,21 +76,33 @@ function openFairyDetail(fairyId) {
 function renderFairyCard(fairy) {
   const owned = isFairyOwned(fairy.id);
   const status = getFairyStatus(fairy.id);
+  const affection = getFairyAffectionText(fairy.id);
+  const note = owned ? fairy.description : '尚未契約前不會累積好感度。';
 
   return `
-    <article class="core-item-card ssr ${owned ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
-      <div class="core-item-icon">${fairy.icon}</div>
-      <div>
-        <b>${fairy.name}</b>
-        <span>${GameDB.getRarityLabel(fairy.rarity)} / ${status} / 好感 ${getFairyAffectionText(fairy.id)}</span>
-        <p>「${fairy.quote}」</p>
-        <div class="core-item-meta">
-          <small>來源：${GameDB.getFairySourceText(fairy)}</small>
-          <small>${owned ? fairy.description : '尚未契約前不會累積好感度。'}</small>
+    <article class="fairy-character-card ${owned ? 'is-owned' : 'is-locked'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
+      <div class="fairy-card-frame">
+        <div class="fairy-card-badge">${getFairyStatusIcon(fairy.id)}</div>
+        <div class="fairy-card-portrait" aria-hidden="true">
+          <span>${fairy.icon}</span>
         </div>
-        <button type="button" class="core-detail-button" data-fairy-detail="${fairy.id}">查看角色資料</button>
+        <div class="fairy-card-body">
+          <div class="fairy-card-title-row">
+            <div>
+              <small>${GameDB.getRarityLabel(fairy.rarity)} / FAIRY</small>
+              <h3>${fairy.name}</h3>
+            </div>
+            <strong>${status}</strong>
+          </div>
+          <p class="fairy-card-quote">「${fairy.quote}」</p>
+          <div class="fairy-card-stats">
+            <span>好感 ${affection}</span>
+            <span>來源 ${GameDB.getFairySourceText(fairy)}</span>
+          </div>
+          <p class="fairy-card-note">${note}</p>
+          <button type="button" class="fairy-card-button" data-fairy-detail="${fairy.id}">查看角色資料</button>
+        </div>
       </div>
-      <strong>${getFairyStatusIcon(fairy.id)}</strong>
     </article>
   `;
 }
@@ -111,8 +123,8 @@ export function renderFairies() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('FAIRY / CHARACTER ROOM', '精靈', '這裡是角色頁。精靈必須先契約，之後完成相關委託才會增加好感度。')}
-    <div class="core-list" id="fairy-list">
+    ${pageHeader('FAIRY / CHARACTER ROOM', '精靈', '這裡是角色卡頁。精靈必須先契約，之後透過送禮物或精靈專屬委託增加好感度。')}
+    <div class="fairy-card-grid" id="fairy-list">
       ${cards || '<div class="core-empty">目前沒有精靈資料。</div>'}
     </div>
   `;
