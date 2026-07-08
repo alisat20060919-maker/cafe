@@ -114,6 +114,10 @@
 9. 完成後扣除 requiredItems，並發放獎勵。
 10. 已完成委託不可重複領獎。
 11. 舊 `cost` 委託若暫時存在，仍應由 `GameDB.getCommissionRequiredItems()` 相容讀取。
+12. 完成委託後，`state.commissions[questId].status` 必須寫入 `completed`。
+13. UI 顯示用的 `available`、`ready` 不可寫入 state。
+14. 舊存檔若存在 `status: 'claimed'`，migration 後應轉為 `completed`。
+15. state 中不存在於 `GameDB.commissions` 的委託紀錄應在 migration 時被清掉。
 
 ## 7. 祈願測試
 
@@ -141,6 +145,10 @@
 5. 清除 localStorage 後，新存檔可正常建立。
 6. `state.unlockedScenes` 只存 boolean，不存場景名稱、描述、掉落表。
 7. 舊存檔缺少 `unlockedScenes` 時，migration 會補上預設解鎖狀態。
+8. `state.commissions` 只保存 `completed` 或 `in_progress`。
+9. `state.commissions` 不保存 `available`、`ready`、`locked` 這種可計算狀態。
+10. 舊 `claimed` 委託狀態會被 migration 轉成 `completed`。
+11. 本步已更新 `SAVE_VERSION`，舊存檔載入後 `saveVersion` 應為最新版。
 
 ## 10. 手機 UI 測試
 
@@ -169,6 +177,7 @@
 煉金室配方列表
 煉金室製作成功/素材不足
 委託產品需求 / 完成扣成品
+委託狀態機 migration / completed 狀態
 配方資料 validator
 GameDB Facade 拆檔後仍能讀 items/recipes
 產品/原料分類規則
