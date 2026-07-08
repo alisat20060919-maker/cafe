@@ -1,30 +1,13 @@
 import { GameDB } from '@db';
 import { getState, addItem, persistState } from '@state';
 
-const DAILY_GATHER_LIMIT = 5;
+function getDailyGatherLimit() {
+  return Number(GameDB.gatherConfig?.dailyLimit || 5);
+}
 
-const gatherTables = {
-  backyard: {
-    title: '後山採集完成',
-    emptyTitle: '今天後山採集完成',
-    drops: [
-      { itemId: 'star_berry', qty: 1, weight: 45 },
-      { itemId: 'stardew_water', qty: 1, weight: 30 },
-      { itemId: 'forest_cookie', qty: 1, weight: 20 },
-      { itemId: 'star_berry', qty: 2, weight: 5 },
-    ],
-  },
-  greenhouse: {
-    title: '溫室照顧完成',
-    emptyTitle: '今天溫室照顧完成',
-    drops: [
-      { itemId: 'moon_petals', qty: 1, weight: 55 },
-      { itemId: 'stardew_water', qty: 1, weight: 30 },
-      { itemId: 'moon_petals', qty: 2, weight: 10 },
-      { itemId: 'star_berry', qty: 1, weight: 5 },
-    ],
-  },
-};
+function getGatherTable(locationId) {
+  return GameDB.gatherTables?.[locationId] || null;
+}
 
 function localDateString(date = new Date()) {
   const y = date.getFullYear();
@@ -67,24 +50,25 @@ function formatGatherDrop(drop) {
 }
 
 export function canGatherAt(locationId = 'backyard') {
-  return Boolean(gatherTables[locationId]);
+  return Boolean(getGatherTable(locationId));
 }
 
 export function gatherAt(locationId = 'backyard') {
-  const table = gatherTables[locationId];
+  const table = getGatherTable(locationId);
   if (!table) return { ok: false, message: '這個地點還不能採集。' };
 
+  const limit = getDailyGatherLimit();
   const record = refreshDailyRecord(getGatherRecord(locationId));
   const currentCount = Number(record.count || 0);
 
-  if (currentCount >= DAILY_GATHER_LIMIT) {
+  if (currentCount >= limit) {
     persistState(`gather:${locationId}:limit`);
     return {
       ok: false,
       title: table.emptyTitle || '今天採集完成',
-      message: `今天這裡的素材已經採完了。明天再來吧。(${DAILY_GATHER_LIMIT}/${DAILY_GATHER_LIMIT})`,
+      message: `今天這裡的素材已經採完了。明天再來吧。(${limit}/${limit})`,
       remaining: 0,
-      limit: DAILY_GATHER_LIMIT,
+      limit,
     };
   }
 
@@ -93,14 +77,14 @@ export function gatherAt(locationId = 'backyard') {
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
 
-  const remaining = Math.max(0, DAILY_GATHER_LIMIT - record.count);
+  const remaining = Math.max(0, limit - record.count);
 
   return {
     ok: true,
     title: table.title,
     drop,
     remaining,
-    limit: DAILY_GATHER_LIMIT,
+    limit,
     message: `你找到了 ${formatGatherDrop(drop)}。今日還能採集 ${remaining} 次。`,
   };
 }
