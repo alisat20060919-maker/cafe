@@ -99,6 +99,8 @@
 6. `output` 必須是 `{ itemId, qty }`，且 itemId 必須存在於 `GameDB.items`。
 7. 新增配方資料本身不需要更新 `SAVE_VERSION`，除非新增玩家持久化欄位。
 8. UI 顯示配方時必須用 recipe 的 id 回查 `GameDB`，不可把配方資料複製到 page。
+9. 配方列表 UI 可以讀取 `state.inventory` 顯示目前持有數，但不可扣素材、不可產出成品。
+10. 正式製作功能開放前，配方列表裡的製作按鈕必須維持 disabled。
 
 ## 事件流
 
