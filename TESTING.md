@@ -9,27 +9,33 @@
 3. 打開瀏覽器 Console，確認沒有 blocking error。
 4. 若有更新 JS，確認 `index.html` importmap 已升版。
 5. 確認沒有殘留上一版 `coreXX` 搜尋結果。
+6. 需要跑開發檢查時，使用 `index.html?force=coreXXa&dev=1` 或 `?checks=1`。
+7. 正式玩家入口不應強制執行 validator / smoke test。
 
 ## 2. GameDB 資料檢查
 
-1. 開頁後確認 `validateGameDB()` 有執行。
-2. 正常資料不應顯示 error。
-3. warning 可以暫時存在，但必須確認不會導致白屏。
-4. 新增素材、精靈、委託、祈願池、採集表、配方後，必須確認 validator 沒有抓到不存在的 id。
-5. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
-6. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
-7. 新增煉成素材時，`item.type` 必須是已登錄的 `refined_material`。
-8. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes` 仍必須存在且結構不變。
-9. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
-10. `GameDB.materialTypes` 與 `GameDB.productTypes` 都必須是非空陣列，且只能包含已登錄的 `itemTypes`。
-11. `GameDB.materialTypes` 與 `GameDB.productTypes` 不可重疊。
-12. 每個 `GameDB.items` 都必須能被 `GameDB.getItemRole()` 判定為 `material` 或 `product`。
-13. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
-14. 新委託的 `requiredItems` 必須指向產品類 item，例如 `moon_latte`、`star_berry_tart`、`dream_cocoa`。
-15. `GameDB.getCommissionRequiredItems()` 必須能讀取新 `requiredItems`，並保留舊 `cost` 相容。
-16. `GameDB.commissionConfig.dailyCount` 必須是正整數。
-17. `GameDB.commissionConfig.difficultyRules` 必須包含目前使用的委託星級。
-18. 每個 difficulty rule 都必須有 `rank`、`label`、`requiredProductQty` 與 `reward` 區間。
+1. 使用 `?dev=1` 開頁後確認 `validateGameDB()` 有執行。
+2. 使用 `?dev=1` 開頁後確認 MVP Smoke Test 有執行。
+3. 正常資料不應顯示 error。
+4. warning 可以暫時存在，但必須確認不會導致白屏。
+5. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
+6. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
+7. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
+8. 新增煉成素材時，`item.type` 必須是已登錄的 `refined_material`。
+9. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
+10. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
+11. `GameDB.materialTypes` 與 `GameDB.productTypes` 都必須是非空陣列，且只能包含已登錄的 `itemTypes`。
+12. `GameDB.materialTypes` 與 `GameDB.productTypes` 不可重疊。
+13. 每個 `GameDB.items` 都必須能被 `GameDB.getItemRole()` 判定為 `material` 或 `product`。
+14. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
+15. 新委託的 `requiredItems` 必須指向產品類 item，例如 `moon_latte`、`star_berry_tart`、`dream_cocoa`。
+16. `GameDB.getCommissionRequiredItems()` 必須能讀取新 `requiredItems`，並保留舊 `cost` 相容。
+17. `GameDB.commissionConfig.dailyCount` 必須是正整數。
+18. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
+19. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
+20. `GameDB.commissionConfig.difficultyRules` 必須包含目前使用的委託星級。
+21. 每個 difficulty rule 都必須有 `rank`、`label`、`requiredProductQty` 與 `reward` 區間。
+22. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -121,21 +127,25 @@
 13. UI 顯示用的 `available`、`ready` 不可寫入 state。
 14. 舊存檔若存在 `status: 'claimed'`，migration 後應轉為 `completed`。
 15. state 中不存在於 `GameDB.commissions` 的委託紀錄應在 migration 時被清掉。
-16. 委託分類按鈕應顯示：全部、可交付、商品不足、已完成。
-17. 分類按鈕切換後，只影響畫面，不可寫入 state。
-18. 委託排序下拉選單應可切換：預設順序、狀態排序、難度高到低。
-19. 狀態排序時，順序應為可交付、商品不足、已完成。
-20. 難度高到低排序時，星等較高的委託應排在前面。
-21. 分類後若沒有符合的委託，應顯示空狀態，不可白屏。
-22. 每日委託應使用玩家本地日期刷新，不使用網路時間。
-23. 免費刷新每天只能使用一次。
-24. 付費刷新應扣除 `靈感券 ×1`，不足時不可刷新。
-25. 委託難度必須登錄在 `GameDB.commissionConfig.difficultyRules`。
-26. 委託需求總數必須符合該難度的 `requiredProductQty` 區間。
-27. 委託葉幣與星糖獎勵必須符合該難度的 reward 區間。
-28. 一般委託不可顯示或發放精靈好感度。
-29. 只有 `category: 'fairy'` 的精靈專屬委託才可以透過 `reward.affection` 發放好感。
-30. 未契約精靈即使被指定為 affection 目標，也不可累積好感。
+16. 每日委託池只可抽 `category: 'daily'` 的委託。
+17. 非 daily 的 `fairy`、`story`、`event` 委託不可被塞進 `state.dailyCommissions.ids`。
+18. 每日委託洗牌必須用 Fisher-Yates，不使用 `sort(() => Math.random() - 0.5)`。
+19. 委託分類按鈕應顯示：全部、可交付、商品不足、已完成。
+20. 分類按鈕切換後，只影響畫面，不可寫入 state。
+21. 委託排序下拉選單應可切換：預設順序、狀態排序、難度高到低。
+22. 狀態排序時，順序應為可交付、商品不足、已完成。
+23. 難度高到低排序時，星等較高的委託應排在前面。
+24. 分類後若沒有符合的委託，應顯示空狀態，不可白屏。
+25. 每日委託應使用玩家本地日期刷新，不使用網路時間。
+26. 免費刷新每天只能使用一次。
+27. 付費刷新應讀取 `GameDB.commissionConfig.refreshCost`，目前為 `靈感券 ×1`。
+28. 委託難度必須登錄在 `GameDB.commissionConfig.difficultyRules`。
+29. `daily` / `mvp` 委託需求總數必須符合該難度的 `requiredProductQty` 區間。
+30. `daily` / `mvp` 委託葉幣與星糖獎勵必須符合該難度的 reward 區間。
+31. 一般委託不可顯示、保存或發放精靈好感度。
+32. 只有 `category: 'fairy'` 的精靈專屬委託才可以透過 `reward.affection` 發放好感。
+33. 未契約精靈即使被指定為 affection 目標，也不可累積好感。
+34. 委託頁事件應使用 event delegation，不可每次 `renderCommissions()` 後對每個按鈕重新綁一輪 listener。
 
 ## 7. 祈願測試
 
@@ -193,7 +203,7 @@
 9. 解鎖後煉金室可以進入配方列表，不可白屏。
 10. 完成一輪採集 -> 製作 -> 委託 -> 獎勵後，重新整理頁面，存檔仍能正常載入。
 11. state 只保存玩家動態資料，不保存 GameDB 可推導資料。
-12. `validateGameDB()` 不應出現 error。
+12. 使用 `?dev=1` 時，`validateGameDB()` 與 MVP Smoke Test 不應出現 error。
 13. 手機版底部導覽、委託頁、配方頁、精靈頁都必須可點、可捲動、不遮住主要按鈕。
 
 ## 12. 手機 UI 測試
@@ -201,8 +211,12 @@
 1. 底部導航不遮主要按鈕。
 2. 按鈕大小足夠點擊。
 3. 彈窗可關閉。
-4. 文字不溢出卡片。
-5. 橫向內容不讓整頁破版。
+4. 彈窗開啟時，背景頁面不可跟著滑動穿透。
+5. 設定頁匯入存檔、清除存檔不可使用原生 `prompt()` / `confirm()`。
+6. 匯入存檔應使用自製 modal textarea。
+7. 清除存檔應使用自製確認 modal。
+8. 文字不溢出卡片。
+9. 橫向內容不讓整頁破版。
 
 ## 13. 回歸測試
 
@@ -216,8 +230,9 @@
 委託
 委託分類 / 排序
 委託每日刷新 / 免費刷新 / 付費刷新
-一般委託不顯示 / 不發放精靈好感
+一般委託不顯示 / 不保存 / 不發放精靈好感
 委託難度與獎勵平衡 validator
+每日委託只抽 category: daily
 後山採集
 溫室採集
 採集結果彈窗
@@ -230,8 +245,11 @@
 委託產品需求 / 完成扣成品
 委託狀態機 migration / completed 狀態
 配方資料 validator
-GameDB Facade 拆檔後仍能讀 items/recipes
+GameDB Facade 拆檔後仍能讀 items/recipes/stories
 產品/原料分類規則
+開場劇情從 GameDB.stories.opening 讀取
+設定匯入 / 匯出 / 清除存檔
+無原生 prompt / confirm
 未解鎖地點提示
 簽到
 設定
