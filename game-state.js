@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 function createDefaultState() {
   return {
@@ -34,10 +34,6 @@ function createDefaultState() {
         count: 0,
       },
       greenhouse: {
-        lastDate: null,
-        count: 0,
-      },
-      alchemy: {
         lastDate: null,
         count: 0,
       },
