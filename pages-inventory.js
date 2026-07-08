@@ -112,7 +112,10 @@ export function renderInventory() {
           <b>${item.name}</b>
           <span>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</span>
           <p>${item.description}</p>
-          <small>用途：${item.use}</small>
+          <div class="core-item-meta">
+            <small>來源：${GameDB.getItemSourceText(item)}</small>
+            <small>用途：${item.use}</small>
+          </div>
         </div>
         <strong>×${count}</strong>
       </article>
@@ -130,7 +133,10 @@ export function renderInventory() {
             <b>${fairy.name}</b>
             <span>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</span>
             <p>「${fairy.quote}」</p>
-            <small>${fairy.description}</small>
+            <div class="core-item-meta">
+              <small>來源：${GameDB.getFairySourceText(fairy)}</small>
+              <small>${fairy.description}</small>
+            </div>
           </div>
           <strong>已契約</strong>
         </article>
@@ -139,10 +145,10 @@ export function renderInventory() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類、稀有度與搜尋資料由 GameDB 提供。')}
+    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類、稀有度、來源與搜尋資料由 GameDB 提供。')}
     <div class="core-search-box">
       <label for="inventory-search">搜尋背包</label>
-      <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度或用途" autocomplete="off" />
+      <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度、來源或用途" autocomplete="off" />
     </div>
     <div class="core-filter-group">
       <p>分類</p>
