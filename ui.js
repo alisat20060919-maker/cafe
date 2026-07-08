@@ -1,3 +1,4 @@
+import { GameDB } from '@db';
 import { getState, resetState, replaceState, persistState, markOpeningStorySeen } from '@state';
 import { claimDailyReward } from '@actions/daily';
 import { exportSave, importSave } from '@save';
@@ -60,8 +61,12 @@ export function updateStatus() {
   const state = getState();
   const saveLabel = $('.save-label');
   const status = $('.status-pills');
+  const progress = GameDB.getLevelProgress(state.player);
+  const expText = progress.isMax
+    ? `EXP ${progress.exp}`
+    : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`;
 
-  if (saveLabel) saveLabel.textContent = `LV. ${String(state.player.level).padStart(2, '0')} / Save v${state.saveVersion}`;
+  if (saveLabel) saveLabel.textContent = `LV. ${String(state.player.level).padStart(2, '0')} / ${expText} / Save v${state.saveVersion}`;
   if (status) {
     status.innerHTML = `
       <span>☀️ 森林午後</span>
