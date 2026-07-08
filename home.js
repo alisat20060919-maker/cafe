@@ -1,4 +1,4 @@
-import { canGatherAt, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
+import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { showModal } from '@ui';
 
 let activeIndex = 0;
@@ -265,8 +265,13 @@ function bindHomeEvents() {
         return;
       }
 
-      if (canGatherAt(scene.id)) {
+      if (canEnterGatherArea(scene.id)) {
         handleGatherScene(scene);
+        return;
+      }
+
+      if (canGatherAt(scene.id)) {
+        showLocationHintModal(scene);
         return;
       }
 
