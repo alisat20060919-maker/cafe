@@ -22,5 +22,10 @@ export function formatReward(reward = {}) {
     parts.push(`${fairy?.icon || ''}${fairy?.name || fairyId}`);
   });
 
+  Object.entries(reward.affection || {}).forEach(([fairyId, amount]) => {
+    const fairy = GameDB.fairies[fairyId];
+    parts.push(`${fairy?.icon || '🧚'}${fairy?.name || fairyId} 好感 +${amount}`);
+  });
+
   return parts.join('、') || '無';
 }
