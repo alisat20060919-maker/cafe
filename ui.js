@@ -61,12 +61,24 @@ export function updateStatus() {
   const state = getState();
   const saveLabel = $('.save-label');
   const status = $('.status-pills');
+  const ring = $('.level-ring');
+  const ringValue = $('#levelRingValue');
+  const ringSub = $('#levelRingSub');
   const progress = GameDB.getLevelProgress(state.player);
+  const ratio = progress.isMax ? 1 : Math.min(1, Math.max(0, progress.currentLevelExp / progress.neededForNext));
+  const degrees = Math.round(ratio * 360);
   const expText = progress.isMax
     ? `EXP ${progress.exp}`
     : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`;
 
-  if (saveLabel) saveLabel.textContent = `LV. ${String(state.player.level).padStart(2, '0')} / ${expText} / Save v${state.saveVersion}`;
+  if (saveLabel) saveLabel.textContent = `${expText} / Save v${state.saveVersion}`;
+  if (ring) {
+    ring.style.setProperty('--exp-deg', `${degrees}deg`);
+    ring.setAttribute('aria-label', `等級 ${state.player.level}，${expText}`);
+  }
+  if (ringValue) ringValue.textContent = String(state.player.level).padStart(2, '0');
+  if (ringSub) ringSub.textContent = progress.isMax ? 'MAX' : 'LV';
+
   if (status) {
     status.innerHTML = `
       <span>☀️ 森林午後</span>
