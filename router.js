@@ -2,6 +2,7 @@ import { Events, emit } from '@eventBus';
 
 let routes = {};
 let currentRoute = 'home';
+let delegatedRouteBinding = false;
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
@@ -19,6 +20,19 @@ function setActiveRoute(routeName) {
   document.querySelector('.game-window')?.setAttribute('data-current-page', routeName);
 }
 
+function bindDelegatedRoutes() {
+  if (delegatedRouteBinding) return;
+  delegatedRouteBinding = true;
+
+  document.addEventListener('click', (event) => {
+    const trigger = event.target.closest('[data-route]');
+    if (!trigger) return;
+
+    event.preventDefault();
+    navigate(trigger.dataset.route);
+  });
+}
+
 export function navigate(routeName = 'home') {
   const nextRoute = routes[routeName] ? routeName : 'home';
   currentRoute = nextRoute;
@@ -29,11 +43,7 @@ export function navigate(routeName = 'home') {
 
 export function initRouter(routeMap, defaultRoute = 'home') {
   routes = routeMap;
-
-  $all('[data-route]').forEach((button) => {
-    button.addEventListener('click', () => navigate(button.dataset.route));
-  });
-
+  bindDelegatedRoutes();
   navigate(defaultRoute);
 }
 
