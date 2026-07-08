@@ -3,10 +3,6 @@ import { getState } from '@state';
 import { showModal } from '@ui';
 import { Events, on } from '@eventBus';
 
-function $all(selector, root = document) {
-  return [...root.querySelectorAll(selector)];
-}
-
 function pageHeader(kicker, title, body) {
   return `
     <div class="core-page-head fairy-page-head">
@@ -15,14 +11,6 @@ function pageHeader(kicker, title, body) {
       <p>${body}</p>
     </div>
   `;
-}
-
-function escapeAttr(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
 }
 
 function getFairyState(fairyId) {
@@ -40,10 +28,6 @@ function getFairyAffectionText(fairyId) {
 
 function getFairyStatus(fairyId) {
   return isFairyOwned(fairyId) ? '已契約' : '尚未契約';
-}
-
-function getFairyStatusIcon(fairyId) {
-  return isFairyOwned(fairyId) ? '契約中' : '未契約';
 }
 
 function openFairyDetail(fairyId) {
@@ -77,34 +61,29 @@ function renderFairyCard(fairy) {
   const owned = isFairyOwned(fairy.id);
   const status = getFairyStatus(fairy.id);
   const affection = getFairyAffectionText(fairy.id);
-  const note = owned ? fairy.description : '尚未契約前不會累積好感度。';
 
   return `
-    <article class="fairy-character-card ${owned ? 'is-owned' : 'is-locked'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
-      <div class="fairy-card-frame">
-        <div class="fairy-card-badge">${getFairyStatusIcon(fairy.id)}</div>
-        <div class="fairy-card-portrait" aria-hidden="true">
-          <span>${fairy.icon}</span>
-        </div>
-        <div class="fairy-card-body">
-          <div class="fairy-card-title-row">
-            <div>
-              <small>${GameDB.getRarityLabel(fairy.rarity)} / FAIRY</small>
-              <h3>${fairy.name}</h3>
-            </div>
-            <strong>${status}</strong>
-          </div>
-          <p class="fairy-card-quote">「${fairy.quote}」</p>
-          <div class="fairy-card-stats">
-            <span>好感 ${affection}</span>
-            <span>來源 ${GameDB.getFairySourceText(fairy)}</span>
-          </div>
-          <p class="fairy-card-note">${note}</p>
-          <button type="button" class="fairy-card-button" data-fairy-detail="${fairy.id}">查看角色資料</button>
-        </div>
-      </div>
-    </article>
+    <button type="button" class="fairy-character-card ${owned ? 'is-owned' : 'is-locked'}" data-fairy-detail="${fairy.id}" aria-label="查看${fairy.name}角色資料">
+      <span class="fairy-card-badge">${status}</span>
+      <span class="fairy-card-portrait" aria-hidden="true">${fairy.icon}</span>
+      <span class="fairy-card-name">${fairy.name}</span>
+      <span class="fairy-card-meta">${GameDB.getRarityLabel(fairy.rarity)}｜好感 ${affection}</span>
+    </button>
   `;
+}
+
+function handleFairyClick(event) {
+  const button = event.target.closest('[data-fairy-detail]');
+  const page = document.querySelector('#page-fairies');
+  if (!button || !page?.contains(button)) return;
+  openFairyDetail(button.dataset.fairyDetail);
+}
+
+function bindFairyEvents() {
+  const page = document.querySelector('#page-fairies');
+  if (!page || page.dataset.eventsBound === 'true') return;
+  page.dataset.eventsBound = 'true';
+  page.addEventListener('click', handleFairyClick);
 }
 
 export function renderFairies() {
@@ -123,18 +102,15 @@ export function renderFairies() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('FAIRY / CHARACTER ROOM', '精靈', '這裡是角色卡頁。精靈必須先契約，之後透過送禮物或精靈專屬委託增加好感度。')}
+    ${pageHeader('FAIRY / CHARACTER CODEX', '精靈角色卡', '精靈以小格角色卡顯示。點開卡片可以查看完整角色資料；未契約前不會累積好感度。')}
     <div class="fairy-card-grid" id="fairy-list">
       ${cards || '<div class="core-empty">目前沒有精靈資料。</div>'}
     </div>
   `;
-
-  $all('[data-fairy-detail]', page).forEach((button) => {
-    button.addEventListener('click', () => openFairyDetail(button.dataset.fairyDetail));
-  });
 }
 
 export function initFairiesPage() {
+  bindFairyEvents();
   on(Events.STATE_CHANGED, () => {
     const page = document.querySelector('#page-fairies');
     if (page?.classList.contains('active')) renderFairies();
