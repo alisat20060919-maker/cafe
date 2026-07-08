@@ -1,4 +1,4 @@
-import { GameDB } from './game-data.js?v=core06';
+import { GameDB } from './game-data.js?v=core07';
 
 export function formatReward(reward = {}) {
   const parts = [];
