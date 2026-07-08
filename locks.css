@@ -1,0 +1,51 @@
+.scene-card.is-locked{
+  filter:saturate(.82) brightness(.92);
+}
+
+.scene-card.is-locked .enter-button{
+  background:linear-gradient(180deg,#f0dfbf,#b58a54);
+  color:#3d2a18;
+}
+
+.station-lock-badge,
+.station-requirement-line{
+  display:inline-flex;
+  align-items:center;
+  width:max-content;
+  max-width:100%;
+  border-radius:999px;
+  font-weight:1000;
+  box-shadow:0 6px 14px rgba(56,33,13,.16);
+}
+
+.station-lock-badge{
+  margin-top:8px;
+  padding:5px 10px;
+  border:1px solid rgba(255,226,145,.42);
+  background:rgba(62,40,25,.78);
+  color:#fff2d3;
+  font-size:12px;
+}
+
+.station-requirement-line{
+  margin-top:6px;
+  padding:4px 9px;
+  border:1px solid rgba(255,226,145,.34);
+  background:rgba(255,247,220,.78);
+  color:#6d4726;
+  font-size:11px;
+}
+
+.recipe-card.is-locked-card{
+  border-color:rgba(255,226,145,.34);
+  background:linear-gradient(180deg,rgba(255,247,220,.88),rgba(203,169,114,.72));
+}
+
+.recipe-card.is-locked-card h3{
+  color:#4d3119;
+}
+
+.recipe-card.is-locked-card p{
+  color:#6d4726;
+  font-weight:800;
+}
