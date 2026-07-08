@@ -1,8 +1,9 @@
 import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
+import { openingStory } from '@data/story';
 
 export const GameDB = {
-  version: 19,
+  version: 20,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -272,6 +273,8 @@ export const GameDB = {
 
   commissionConfig: {
     dailyCount: 3,
+    categories: ['daily', 'main', 'fairy', 'story', 'event', 'mvp'],
+    refreshCost: { currency: 'tickets', amount: 1 },
     difficultyRules: {
       '★☆☆': {
         rank: 1,
@@ -307,10 +310,15 @@ export const GameDB = {
     },
   },
 
+  stories: {
+    opening: openingStory,
+  },
+
   routes: {
     home: { id: 'home', label: '店鋪' },
     gacha: { id: 'gacha', label: '祈願' },
     inventory: { id: 'inventory', label: '背包' },
+    fairies: { id: 'fairies', label: '精靈' },
     collection: { id: 'collection', label: '圖鑑' },
     commissions: { id: 'commissions', label: '委託' },
   },
@@ -477,32 +485,35 @@ export const GameDB = {
   commissions: {
     quest_moon_latte: {
       id: 'quest_moon_latte',
+      category: 'daily',
       title: '想喝會發光的拿鐵',
       customer: '迷路的夜貓精靈',
       difficulty: '★☆☆',
       request: '月光花瓣拿鐵 ×1',
       requiredItems: { moon_latte: 1 },
-      reward: { exp: 30, currencies: { leafCoin: 120, starSugar: 20 }, affection: { moon_petals_fairy: 5 } },
+      reward: { exp: 30, currencies: { leafCoin: 120, starSugar: 20 } },
       description: '客人想要一杯會微微發光、可以安定心情的飲品。',
     },
     quest_berry_tart: {
       id: 'quest_berry_tart',
+      category: 'daily',
       title: '星屑莓果小塔',
       customer: '森林郵差兔',
       difficulty: '★☆☆',
       request: '星星莓奶油塔 ×1',
       requiredItems: { star_berry_tart: 1 },
-      reward: { exp: 25, currencies: { leafCoin: 90, starSugar: 15 }, affection: { star_berry_fairy: 5 } },
+      reward: { exp: 25, currencies: { leafCoin: 90, starSugar: 15 } },
       description: '郵差兔想帶一份不會在路上融化的小甜點。',
     },
     quest_dream_cocoa: {
       id: 'quest_dream_cocoa',
+      category: 'daily',
       title: '夜空碎片可可',
       customer: '失眠的夢境精靈',
       difficulty: '★★☆',
       request: '夜空碎片可可 ×1',
       requiredItems: { dream_cocoa: 1 },
-      reward: { exp: 60, currencies: { leafCoin: 180, starSugar: 30 }, affection: { night_sky_fairy: 8 } },
+      reward: { exp: 60, currencies: { leafCoin: 180, starSugar: 30 } },
       description: '夢境精靈需要一杯能把噩夢變柔和的可可。',
     },
   },
