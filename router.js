@@ -1,4 +1,4 @@
-import { Events, emit } from './event-bus.js?v=core06';
+import { Events, emit } from './event-bus.js?v=core07';
 
 let routes = {};
 let currentRoute = 'home';
