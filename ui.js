@@ -1,9 +1,27 @@
-import { getState, resetState, replaceState, persistState } from '@state';
+import { getState, resetState, replaceState, persistState, markOpeningStorySeen } from '@state';
 import { claimDailyReward } from '@actions/daily';
 import { exportSave, importSave } from '@save';
 import { Events, on } from '@eventBus';
 
 let modalHost;
+
+const openingStory = [
+  {
+    speaker: '？？？',
+    title: '森林盡頭的邀請函',
+    body: '你在信箱裡發現一封沾著星屑的邀請函。信紙上寫著：「如果你願意照顧這間小店，迷路的精靈們就會找到回家的燈。」',
+  },
+  {
+    speaker: '小店長',
+    title: '精靈咖啡屋',
+    body: '推開木門後，咖啡香、月光花瓣和星星莓的甜味一起湧了出來。這裡曾經很熱鬧，但現在只剩下一盞還沒熄滅的小燈。',
+  },
+  {
+    speaker: '小店長',
+    title: '第一天營業',
+    body: '從今天開始，你要接下客人的委託、製作甜點與飲品、累積經驗，讓咖啡屋慢慢恢復原本的樣子。也許某一天，封住的煉金室會再次亮起來。',
+  },
+];
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -59,6 +77,39 @@ export function updateStatus() {
 function handleDaily() {
   const result = claimDailyReward();
   showNotice(result.ok ? `連續簽到 Day ${result.streak}` : '今日簽到', result.message);
+}
+
+function renderOpeningStoryStep(index = 0) {
+  const step = openingStory[index] || openingStory[0];
+  const isLast = index >= openingStory.length - 1;
+
+  showModal(`
+    <div class="core-modal-card compact opening-story-modal">
+      <span class="core-modal-kicker">OPENING STORY ${index + 1}/${openingStory.length}</span>
+      <div class="gather-result-icon">📜</div>
+      <p class="core-customer">${step.speaker}</p>
+      <h2>${step.title}</h2>
+      <p>${step.body}</p>
+      <button type="button" data-opening-story-next="${isLast ? 'finish' : String(index + 1)}">${isLast ? '進入咖啡屋' : '繼續'}</button>
+    </div>
+  `);
+
+  $('[data-opening-story-next]', modalHost)?.addEventListener('click', (event) => {
+    const next = event.currentTarget.dataset.openingStoryNext;
+    if (next === 'finish') {
+      markOpeningStorySeen();
+      closeModal();
+      return;
+    }
+
+    renderOpeningStoryStep(Number(next || 0));
+  });
+}
+
+export function showOpeningStoryIfNeeded() {
+  const state = getState();
+  if (state.story?.seenOpening) return;
+  renderOpeningStoryStep(0);
 }
 
 export function showNotice(title, body) {
