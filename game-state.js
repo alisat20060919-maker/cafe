@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 13;
+export const SAVE_VERSION = 14;
 
 function createDefaultState() {
   return {
@@ -117,10 +117,11 @@ function normalizeFairyState(nextState) {
     if (!GameDB.fairies?.[fairyId]) return;
     if (!isPlainObject(data)) return;
 
+    const owned = Boolean(data.owned);
     normalized[fairyId] = {
       ...data,
-      owned: Boolean(data.owned),
-      affection: Math.max(0, Number(data.affection || 0)),
+      owned,
+      affection: owned ? Math.max(0, Number(data.affection || 0)) : 0,
     };
   });
 
@@ -471,10 +472,12 @@ export function addFairyAffection(fairyId, amount = 0) {
   const gained = Math.max(0, Number(amount || 0));
   if (gained <= 0) return null;
 
-  const current = state.fairies[fairyId] || { owned: false, affection: 0 };
+  const current = state.fairies[fairyId];
+  if (!current?.owned) return null;
+
   state.fairies[fairyId] = {
     ...current,
-    owned: Boolean(current.owned),
+    owned: true,
     affection: Math.max(0, Number(current.affection || 0) + gained),
   };
 
