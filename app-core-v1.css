@@ -189,3 +189,34 @@ body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
   #page-inventory .core-filter-tabs button{padding:6px 8px;font-size:11px}
   #page-inventory #inventory-list{padding:6px;border-radius:18px}
 }
+
+/* Inventory should scroll as one white panel, not as a tiny list box. */
+#page-inventory.core-page-host.active{
+  display:block!important;
+  height:auto;
+  max-height:clamp(430px,58vh,560px);
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#page-inventory.core-page-host.active #inventory-list{
+  height:auto!important;
+  min-height:0;
+  max-height:none!important;
+  overflow:visible!important;
+}
+@media(max-width:520px){
+  #page-inventory.core-page-host.active{
+    height:auto!important;
+    max-height:calc(100svh - 250px);
+    min-height:0!important;
+    overflow-y:auto!important;
+  }
+  #page-inventory.core-page-host.active #inventory-list{
+    height:auto!important;
+    max-height:none!important;
+    overflow:visible!important;
+  }
+}
