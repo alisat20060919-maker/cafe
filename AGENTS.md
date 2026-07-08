@@ -19,15 +19,13 @@
 5. Page 模組只負責畫面渲染與按鈕事件，不直接管理複雜遊戲規則。
 6. `persistState()` 是狀態更新通知的核心，修改它時必須確認狀態列會更新。
 
-## Import Map 規則
+## 模組快取與版本更新協議 (Import Maps 架構)
 
-這個專案使用 GitHub Pages + 原生 ES Modules，並用 `index.html` 的 import map 集中管理 JS 版本。
+本專案全面採用原生的 Import Maps 來管理 ES Modules 路徑與快取，請嚴格遵守以下規則：
 
-1. JS 檔案內部 import 應使用固定別名，例如 `@state`、`@db`、`@eventBus`、`@actions/gather`。
-2. 不要在 JS 檔案內部寫 `./game-state.js?v=coreXX` 這種版本化相對路徑。
-3. 需要破快取時，只改 `index.html` 裡 import map 的版本值。
-4. 同一個模組只能有一個對應 URL，避免 state 被載成兩份。
-5. 新增 JS 模組時，先在 import map 加別名，再從其他模組引用。
+1. **絕對禁止相對路徑 Import**：所有 JS 檔案間的互相引用，**一律使用別名**（例如 `@state`, `@ui`, `@events`），嚴禁出現 `./game-state.js` 這種寫法。
+2. **唯一版本控制中心**：所有的版本號（`?v=coreXX`）**只允許**出現在 `index.html` 的 `<script type="importmap">` 區塊以及主入口 `<script type="module" src="main.js">` 中。
+3. **改版更新流程**：每次進行邏輯升級時，只需修改 `index.html` 內 importmap 裡面的版本號即可，JS 檔案內部完全不需要更動。
 
 ## 事件流
 
