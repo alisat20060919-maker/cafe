@@ -1,4 +1,5 @@
 import { GameDB } from '@db';
+import { getState, isItemDiscovered, isFairyDiscovered } from '@state';
 import { showModal } from '@ui';
 
 function $all(selector, root = document) {
@@ -21,6 +22,17 @@ function escapeAttr(value = '') {
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function hiddenSearchText(kind, rarity, typeId = '') {
+  return GameDB.buildSearchText([
+    kind === 'fairy' ? 'fairy' : typeId,
+    kind === 'fairy' ? GameDB.getItemTypeLabel('fairy') : GameDB.getItemTypeLabel(typeId),
+    rarity,
+    GameDB.getRarityLabel(rarity),
+    '未發現',
+    '???',
+  ]);
 }
 
 function renderCollectionCategories() {
@@ -73,9 +85,35 @@ function updateCollectionSearch(page) {
   if (empty) empty.hidden = cardCount === 0 || visibleCount > 0;
 }
 
+function renderLockedDetail(kind, rarity, typeLabel) {
+  showModal(`
+    <div class="core-modal-card core-detail-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">LOCKED COLLECTION</span>
+      <div class="core-detail-head">
+        <div class="core-detail-icon">❔</div>
+        <div>
+          <h2>???</h2>
+          <p>${GameDB.getRarityLabel(rarity)} / ${typeLabel}</p>
+        </div>
+      </div>
+      <p class="core-detail-quote">尚未發現。取得一次後會解鎖完整圖鑑資料。</p>
+      <dl class="core-detail-list">
+        <div><dt>狀態</dt><dd>未發現</dd></div>
+        <div><dt>類型</dt><dd>${kind === 'fairy' ? '精靈' : '素材 / 商品'}</dd></div>
+      </dl>
+    </div>
+  `);
+}
+
 function openCollectionItemDetail(itemId) {
   const item = GameDB.items[itemId];
   if (!item) return;
+
+  if (!isItemDiscovered(item.id)) {
+    renderLockedDetail('item', item.rarity, GameDB.getItemTypeLabel(item.type));
+    return;
+  }
 
   showModal(`
     <div class="core-modal-card core-detail-modal">
@@ -101,6 +139,11 @@ function openCollectionItemDetail(itemId) {
 function openCollectionFairyDetail(fairyId) {
   const fairy = GameDB.fairies[fairyId];
   if (!fairy) return;
+
+  if (!isFairyDiscovered(fairy.id)) {
+    renderLockedDetail('fairy', fairy.rarity, GameDB.getItemTypeLabel('fairy'));
+    return;
+  }
 
   showModal(`
     <div class="core-modal-card core-detail-modal">
@@ -161,46 +204,54 @@ export function renderCollection() {
   const page = document.querySelector('#page-collection');
   if (!page) return;
 
+  getState();
+
   const itemCards = Object.values(GameDB.items)
-    .map((item) => `
-      <article class="core-item-card rarity-${item.rarity.toLowerCase()} collection-card" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true">
-        <div class="core-item-icon">${item.icon}</div>
-        <div>
-          <b>${item.name}</b>
-          <span>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</span>
-          <p>${item.description}</p>
-          <div class="core-item-meta">
-            <small>來源：${GameDB.getItemSourceText(item)}</small>
-            <small>用途：${item.use}</small>
+    .map((item) => {
+      const discovered = isItemDiscovered(item.id);
+      return `
+        <article class="core-item-card rarity-${item.rarity.toLowerCase()} collection-card ${discovered ? '' : 'is-undiscovered'}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(discovered ? GameDB.getItemSearchText(item) : hiddenSearchText('item', item.rarity, item.type))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}">
+          <div class="core-item-icon">${discovered ? item.icon : '❔'}</div>
+          <div>
+            <b>${discovered ? item.name : '???'}</b>
+            <span>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)}${discovered ? ` / ${'★'.repeat(item.stars)}` : ''}</span>
+            <p>${discovered ? item.description : '尚未發現。取得一次後會解鎖完整資料。'}</p>
+            <div class="core-item-meta">
+              <small>狀態：${discovered ? '已發現' : '未發現'}</small>
+              <small>${discovered ? `來源：${GameDB.getItemSourceText(item)}` : '來源：???'}</small>
+            </div>
+            <button type="button" class="core-detail-button" data-collection-kind="item" data-collection-id="${item.id}">查看資料</button>
           </div>
-          <button type="button" class="core-detail-button" data-collection-kind="item" data-collection-id="${item.id}">查看資料</button>
-        </div>
-        <strong>圖鑑</strong>
-      </article>
-    `)
+          <strong>${discovered ? '已發現' : '???'}</strong>
+        </article>
+      `;
+    })
     .join('');
 
   const fairyCards = Object.values(GameDB.fairies)
-    .map((fairy) => `
-      <article class="core-item-card ssr collection-card" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
-        <div class="core-item-icon">${fairy.icon}</div>
-        <div>
-          <b>${fairy.name}</b>
-          <span>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</span>
-          <p>「${fairy.quote}」</p>
-          <div class="core-item-meta">
-            <small>來源：${GameDB.getFairySourceText(fairy)}</small>
-            <small>${fairy.description}</small>
+    .map((fairy) => {
+      const discovered = isFairyDiscovered(fairy.id);
+      return `
+        <article class="core-item-card ssr collection-card ${discovered ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(discovered ? GameDB.getFairySearchText(fairy) : hiddenSearchText('fairy', fairy.rarity))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}">
+          <div class="core-item-icon">${discovered ? fairy.icon : '❔'}</div>
+          <div>
+            <b>${discovered ? fairy.name : '???'}</b>
+            <span>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</span>
+            <p>${discovered ? `「${fairy.quote}」` : '尚未契約。取得一次後會解鎖完整資料。'}</p>
+            <div class="core-item-meta">
+              <small>狀態：${discovered ? '已發現' : '未發現'}</small>
+              <small>${discovered ? `來源：${GameDB.getFairySourceText(fairy)}` : '來源：???'}</small>
+            </div>
+            <button type="button" class="core-detail-button" data-collection-kind="fairy" data-collection-id="${fairy.id}">查看資料</button>
           </div>
-          <button type="button" class="core-detail-button" data-collection-kind="fairy" data-collection-id="${fairy.id}">查看資料</button>
-        </div>
-        <strong>圖鑑</strong>
-      </article>
-    `)
+          <strong>${discovered ? '已發現' : '???'}</strong>
+        </article>
+      `;
+    })
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('COLLECTION / READ ONLY GAME DB', '圖鑑', '這裡是獨立圖鑑頁，只讀取 GameDB 的世界資料；搜尋與篩選都不讀取背包、不改存檔。')}
+    ${pageHeader('COLLECTION / DISCOVERY STATE', '圖鑑', '這裡是獨立圖鑑頁。已發現資料會顯示完整內容；未發現項目只顯示 ???，不塞進背包。')}
     <div class="core-actions-row collection-actions">
       <button type="button" data-route="inventory">返回背包</button>
       <button type="button" data-route="home">回到店鋪</button>
