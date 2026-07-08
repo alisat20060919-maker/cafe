@@ -1,3 +1,6 @@
+import { gatherAt } from './gather-actions.js?v=core07';
+import { emitNotice } from './event-bus.js?v=core07';
+
 let activeIndex = 0;
 let homeRoot;
 
@@ -103,6 +106,12 @@ function openCafeInside() {
   setInteriorPanel('menu');
 }
 
+function handleBackyardGather() {
+  const result = gatherAt('backyard');
+  emitNotice(result.ok ? result.title : '採集失敗', result.message);
+  setDialogue('採集精靈', '後山', result.message);
+}
+
 function scrollToScene(index) {
   closeInsidePage();
   const viewport = $('#mapViewport');
@@ -144,6 +153,11 @@ function bindHomeEvents() {
 
       if (scene.id === 'cafe') {
         openCafeInside();
+        return;
+      }
+
+      if (scene.id === 'backyard') {
+        handleBackyardGather();
         return;
       }
 
