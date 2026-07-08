@@ -18,16 +18,21 @@
 
 1. 使用 `?dev=1` 開頁後確認 `validateGameDB()` 有執行。
 2. 使用 `?dev=1` 開頁後確認 MVP Smoke Test 有執行。
-3. 正常資料不應顯示 error。
-4. warning 可以暫時存在，但必須確認不會導致白屏。
-5. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
-6. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
-7. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
-8. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
-9. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
-10. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
-11. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
-12. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
+3. 使用 `?dev=1` 開頁後確認 Player Progress Check 有執行。
+4. 正常資料不應顯示 error。
+5. warning 可以暫時存在，但必須確認不會導致白屏。
+6. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
+7. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
+8. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
+9. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
+10. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
+11. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
+12. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
+13. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
+14. `GameDB.levelConfig.thresholds[1]` 必須是 0。
+15. `GameDB.getLevelByExp(0)` 必須回傳 Lv.1。
+16. `GameDB.getLevelProgress({ level: 1, exp: 0 })` 必須能算出下一級需求。
+17. `GameDB.getLevelUnlocksFor(2).scenes` 必須包含 `alchemy`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -127,9 +132,11 @@
 3. `SAVE_VERSION` 有正確更新。
 4. state 不存素材名稱、描述、圖示、來源文字。
 5. 清除 localStorage 後，新存檔可正常建立。
-6. 舊 `claimed` 委託狀態會被 migration 轉為 `completed`。
-7. 未契約精靈的 `affection` 應在 migration 後歸零。
-8. 已契約精靈才可以保留與增加 `affection`。
+6. `state.player.level` 必須是數字，舊存檔缺少時 migration 會補成 Lv.1。
+7. `state.player.exp` 必須是數字，舊存檔缺少時 migration 會補成 0。
+8. 舊 `claimed` 委託狀態會被 migration 轉為 `completed`。
+9. 未契約精靈的 `affection` 應在 migration 後歸零。
+10. 已契約精靈才可以保留與增加 `affection`。
 
 ## 11. MVP 核心循環驗收
 
@@ -143,7 +150,7 @@
 8. EXP 達標時會升等，Lv.2 應解鎖煉金室。
 9. 解鎖後煉金室可以進入配方列表，不可白屏。
 10. 完成一輪採集 -> 製作 -> 委託 -> 獎勵後，重新整理頁面，存檔仍能正常載入。
-11. 使用 `?dev=1` 時，`validateGameDB()` 與 MVP Smoke Test 不應出現 error。
+11. 使用 `?dev=1` 時，`validateGameDB()`、MVP Smoke Test、Player Progress Check 不應出現 error。
 
 ## 12. 手機 UI 測試
 
@@ -157,7 +164,18 @@
 8. 文字不溢出卡片。
 9. 橫向內容不讓整頁破版。
 
-## 13. 回歸測試
+## 13. 第 51 步玩家 EXP / Level 驗收
+
+1. `state.player.level` 預設為 1。
+2. `state.player.exp` 預設為 0。
+3. `GameDB.levelConfig.thresholds` 是唯一等級需求資料來源，不新增第二份重複表。
+4. `GameDB.getLevelByExp(0)` 回傳 1。
+5. `GameDB.getLevelProgress({ level: 1, exp: 0 })` 能回傳下一級所需 EXP。
+6. 完成委託時，`addReward()` 會處理 `reward.exp`。
+7. EXP 達到 Lv.2 門檻時，`applyLevelUnlocksToState()` 會解鎖煉金室。
+8. `?dev=1` 時 Console 應顯示 `[Player Progress Check] ok`。
+
+## 14. 回歸測試
 
 每次改版後至少確認：
 
@@ -179,6 +197,7 @@
 煉金室配方列表
 煉金室製作成功 / 素材不足
 委託產品需求 / 完成扣成品
+玩家 Lv / EXP / 升等 / Lv.2 解鎖煉金室
 開場劇情從 GameDB.stories.opening 讀取
 設定匯入 / 匯出 / 清除存檔
 無原生 alert / prompt / confirm
