@@ -82,6 +82,20 @@ function renderPreviewList(preview = []) {
   `;
 }
 
+function renderSpecialEvent(event) {
+  if (!event) return '';
+
+  return `
+    <div class="gather-preview-list gather-special-event">
+      <b>${event.icon || '✨'} ${event.title}</b>
+      <span>${event.message}</span>
+      ${(event.rewards || []).map((drop) => `
+        <span>額外獲得：${drop.icon} ${drop.name} ×${drop.qty}</span>
+      `).join('')}
+    </div>
+  `;
+}
+
 function renderGatherStatusBadges() {
   $all('.scene-card').forEach((scene) => {
     scene.querySelector('.gather-status-badge')?.remove();
@@ -107,6 +121,7 @@ function renderGatherStatusBadges() {
 
 function showGatherResultModal(result) {
   const previewHtml = renderPreviewList(result.preview || []);
+  const eventHtml = renderSpecialEvent(result.specialEvent);
 
   if (!result.ok) {
     showModal(`
@@ -136,6 +151,7 @@ function showGatherResultModal(result) {
         <span>${drop.typeLabel}</span>
         <span>${drop.chance}%</span>
       </div>
+      ${eventHtml}
       <div class="gather-result-status">今日剩餘 ${result.remaining}/${result.limit}</div>
       ${previewHtml}
     </div>
