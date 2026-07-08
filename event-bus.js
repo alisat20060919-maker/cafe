@@ -4,6 +4,7 @@ export const Events = {
   ROUTE_CHANGED: 'route:changed',
   GACHA_ROLLED: 'gacha:rolled',
   GACHA_FAILED: 'gacha:failed',
+  LEVEL_UP: 'player:level-up',
   NOTICE: 'ui:notice',
   CONFIRM: 'ui:confirm',
 };
@@ -23,4 +24,8 @@ export function emitStateChanged(reason = 'unknown') {
 
 export function emitNotice(title, body) {
   emit(Events.NOTICE, { title, body });
+}
+
+export function emitLevelUp(detail = {}) {
+  emit(Events.LEVEL_UP, { ...detail, at: new Date().toISOString() });
 }
