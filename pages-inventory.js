@@ -26,6 +26,16 @@ function renderFilterTabs() {
     .join('');
 }
 
+function renderRarityTabs() {
+  return GameDB.getInventoryRarities()
+    .map((rarity, index) => `
+      <button type="button" data-rarity-filter="${rarity.id}" class="${index === 0 ? 'active' : ''}">
+        <span>${rarity.icon}</span>${rarity.label}
+      </button>
+    `)
+    .join('');
+}
+
 function bindInventoryFilters(page) {
   const list = page.querySelector('#inventory-list');
   if (!list) return;
@@ -35,6 +45,14 @@ function bindInventoryFilters(page) {
       $all('[data-filter]', page).forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       list.dataset.currentFilter = button.dataset.filter || 'all';
+    });
+  });
+
+  $all('[data-rarity-filter]', page).forEach((button) => {
+    button.addEventListener('click', () => {
+      $all('[data-rarity-filter]', page).forEach((item) => item.classList.remove('active'));
+      button.classList.add('active');
+      list.dataset.currentRarity = button.dataset.rarityFilter || 'all';
     });
   });
 }
@@ -48,11 +66,11 @@ export function renderInventory() {
     .map((item) => ({ item, count: Number(state.inventory[item.id] || 0) }))
     .filter(({ count }) => count > 0)
     .map(({ item, count }) => `
-      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}">
+      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}">
         <div class="core-item-icon">${item.icon}</div>
         <div>
           <b>${item.name}</b>
-          <span>${item.rarity} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</span>
+          <span>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</span>
           <p>${item.description}</p>
           <small>用途：${item.use}</small>
         </div>
@@ -66,11 +84,11 @@ export function renderInventory() {
     .map(([fairyId]) => {
       const fairy = GameDB.fairies[fairyId];
       return `
-        <article class="core-item-card ssr" data-category="fairy">
+        <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}">
           <div class="core-item-icon">${fairy.icon}</div>
           <div>
             <b>${fairy.name}</b>
-            <span>${fairy.rarity} / ${GameDB.getItemTypeLabel('fairy')}</span>
+            <span>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</span>
             <p>「${fairy.quote}」</p>
             <small>${fairy.description}</small>
           </div>
@@ -81,12 +99,21 @@ export function renderInventory() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類資料由 GameDB 提供。')}
-    <div class="core-filter-tabs" aria-label="背包分類篩選">
-      ${renderFilterTabs()}
+    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類與稀有度資料由 GameDB 提供。')}
+    <div class="core-filter-group">
+      <p>分類</p>
+      <div class="core-filter-tabs" aria-label="背包分類篩選">
+        ${renderFilterTabs()}
+      </div>
     </div>
-    <div class="core-list" id="inventory-list" data-current-filter="all">
-      ${itemCards || '<p class="core-empty" data-category="empty">背包還是空的。去祈願或簽到拿一點素材吧。</p>'}
+    <div class="core-filter-group">
+      <p>稀有度</p>
+      <div class="core-filter-tabs" aria-label="背包稀有度篩選">
+        ${renderRarityTabs()}
+      </div>
+    </div>
+    <div class="core-list" id="inventory-list" data-current-filter="all" data-current-rarity="all">
+      ${itemCards || '<p class="core-empty" data-category="empty" data-rarity="empty">背包還是空的。去祈願或簽到拿一點素材吧。</p>'}
       ${fairyCards}
     </div>
   `;
