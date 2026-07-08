@@ -88,26 +88,11 @@ function sortInventoryCards(page) {
   const cards = $all('.core-item-card', list);
 
   const sorted = cards.sort((a, b) => {
-    if (mode === 'rarity_desc') {
-      return getCardNumber(b, 'sortRarity') - getCardNumber(a, 'sortRarity') || compareDefault(a, b);
-    }
-
-    if (mode === 'rarity_asc') {
-      return getCardNumber(a, 'sortRarity') - getCardNumber(b, 'sortRarity') || compareDefault(a, b);
-    }
-
-    if (mode === 'count_desc') {
-      return getCardNumber(b, 'sortCount') - getCardNumber(a, 'sortCount') || compareDefault(a, b);
-    }
-
-    if (mode === 'type_asc') {
-      return getCardNumber(a, 'sortType') - getCardNumber(b, 'sortType') || compareDefault(a, b);
-    }
-
-    if (mode === 'name_asc') {
-      return getCardText(a, 'sortName').localeCompare(getCardText(b, 'sortName'), 'zh-Hant') || compareDefault(a, b);
-    }
-
+    if (mode === 'rarity_desc') return getCardNumber(b, 'sortRarity') - getCardNumber(a, 'sortRarity') || compareDefault(a, b);
+    if (mode === 'rarity_asc') return getCardNumber(a, 'sortRarity') - getCardNumber(b, 'sortRarity') || compareDefault(a, b);
+    if (mode === 'count_desc') return getCardNumber(b, 'sortCount') - getCardNumber(a, 'sortCount') || compareDefault(a, b);
+    if (mode === 'type_asc') return getCardNumber(a, 'sortType') - getCardNumber(b, 'sortType') || compareDefault(a, b);
+    if (mode === 'name_asc') return getCardText(a, 'sortName').localeCompare(getCardText(b, 'sortName'), 'zh-Hant') || compareDefault(a, b);
     return compareDefault(a, b);
   });
 
@@ -141,6 +126,10 @@ function updateInventorySearch(page) {
   });
 
   if (empty) empty.hidden = cardCount === 0 || visibleCount > 0;
+}
+
+function setActiveFilter(page, selector, activeButton) {
+  $all(selector, page).forEach((button) => button.classList.toggle('active', button === activeButton));
 }
 
 function openItemDetail(itemId) {
@@ -198,40 +187,53 @@ function openFairyDetail(fairyId) {
   `);
 }
 
-function bindInventoryFilters(page) {
+function handleInventoryClick(event) {
+  const page = document.querySelector('#page-inventory');
+  const button = event.target.closest('button');
+  if (!button || !page?.contains(button)) return;
+
   const list = page.querySelector('#inventory-list');
-  if (!list) return;
 
-  $all('[data-filter]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      $all('[data-filter]', page).forEach((item) => item.classList.remove('active'));
-      button.classList.add('active');
-      list.dataset.currentFilter = button.dataset.filter || 'all';
-      updateInventorySearch(page);
-    });
-  });
+  if (button.dataset.filter && list) {
+    setActiveFilter(page, '[data-filter]', button);
+    list.dataset.currentFilter = button.dataset.filter || 'all';
+    updateInventorySearch(page);
+    return;
+  }
 
-  $all('[data-rarity-filter]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      $all('[data-rarity-filter]', page).forEach((item) => item.classList.remove('active'));
-      button.classList.add('active');
-      list.dataset.currentRarity = button.dataset.rarityFilter || 'all';
-      updateInventorySearch(page);
-    });
-  });
+  if (button.dataset.rarityFilter && list) {
+    setActiveFilter(page, '[data-rarity-filter]', button);
+    list.dataset.currentRarity = button.dataset.rarityFilter || 'all';
+    updateInventorySearch(page);
+    return;
+  }
 
-  page.querySelector('#inventory-search')?.addEventListener('input', () => updateInventorySearch(page));
-  page.querySelector('#inventory-sort')?.addEventListener('change', () => sortInventoryCards(page));
+  if (button.dataset.detailKind) {
+    if (button.dataset.detailKind === 'fairy') {
+      openFairyDetail(button.dataset.detailId);
+      return;
+    }
+    openItemDetail(button.dataset.detailId);
+  }
+}
 
-  $all('[data-detail-kind]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      if (button.dataset.detailKind === 'fairy') {
-        openFairyDetail(button.dataset.detailId);
-        return;
-      }
-      openItemDetail(button.dataset.detailId);
-    });
-  });
+function handleInventoryInput(event) {
+  const page = document.querySelector('#page-inventory');
+  if (page?.contains(event.target) && event.target.matches('#inventory-search')) updateInventorySearch(page);
+}
+
+function handleInventoryChange(event) {
+  const page = document.querySelector('#page-inventory');
+  if (page?.contains(event.target) && event.target.matches('#inventory-sort')) sortInventoryCards(page);
+}
+
+function bindInventoryEvents() {
+  const page = document.querySelector('#page-inventory');
+  if (!page || page.dataset.eventsBound === 'true') return;
+  page.dataset.eventsBound = 'true';
+  page.addEventListener('click', handleInventoryClick);
+  page.addEventListener('input', handleInventoryInput);
+  page.addEventListener('change', handleInventoryChange);
 }
 
 export function renderInventory() {
@@ -265,6 +267,7 @@ export function renderInventory() {
     .filter(([, data]) => data?.owned)
     .map(([fairyId], index) => {
       const fairy = GameDB.fairies[fairyId];
+      if (!fairy) return '';
       return `
         <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true" data-sort-default="${fairyDefaultOffset + index}" data-sort-rarity="${GameDB.getRarityRank(fairy.rarity)}" data-sort-type="${GameDB.getItemTypeRank('fairy')}" data-sort-count="1" data-sort-name="${escapeAttr(fairy.name)}">
           <div class="core-item-icon">${fairy.icon}</div>
@@ -320,11 +323,11 @@ export function renderInventory() {
     ` : renderEmptyInventoryState()}
   `;
 
-  bindInventoryFilters(page);
   sortInventoryCards(page);
 }
 
 export function initInventoryPage() {
+  bindInventoryEvents();
   on(Events.STATE_CHANGED, () => {
     const page = document.querySelector('#page-inventory');
     if (page?.classList.contains('active')) renderInventory();
