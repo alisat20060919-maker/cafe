@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 function createDefaultState() {
   return {
@@ -40,6 +40,9 @@ function createDefaultState() {
       ids: [],
       freeRefreshUsed: false,
       paidRefreshCount: 0,
+    },
+    story: {
+      seenOpening: false,
     },
     daily: {
       lastCheckIn: null,
@@ -328,6 +331,12 @@ export function unlockScene(sceneId) {
 
 export function applyCommissionUnlocks(commissionId) {
   return applyCommissionUnlocksToState(state, commissionId);
+}
+
+export function markOpeningStorySeen() {
+  if (!state.story) state.story = {};
+  state.story.seenOpening = true;
+  persistState('story:opening');
 }
 
 export function markItemDiscovered(itemId) {
