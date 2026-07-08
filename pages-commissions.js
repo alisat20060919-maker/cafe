@@ -1,8 +1,8 @@
-import { GameDB } from './game-data.js?v=core07';
-import { getState } from './game-state.js?v=core07';
-import { canCompleteCommission, completeCommission } from './commission-actions.js?v=core07';
-import { formatReward } from './utils.js?v=core07';
-import { Events, on, emitNotice } from './event-bus.js?v=core07';
+import { GameDB } from '@db';
+import { getState } from '@state';
+import { canCompleteCommission, completeCommission } from '@actions/commission';
+import { formatReward } from '@utils';
+import { Events, on, emitNotice } from '@eventBus';
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
