@@ -24,7 +24,9 @@ function getDailyGatherLimit() {
 }
 
 function getSpecialEventChance() {
-  return Number(GameDB.gatherConfig?.specialEventChance || 0);
+  const configuredChance = Number(GameDB.gatherConfig?.specialEventChance ?? 0.05);
+  if (!Number.isFinite(configuredChance) || configuredChance <= 0) return 0;
+  return Math.min(configuredChance, 0.05);
 }
 
 function getGatherTable(locationId) {
@@ -103,15 +105,20 @@ function rollSpecialEvent(table) {
 
   const event = pickWeighted(events);
   Object.entries(event.bonus?.items || {}).forEach(([itemId, qty]) => {
-    addItem(itemId, Number(qty || 0));
+    const amount = Number(qty || 0);
+    if (amount > 0) addItem(itemId, amount);
   });
+
+  const bonusItems = getBonusRewardViews(event.bonus);
 
   return {
     id: event.id,
+    type: event.type || (bonusItems.length ? 'bonus_drop' : 'flavor_text'),
     title: event.title,
     icon: event.icon || '✨',
     message: event.message,
-    rewards: getBonusRewardViews(event.bonus),
+    bonusItems,
+    rewards: bonusItems,
   };
 }
 
@@ -228,6 +235,7 @@ export function gatherAt(locationId = 'backyard') {
 
   return {
     ok: true,
+    status: 'success',
     title: table.title,
     drop,
     dropView,
