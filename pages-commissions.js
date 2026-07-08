@@ -6,14 +6,6 @@ import { navigate } from '@router';
 import { goToScene } from '@home';
 import { Events, on, emitNotice } from '@eventBus';
 
-const itemSources = {
-  moon_petals: { type: 'scene', id: 'greenhouse', label: '溫室' },
-  star_berry: { type: 'scene', id: 'backyard', label: '後山' },
-  night_sky_fragment: { type: 'route', id: 'gacha', label: '祈願' },
-  forest_cookie: { type: 'scene', id: 'backyard', label: '後山' },
-  stardew_water: { type: 'scene', id: 'backyard', label: '後山' },
-};
-
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
 }
@@ -63,7 +55,7 @@ function statusLabel(status) {
 }
 
 function getItemSource(itemId) {
-  return itemSources[itemId] || { type: 'scene', id: 'backyard', label: '後山' };
+  return GameDB.itemSources?.[itemId] || { type: 'scene', id: 'backyard', label: '後山' };
 }
 
 function getMissingItems(cost = {}) {
@@ -109,6 +101,10 @@ function renderQuestButton(quest, status) {
   return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">前往${source.label}</button>`;
 }
 
+function findSourceByScene(sourceId) {
+  return Object.values(GameDB.itemSources || {}).find((item) => item.type === 'scene' && item.id === sourceId);
+}
+
 function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   if (sourceType === 'route') {
     navigate(sourceId);
@@ -119,7 +115,7 @@ function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   navigate('home');
   window.requestAnimationFrame(() => {
     goToScene(sourceId);
-    const source = Object.values(itemSources).find((item) => item.type === 'scene' && item.id === sourceId);
+    const source = findSourceByScene(sourceId);
     emitNotice('前往收集', `已帶你前往${source?.label || '後山'}。`);
   });
 }
@@ -148,7 +144,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會標出缺少素材與來源，按鈕可直接跳到收集地點或祈願頁。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會從 GameDB 讀取來源，按鈕可直接跳到收集地點或祈願頁。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
