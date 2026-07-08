@@ -271,6 +271,16 @@ function validateCurrencyMap(errors, map = {}, scope = 'currencyMap') {
   });
 }
 
+function validateExpReward(errors, exp, scope = 'reward.exp') {
+  if (exp === undefined || exp === null) return false;
+  const value = Number(exp);
+  if (!Number.isFinite(value) || value <= 0) {
+    pushIssue(errors, scope, 'exp 必須是大於 0 的數字。');
+    return false;
+  }
+  return true;
+}
+
 function validateFairyMap(errors, map = {}, scope = 'fairyMap') {
   if (!validateObjectMap(errors, map, scope)) return;
   Object.entries(map || {}).forEach(([fairyId, value]) => {
@@ -287,26 +297,30 @@ function validateRewardObject(errors, reward, scope = 'reward') {
     return;
   }
 
-  const allowedKeys = ['currencies', 'items', 'fairies'];
+  const allowedKeys = ['exp', 'currencies', 'items', 'fairies'];
   Object.keys(reward).forEach((key) => {
     if (!allowedKeys.includes(key)) pushIssue(errors, scope, `未知 reward 欄位：${key}。`);
   });
 
+  const hasExp = Number(reward.exp || 0) > 0;
   const hasCurrencies = isRecord(reward.currencies) && Object.keys(reward.currencies).length > 0;
   const hasItems = isRecord(reward.items) && Object.keys(reward.items).length > 0;
   const hasFairies = isRecord(reward.fairies) && Object.keys(reward.fairies).length > 0;
-  if (!hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, 'reward 至少需要 currencies、items 或 fairies 其中一種獎勵。');
+  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, 'reward 至少需要 exp、currencies、items 或 fairies 其中一種獎勵。');
 
+  validateExpReward(errors, reward.exp, `${scope}.exp`);
   validateCurrencyMap(errors, reward.currencies, `${scope}.currencies`);
   validateItemMap(errors, reward.items, `${scope}.items`);
   validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
 }
 
 function validateRewardFields(errors, reward = {}, scope = 'reward') {
+  const hasExp = Number(reward.exp || 0) > 0;
   const hasCurrencies = isRecord(reward.currencies) && Object.keys(reward.currencies).length > 0;
   const hasItems = isRecord(reward.items) && Object.keys(reward.items).length > 0;
   const hasFairies = isRecord(reward.fairies) && Object.keys(reward.fairies).length > 0;
-  if (!hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, '至少需要 currencies、items 或 fairies 其中一種獎勵。');
+  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, '至少需要 exp、currencies、items 或 fairies 其中一種獎勵。');
+  validateExpReward(errors, reward.exp, `${scope}.exp`);
   validateCurrencyMap(errors, reward.currencies, `${scope}.currencies`);
   validateItemMap(errors, reward.items, `${scope}.items`);
   validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
@@ -323,6 +337,41 @@ function validateRangeRule(errors, range, scope) {
   if (!Number.isFinite(min) || !Number.isFinite(max)) pushIssue(errors, scope, 'min / max 必須是數字。');
   if (min < 0 || max < 0) pushIssue(errors, scope, 'min / max 不可小於 0。');
   if (max < min) pushIssue(errors, scope, 'max 不可小於 min。');
+}
+
+function validateLevelConfig(errors) {
+  const config = GameDB.levelConfig;
+  const scope = 'levelConfig';
+  if (!isRecord(config)) {
+    pushIssue(errors, scope, '缺少等級設定。');
+    return;
+  }
+
+  if (!Number.isInteger(Number(config.maxLevel)) || Number(config.maxLevel) <= 0) {
+    pushIssue(errors, `${scope}.maxLevel`, 'maxLevel 必須是正整數。');
+  }
+
+  if (!isRecord(config.thresholds)) {
+    pushIssue(errors, `${scope}.thresholds`, 'thresholds 必須是物件。');
+  } else {
+    Object.entries(config.thresholds).forEach(([level, exp]) => {
+      if (!Number.isInteger(Number(level)) || Number(level) <= 0) pushIssue(errors, `${scope}.thresholds`, `level ${level} 必須是正整數。`);
+      if (!Number.isFinite(Number(exp)) || Number(exp) < 0) pushIssue(errors, `${scope}.thresholds.${level}`, '門檻 EXP 必須是大於等於 0 的數字。');
+    });
+  }
+
+  Object.entries(config.unlocks || {}).forEach(([level, unlocks]) => {
+    const unlockScope = `${scope}.unlocks.${level}`;
+    if (!Number.isInteger(Number(level)) || Number(level) <= 0) pushIssue(errors, unlockScope, '解鎖等級必須是正整數。');
+    if (!isRecord(unlocks)) {
+      pushIssue(errors, unlockScope, '解鎖資料必須是物件。');
+      return;
+    }
+    if (unlocks.scenes !== undefined && !Array.isArray(unlocks.scenes)) pushIssue(errors, `${unlockScope}.scenes`, 'scenes 必須是陣列。');
+    (unlocks.scenes || []).forEach((sceneId) => {
+      if (!hasOwn(GameDB.scenes, sceneId)) pushIssue(errors, `${unlockScope}.scenes`, `scene ${sceneId} 不存在。`);
+    });
+  });
 }
 
 function validateCommissionBalanceConfig(errors) {
@@ -358,9 +407,9 @@ function validateCommissionBalanceConfig(errors) {
       return;
     }
 
-    Object.entries(rule.reward).forEach(([currencyId, range]) => {
-      if (!hasOwn(GameDB.currencies, currencyId)) pushIssue(errors, `${ruleScope}.reward`, `currency ${currencyId} 不存在。`);
-      validateRangeRule(errors, range, `${ruleScope}.reward.${currencyId}`);
+    Object.entries(rule.reward).forEach(([rewardId, range]) => {
+      if (rewardId !== 'exp' && !hasOwn(GameDB.currencies, rewardId)) pushIssue(errors, `${ruleScope}.reward`, `currency ${rewardId} 不存在。`);
+      validateRangeRule(errors, range, `${ruleScope}.reward.${rewardId}`);
     });
   });
 }
@@ -474,12 +523,14 @@ function validateCommissionBalance(errors, quest, scope) {
     pushIssue(errors, `${scope}.requiredItems`, `${quest.difficulty} 需求總數應在 ${minRequired}～${maxRequired} 之間，目前是 ${totalRequired}。`);
   }
 
-  Object.entries(rule.reward || {}).forEach(([currencyId, range]) => {
-    const amount = Number(quest.reward?.currencies?.[currencyId] || 0);
+  Object.entries(rule.reward || {}).forEach(([rewardId, range]) => {
+    const amount = rewardId === 'exp'
+      ? Number(quest.reward?.exp || 0)
+      : Number(quest.reward?.currencies?.[rewardId] || 0);
     const min = Number(range.min ?? 0);
     const max = Number(range.max ?? 0);
     if (amount < min || amount > max) {
-      pushIssue(errors, `${scope}.reward.currencies`, `${quest.difficulty} 的 ${currencyId} 獎勵應在 ${min}～${max} 之間，目前是 ${amount}。`);
+      pushIssue(errors, `${scope}.reward`, `${quest.difficulty} 的 ${rewardId} 獎勵應在 ${min}～${max} 之間，目前是 ${amount}。`);
     }
   });
 }
@@ -549,6 +600,7 @@ export function validateGameDB() {
   validateGatherTables(errors);
   validateGachaPools(errors);
   validateRecipes(errors);
+  validateLevelConfig(errors);
   validateCommissionBalanceConfig(errors);
   validateCommissions(errors, warnings);
   validateKitchenProductWorkflow(errors);
