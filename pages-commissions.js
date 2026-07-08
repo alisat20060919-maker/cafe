@@ -45,8 +45,13 @@ function itemIcon(itemId) {
 }
 
 function renderCost(cost = {}) {
+  const state = getState();
   return Object.entries(cost)
-    .map(([itemId, qty]) => `${itemIcon(itemId)} ${itemName(itemId)} ×${qty}`)
+    .map(([itemId, qty]) => {
+      const owned = Number(state.inventory[itemId] || 0);
+      const lackClass = owned < qty ? ' class="is-lacking"' : '';
+      return `<span${lackClass}>${itemIcon(itemId)} ${itemName(itemId)} ${owned}/${qty}</span>`;
+    })
     .join('、');
 }
 
@@ -65,14 +70,34 @@ function statusLabel(status) {
   }[status] || status;
 }
 
-function findMissingItem(cost = {}) {
+function getMissingItems(cost = {}) {
   const state = getState();
-  return Object.entries(cost).find(([itemId, qty]) => Number(state.inventory[itemId] || 0) < qty)?.[0] || null;
+  return Object.entries(cost)
+    .map(([itemId, qty]) => ({
+      itemId,
+      need: qty,
+      owned: Number(state.inventory[itemId] || 0),
+      sceneId: itemSourceScene[itemId] || 'backyard',
+    }))
+    .filter((item) => item.owned < item.need);
 }
 
 function getCollectionScene(quest) {
-  const missingItem = findMissingItem(quest.cost);
-  return itemSourceScene[missingItem] || 'backyard';
+  const missingItems = getMissingItems(quest.cost);
+  return missingItems[0]?.sceneId || 'backyard';
+}
+
+function renderMissingHint(quest, status) {
+  if (status !== 'available') return '';
+
+  const missingItems = getMissingItems(quest.cost);
+  if (!missingItems.length) return '';
+
+  const hint = missingItems
+    .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${sceneNames[item.sceneId] || '後山'}`)
+    .join('<br>');
+
+  return `<p class="core-missing-hint">缺少素材：<br>${hint}</p>`;
 }
 
 function renderQuestButton(quest, status) {
@@ -85,7 +110,7 @@ function renderQuestButton(quest, status) {
   }
 
   const targetScene = getCollectionScene(quest);
-  return `<button type="button" data-collect="${targetScene}">前往收集</button>`;
+  return `<button type="button" data-collect="${targetScene}">前往${sceneNames[targetScene] || '後山'}收集</button>`;
 }
 
 function goCollect(targetScene = 'backyard') {
@@ -112,6 +137,7 @@ export function renderCommissions() {
         <p class="core-customer">客人：${quest.customer}</p>
         <p>${quest.description}</p>
         <div class="core-recipe"><b>需要：</b>${renderCost(quest.cost)}</div>
+        ${renderMissingHint(quest, status)}
         <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
         ${renderQuestButton(quest, status)}
       </article>
@@ -119,7 +145,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時可以直接跳回地圖收集，不再只是不能點的按鈕。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會標出缺少素材與來源，按鈕可直接跳到收集地點。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
