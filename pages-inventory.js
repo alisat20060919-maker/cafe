@@ -45,6 +45,61 @@ function renderRarityTabs() {
     .join('');
 }
 
+function renderSortOptions() {
+  return GameDB.getInventorySortOptions()
+    .map((sort) => `<option value="${sort.id}">${sort.icon} ${sort.label}</option>`)
+    .join('');
+}
+
+function getCardNumber(card, key) {
+  return Number(card.dataset[key] || 0);
+}
+
+function getCardText(card, key) {
+  return String(card.dataset[key] || '');
+}
+
+function compareDefault(a, b) {
+  return getCardNumber(a, 'sortDefault') - getCardNumber(b, 'sortDefault');
+}
+
+function sortInventoryCards(page) {
+  const list = page.querySelector('#inventory-list');
+  const select = page.querySelector('#inventory-sort');
+  if (!list) return;
+
+  const mode = select?.value || 'default';
+  const empty = page.querySelector('#inventory-search-empty');
+  const cards = $all('.core-item-card', list);
+
+  const sorted = cards.sort((a, b) => {
+    if (mode === 'rarity_desc') {
+      return getCardNumber(b, 'sortRarity') - getCardNumber(a, 'sortRarity') || compareDefault(a, b);
+    }
+
+    if (mode === 'rarity_asc') {
+      return getCardNumber(a, 'sortRarity') - getCardNumber(b, 'sortRarity') || compareDefault(a, b);
+    }
+
+    if (mode === 'count_desc') {
+      return getCardNumber(b, 'sortCount') - getCardNumber(a, 'sortCount') || compareDefault(a, b);
+    }
+
+    if (mode === 'type_asc') {
+      return getCardNumber(a, 'sortType') - getCardNumber(b, 'sortType') || compareDefault(a, b);
+    }
+
+    if (mode === 'name_asc') {
+      return getCardText(a, 'sortName').localeCompare(getCardText(b, 'sortName'), 'zh-Hant') || compareDefault(a, b);
+    }
+
+    return compareDefault(a, b);
+  });
+
+  sorted.forEach((card) => list.insertBefore(card, empty || null));
+  updateInventorySearch(page);
+}
+
 function updateInventorySearch(page) {
   const list = page.querySelector('#inventory-list');
   const input = page.querySelector('#inventory-search');
@@ -151,6 +206,7 @@ function bindInventoryFilters(page) {
   });
 
   page.querySelector('#inventory-search')?.addEventListener('input', () => updateInventorySearch(page));
+  page.querySelector('#inventory-sort')?.addEventListener('change', () => sortInventoryCards(page));
 
   $all('[data-detail-kind]', page).forEach((button) => {
     button.addEventListener('click', () => {
@@ -169,10 +225,10 @@ export function renderInventory() {
 
   const state = getState();
   const itemCards = Object.values(GameDB.items)
-    .map((item) => ({ item, count: Number(state.inventory[item.id] || 0) }))
+    .map((item, index) => ({ item, count: Number(state.inventory[item.id] || 0), index }))
     .filter(({ count }) => count > 0)
-    .map(({ item, count }) => `
-      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true">
+    .map(({ item, count, index }) => `
+      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true" data-sort-default="${index}" data-sort-rarity="${GameDB.getRarityRank(item.rarity)}" data-sort-type="${GameDB.getItemTypeRank(item.type)}" data-sort-count="${count}" data-sort-name="${escapeAttr(item.name)}">
         <div class="core-item-icon">${item.icon}</div>
         <div>
           <b>${item.name}</b>
@@ -189,12 +245,13 @@ export function renderInventory() {
     `)
     .join('');
 
+  const fairyDefaultOffset = Object.values(GameDB.items).length;
   const fairyCards = Object.entries(state.fairies)
     .filter(([, data]) => data?.owned)
-    .map(([fairyId]) => {
+    .map(([fairyId], index) => {
       const fairy = GameDB.fairies[fairyId];
       return `
-        <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
+        <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true" data-sort-default="${fairyDefaultOffset + index}" data-sort-rarity="${GameDB.getRarityRank(fairy.rarity)}" data-sort-type="${GameDB.getItemTypeRank('fairy')}" data-sort-count="1" data-sort-name="${escapeAttr(fairy.name)}">
           <div class="core-item-icon">${fairy.icon}</div>
           <div>
             <b>${fairy.name}</b>
@@ -213,10 +270,14 @@ export function renderInventory() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，詳情視窗只讀取 GameDB，不改存檔。')}
+    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，排序只調整畫面順序，不改存檔。')}
     <div class="core-search-box">
       <label for="inventory-search">搜尋背包</label>
       <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度、來源或用途" autocomplete="off" />
+    </div>
+    <div class="core-sort-box">
+      <label for="inventory-sort">排序</label>
+      <select id="inventory-sort">${renderSortOptions()}</select>
     </div>
     <div class="core-filter-group">
       <p>分類</p>
@@ -238,7 +299,7 @@ export function renderInventory() {
   `;
 
   bindInventoryFilters(page);
-  updateInventorySearch(page);
+  sortInventoryCards(page);
 }
 
 export function initInventoryPage() {
