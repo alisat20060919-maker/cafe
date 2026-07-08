@@ -13,7 +13,9 @@ import {
 } from '@state';
 import { formatReward } from '@utils';
 
-const PAID_REFRESH_COST = { currency: 'tickets', amount: 1 };
+function getPaidRefreshCost() {
+  return GameDB.commissionConfig?.refreshCost || { currency: 'tickets', amount: 1 };
+}
 
 function getRequirements(commission) {
   return GameDB.getCommissionRequiredItems(commission);
@@ -54,7 +56,8 @@ function mergeUnlocks(...groups) {
 }
 
 export function getPaidRefreshCostText() {
-  return `${currencyLabel(PAID_REFRESH_COST.currency)} ×${PAID_REFRESH_COST.amount}`;
+  const cost = getPaidRefreshCost();
+  return `${currencyLabel(cost.currency)} ×${cost.amount}`;
 }
 
 export function getCommissionDisplayReward(commission) {
@@ -87,12 +90,13 @@ export function refreshDailyCommissionFree() {
 
 export function refreshDailyCommissionPaid() {
   const state = getState();
-  const current = Number(state.player?.[PAID_REFRESH_COST.currency] || 0);
-  if (current < PAID_REFRESH_COST.amount) {
+  const cost = getPaidRefreshCost();
+  const current = Number(state.player?.[cost.currency] || 0);
+  if (current < cost.amount) {
     return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
   }
 
-  if (!spendCurrency(PAID_REFRESH_COST.currency, PAID_REFRESH_COST.amount)) {
+  if (!spendCurrency(cost.currency, cost.amount)) {
     return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
   }
 
