@@ -282,6 +282,7 @@ export const GameDB = {
 
   gatherConfig: {
     dailyLimit: 5,
+    specialEventChance: 0.12,
   },
 
   gatherTables: {
@@ -294,6 +295,24 @@ export const GameDB = {
         { itemId: 'forest_cookie', qty: 1, weight: 20 },
         { itemId: 'star_berry', qty: 2, weight: 5 },
       ],
+      specialEvents: [
+        {
+          id: 'backyard_squirrel_gift',
+          title: '松鼠送來小禮物',
+          icon: '🐿️',
+          message: '一隻森林松鼠從樹洞裡探出頭，偷偷塞給你一份香香的小餅乾。',
+          weight: 70,
+          bonus: { items: { forest_cookie: 1 } },
+        },
+        {
+          id: 'backyard_star_dew',
+          title: '草葉上的星光露珠',
+          icon: '✨',
+          message: '草葉間閃過一點微光，你多收集到一滴乾淨的星露水。',
+          weight: 30,
+          bonus: { items: { stardew_water: 1 } },
+        },
+      ],
     },
     greenhouse: {
       title: '溫室照顧完成',
@@ -303,6 +322,24 @@ export const GameDB = {
         { itemId: 'stardew_water', qty: 1, weight: 30 },
         { itemId: 'moon_petals', qty: 2, weight: 10 },
         { itemId: 'star_berry', qty: 1, weight: 5 },
+      ],
+      specialEvents: [
+        {
+          id: 'greenhouse_moon_bloom',
+          title: '月光花忽然綻放',
+          icon: '🌙',
+          message: '溫室裡的月光花輕輕發亮，又掉下一片柔軟的花瓣。',
+          weight: 60,
+          bonus: { items: { moon_petals: 1 } },
+        },
+        {
+          id: 'greenhouse_stardew_drip',
+          title: '星露滴落',
+          icon: '💧',
+          message: '葉尖凝成一滴星露水，在你靠近時剛好落進瓶子裡。',
+          weight: 40,
+          bonus: { items: { stardew_water: 1 } },
+        },
       ],
     },
   },
