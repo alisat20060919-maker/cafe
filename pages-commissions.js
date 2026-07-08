@@ -4,7 +4,9 @@ import {
   canCompleteCommission,
   completeCommission,
   getCommissionDisplayReward,
+  getCommissionUnlockText,
   getPaidRefreshCostText,
+  isCommissionUnlocked,
   refreshDailyCommissionList,
   refreshDailyCommissionFree,
   refreshDailyCommissionPaid,
@@ -18,6 +20,7 @@ const COMMISSION_FILTERS = [
   { id: 'all', label: '全部', icon: '📋' },
   { id: 'ready', label: '可交付', icon: '✅' },
   { id: 'available', label: '商品不足', icon: '🧺' },
+  { id: 'locked', label: '未解鎖', icon: '🔒' },
   { id: 'completed', label: '已完成', icon: '🎀' },
 ];
 
@@ -81,11 +84,13 @@ function isSavedCompleted(record) {
 function getQuestViewStatus(quest) {
   const state = getState();
   if (isSavedCompleted(state.commissions[quest.id])) return 'completed';
+  if (!isCommissionUnlocked(quest.id)) return 'locked';
   return canCompleteCommission(quest.id) ? 'ready' : 'available';
 }
 
 function statusLabel(status) {
   return {
+    locked: '尚未解鎖',
     available: '商品不足',
     ready: '可交付',
     completed: '已完成',
@@ -93,7 +98,7 @@ function statusLabel(status) {
 }
 
 function statusRank(status) {
-  return { ready: 0, available: 1, completed: 2 }[status] ?? 99;
+  return { ready: 0, available: 1, locked: 2, completed: 3 }[status] ?? 99;
 }
 
 function difficultyRank(quest) {
@@ -243,6 +248,16 @@ function getFirstSource(quest) {
   return missingItems[0]?.source || GameDB.getItemSource('star_berry');
 }
 
+function renderLockedHint(quest, status) {
+  if (status !== 'locked') return '';
+  return `
+    <div class="core-missing-hint core-lock-hint">
+      <p>🔒 尚未解鎖：${getCommissionUnlockText(quest.id)}</p>
+      <small>先完成目前可交付的委託取得 EXP，升級後會自動開放。</small>
+    </div>
+  `;
+}
+
 function renderMissingHint(quest, status) {
   if (status !== 'available') return '';
 
@@ -272,6 +287,10 @@ function renderQuestButton(quest, status) {
     return '<button type="button" disabled>已完成</button>';
   }
 
+  if (status === 'locked') {
+    return `<button type="button" disabled>${getCommissionUnlockText(quest.id)}</button>`;
+  }
+
   if (status === 'ready') {
     return `<button type="button" data-complete="${quest.id}">完成委託</button>`;
   }
@@ -292,6 +311,7 @@ function renderQuestCard(entry) {
       <p class="core-customer">客人：${quest.customer}</p>
       <p>${quest.description}</p>
       <div class="core-recipe"><b>需要：</b>${renderRequirements(quest)}</div>
+      ${renderLockedHint(quest, status)}
       ${renderMissingHint(quest, status)}
       <div class="core-reward"><b>獎勵：</b>${formatReward(getCommissionDisplayReward(quest))}</div>
       ${renderQuestButton(quest, status)}
