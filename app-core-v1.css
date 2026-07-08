@@ -129,6 +129,7 @@
 #inventory-list[data-search-mode="filtered"] .core-item-card[data-search-match="false"]{display:none}
 
 .collection-entry-actions{margin:0 0 10px;justify-content:flex-start}.collection-section{margin:12px 0}.collection-section h3{margin:0 0 8px;color:var(--core-ink);font-size:17px}.collection-card strong{color:#8b672d}.collection-actions{margin:0 0 12px;justify-content:flex-start}
+.collection-card.is-undiscovered{filter:grayscale(.82);opacity:.68;background:linear-gradient(135deg,rgba(238,235,228,.92),rgba(220,218,213,.78));border-style:dashed}.collection-card.is-undiscovered .core-item-icon{background:rgba(255,255,255,.5);color:#777}.collection-card.is-undiscovered b,.collection-card.is-undiscovered p{color:#777}.collection-card.is-undiscovered strong{color:#777}
 
 .core-quest-top{display:flex;justify-content:space-between;gap:8px}.core-quest-top span,.core-quest-top strong{font-size:12px;background:rgba(255,255,255,.65);border:1px solid rgba(126,84,34,.2);border-radius:999px;padding:5px 8px;color:#6a4b21}.core-quest-card h3{margin:8px 0 3px;color:var(--core-ink)}.core-customer{font-weight:800;color:#7b5723}.core-recipe,.core-reward{margin-top:8px;padding:8px;border-radius:14px;background:rgba(255,255,255,.55);font-size:13px;line-height:1.5}.core-quest-card button{width:100%;margin-top:10px}.core-quest-card.status-ready{border-color:rgba(145,240,208,.65);box-shadow:0 10px 24px rgba(20,80,60,.18)}
 
