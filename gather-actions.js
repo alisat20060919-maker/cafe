@@ -23,6 +23,10 @@ function getDailyGatherLimit() {
   return Number(GameDB.gatherConfig?.dailyLimit || 5);
 }
 
+function getSpecialEventChance() {
+  return Number(GameDB.gatherConfig?.specialEventChance || 0);
+}
+
 function getGatherTable(locationId) {
   return GameDB.gatherTables?.[locationId] || null;
 }
@@ -83,9 +87,32 @@ function getDropView(drop, totalWeight = 0) {
   };
 }
 
+function getBonusRewardViews(bonus = {}) {
+  return Object.entries(bonus.items || {}).map(([itemId, qty]) => getDropView({ itemId, qty, weight: 0 }));
+}
+
 function formatGatherDrop(drop) {
   const view = getDropView(drop);
   return `${view.icon}${view.name} ×${view.qty}`;
+}
+
+function rollSpecialEvent(table) {
+  const events = table.specialEvents || [];
+  if (!events.length) return null;
+  if (Math.random() >= getSpecialEventChance()) return null;
+
+  const event = pickWeighted(events);
+  Object.entries(event.bonus?.items || {}).forEach(([itemId, qty]) => {
+    addItem(itemId, Number(qty || 0));
+  });
+
+  return {
+    id: event.id,
+    title: event.title,
+    icon: event.icon || '✨',
+    message: event.message,
+    rewards: getBonusRewardViews(event.bonus),
+  };
 }
 
 export function canGatherAt(locationId = 'backyard') {
@@ -193,6 +220,7 @@ export function gatherAt(locationId = 'backyard') {
   const totalWeight = table.drops.reduce((sum, item) => sum + Number(item.weight || 0), 0);
   const dropView = getDropView(drop, totalWeight);
   addItem(drop.itemId, drop.qty || 1);
+  const specialEvent = rollSpecialEvent(table);
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
 
@@ -203,11 +231,12 @@ export function gatherAt(locationId = 'backyard') {
     title: table.title,
     drop,
     dropView,
+    specialEvent,
     remaining,
     limit,
     used: record.count,
     isDepleted: remaining <= 0,
     preview: getGatherDropPreview(locationId),
-    message: `你找到了 ${formatGatherDrop(drop)}。今日還能採集 ${remaining} 次。`,
+    message: `你找到了 ${formatGatherDrop(drop)}。${specialEvent ? ` ${specialEvent.title}！` : ''}今日還能採集 ${remaining} 次。`,
   };
 }
