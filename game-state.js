@@ -1,6 +1,6 @@
-import { GameDB } from './game-data.js';
-import { loadSave, saveSave, clearSave } from './save.js';
-import { emitStateChanged } from './event-bus.js';
+import { GameDB } from '@db';
+import { loadSave, saveSave, clearSave } from '@save';
+import { emitStateChanged } from '@eventBus';
 
 export const SAVE_VERSION = 1;
 
