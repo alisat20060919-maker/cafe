@@ -1,5 +1,5 @@
 import { GameDB } from '@db';
-import { getState } from '@state';
+import { getState, isSceneUnlocked } from '@state';
 import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { canCraft, craftRecipe } from '@actions/craft';
 import { showModal } from '@ui';
@@ -83,6 +83,10 @@ function getStationRecipes(stationId) {
 
 function isRecipeStation(sceneId) {
   return Boolean(GameDB.stations?.[sceneId]);
+}
+
+function canEnterRecipeStation(sceneId) {
+  return isRecipeStation(sceneId) && isSceneUnlocked(sceneId);
 }
 
 function renderRecipeCost(cost = {}) {
@@ -408,6 +412,11 @@ function bindHomeEvents() {
       }
 
       if (isRecipeStation(scene.id)) {
+        if (!canEnterRecipeStation(scene.id)) {
+          showLocationHintModal(scene);
+          return;
+        }
+
         showRecipeListModal(scene);
         return;
       }
