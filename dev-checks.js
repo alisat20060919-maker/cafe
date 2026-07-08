@@ -1,5 +1,6 @@
 import { GameDB } from '@db';
 import { isUnlocked, getUnlockRequirementText } from '@state';
+import { canCraft } from '@actions/craft';
 import { validateGameDB } from '@validator';
 
 function shouldRunDevChecks() {
@@ -156,6 +157,26 @@ function validateUnlockRequirementCheck() {
   return { ok: true, issues: [] };
 }
 
+function validateStationLockCheck() {
+  const issues = [];
+  const kitchenCraft = canCraft('recipe_moon_latte');
+  const alchemyCraft = canCraft('recipe_moon_dew');
+
+  if (!kitchenCraft.ok) addIssue(issues, 'stationLock.kitchen', '新玩家應可在廚房製作已開放配方。');
+  if (alchemyCraft.status !== 'locked_station') addIssue(issues, 'stationLock.alchemy', '新玩家不應可製作煉金室配方。');
+  if (!alchemyCraft.unlockRequirementText) addIssue(issues, 'stationLock.alchemyText', '鎖定製作站應提供解鎖條件文字。');
+
+  if (issues.length) {
+    console.groupCollapsed(`[Station Lock Check] ${issues.length} issues`);
+    issues.forEach((message) => console.error(message));
+    console.groupEnd();
+    return { ok: false, issues };
+  }
+
+  console.info('[Station Lock Check] ok');
+  return { ok: true, issues: [] };
+}
+
 export function runDevChecks() {
   if (!shouldRunDevChecks()) return { skipped: true };
   const db = validateGameDB();
@@ -163,5 +184,6 @@ export function runDevChecks() {
   const playerProgress = validatePlayerProgressCheck();
   const commissionExp = validateCommissionExpCheck();
   const unlockRequirement = validateUnlockRequirementCheck();
-  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement };
+  const stationLock = validateStationLockCheck();
+  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement, stationLock };
 }
