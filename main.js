@@ -3,7 +3,7 @@ import { initState } from '@state';
 import { initUI, showOpeningStoryIfNeeded } from '@ui';
 import { initHome, renderHome } from '@home';
 import { initRouter } from '@router';
-import { renderGacha } from '@pages/gacha';
+import { initGachaPage, renderGacha } from '@pages/gacha';
 import { initInventoryPage, renderInventory } from '@pages/inventory';
 import { initFairiesPage, renderFairies } from '@pages/fairies';
 import { renderCollection } from '@pages/collection';
@@ -14,6 +14,7 @@ function boot() {
   initState();
   initUI();
   initHome();
+  initGachaPage();
   initInventoryPage();
   initFairiesPage();
   initCommissionsPage();
