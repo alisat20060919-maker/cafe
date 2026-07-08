@@ -289,6 +289,18 @@ function validateRecipes(errors) {
   });
 }
 
+function validateCommissionProductSource(errors, itemId, scope) {
+  const source = GameDB.getItemSource?.(itemId);
+  if (!source || source.type !== 'station') {
+    pushIssue(errors, scope, `${itemId} 是委託要求的產品，來源必須指向製作站 station。`);
+    return;
+  }
+
+  if (!hasOwn(GameDB.stations, source.id)) {
+    pushIssue(errors, scope, `${itemId} 指向的製作站 ${source.id || '空值'} 沒有登錄在 GameDB.stations。`);
+  }
+}
+
 function validateCommissionRequirements(errors, warnings, quest, scope) {
   const requirements = GameDB.getCommissionRequiredItems?.(quest) || {};
   if (!Object.keys(requirements).length) {
@@ -306,6 +318,10 @@ function validateCommissionRequirements(errors, warnings, quest, scope) {
     Object.keys(quest.requiredItems).forEach((itemId) => {
       if (hasOwn(GameDB.items, itemId) && !GameDB.isProductItem(itemId)) {
         pushIssue(errors, `${scope}.requiredItems`, `requiredItems 只能要求產品類 item，目前 ${itemId} 不是產品。`);
+      }
+
+      if (hasOwn(GameDB.items, itemId) && GameDB.isProductItem(itemId)) {
+        validateCommissionProductSource(errors, itemId, `${scope}.requiredItems`);
       }
     });
   }
