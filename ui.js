@@ -166,6 +166,71 @@ export function closeModal() {
   unlockBodyScroll();
 }
 
+function openExportSaveModal() {
+  const code = exportSave(getState());
+  showModal(`
+    <div class="core-modal-card">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <h2>匯出存檔</h2>
+      <textarea readonly>${code}</textarea>
+      <p class="core-modal-note">先複製起來。之後換裝置可以用匯入存檔貼回來。</p>
+    </div>
+  `);
+}
+
+function openImportSaveModal() {
+  showModal(`
+    <div class="core-modal-card">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">SAVE IMPORT</span>
+      <h2>匯入存檔</h2>
+      <textarea id="saveImportText" placeholder="把匯出的存檔文字貼在這裡"></textarea>
+      <div class="core-setting-list">
+        <button type="button" data-confirm-import-save>匯入存檔</button>
+        <button type="button" data-close-modal>取消</button>
+      </div>
+      <p class="core-modal-note">匯入後會覆蓋目前這台裝置的本機存檔。</p>
+    </div>
+  `);
+
+  $('[data-confirm-import-save]', modalHost)?.addEventListener('click', () => {
+    const text = $('#saveImportText', modalHost)?.value?.trim();
+    if (!text) {
+      showNotice('匯入失敗', '請先貼上存檔文字。');
+      return;
+    }
+
+    try {
+      replaceState(importSave(text));
+      closeModal();
+      showNotice('匯入成功', '存檔已更新。');
+    } catch (error) {
+      showNotice('匯入失敗', '存檔文字格式不正確。');
+    }
+  });
+}
+
+function openResetSaveModal() {
+  showModal(`
+    <div class="core-modal-card compact">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">RESET SAVE</span>
+      <h2>清除存檔？</h2>
+      <p>這會重置精靈咖啡屋的本機存檔。清除後不能復原，建議先匯出備份。</p>
+      <div class="core-setting-list">
+        <button type="button" data-confirm-reset-save>確定清除</button>
+        <button type="button" data-close-modal>取消</button>
+      </div>
+    </div>
+  `);
+
+  $('[data-confirm-reset-save]', modalHost)?.addEventListener('click', () => {
+    resetState();
+    closeModal();
+    showNotice('已清除', '存檔已重置。');
+  });
+}
+
 export function openSettings() {
   const state = getState();
   showModal(`
@@ -195,34 +260,7 @@ export function openSettings() {
     });
   });
 
-  $('[data-export-save]', modalHost)?.addEventListener('click', () => {
-    const code = exportSave(getState());
-    showModal(`
-      <div class="core-modal-card">
-        <button type="button" class="core-modal-close" data-close-modal>×</button>
-        <h2>匯出存檔</h2>
-        <textarea readonly>${code}</textarea>
-        <p class="core-modal-note">先複製起來。之後換裝置可以用匯入存檔貼回來。</p>
-      </div>
-    `);
-  });
-
-  $('[data-import-save]', modalHost)?.addEventListener('click', () => {
-    const text = prompt('貼上你的存檔文字');
-    if (!text) return;
-    try {
-      replaceState(importSave(text));
-      closeModal();
-      showNotice('匯入成功', '存檔已更新。');
-    } catch (error) {
-      showNotice('匯入失敗', '存檔文字格式不正確。');
-    }
-  });
-
-  $('[data-reset-save]', modalHost)?.addEventListener('click', () => {
-    if (!confirm('確定要清除精靈咖啡屋存檔嗎？')) return;
-    resetState();
-    closeModal();
-    showNotice('已清除', '存檔已重置。');
-  });
+  $('[data-export-save]', modalHost)?.addEventListener('click', openExportSaveModal);
+  $('[data-import-save]', modalHost)?.addEventListener('click', openImportSaveModal);
+  $('[data-reset-save]', modalHost)?.addEventListener('click', openResetSaveModal);
 }
