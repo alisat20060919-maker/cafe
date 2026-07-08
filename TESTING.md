@@ -11,6 +11,8 @@
 5. 確認沒有殘留上一版 `coreXX` 搜尋結果。
 6. 需要跑開發檢查時，使用 `index.html?force=coreXXa&dev=1` 或 `?checks=1`。
 7. 正式玩家入口不應強制執行 validator / smoke test。
+8. `main.js` 只應負責啟動與註冊，不應直接放 MVP Smoke Test 大段邏輯。
+9. `dev-checks.js` 必須被 `@dev/checks` 匯入，並由 `main.js` 呼叫 `runDevChecks()`。
 
 ## 2. GameDB 資料檢查
 
@@ -21,21 +23,11 @@
 5. 新增素材、精靈、委託、祈願池、採集表、配方、劇情資料後，必須確認 validator 沒有抓到不存在的 id。
 6. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
 7. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
-8. 新增煉成素材時，`item.type` 必須是已登錄的 `refined_material`。
-9. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
-10. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
-11. `GameDB.materialTypes` 與 `GameDB.productTypes` 都必須是非空陣列，且只能包含已登錄的 `itemTypes`。
-12. `GameDB.materialTypes` 與 `GameDB.productTypes` 不可重疊。
-13. 每個 `GameDB.items` 都必須能被 `GameDB.getItemRole()` 判定為 `material` 或 `product`。
-14. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
-15. 新委託的 `requiredItems` 必須指向產品類 item，例如 `moon_latte`、`star_berry_tart`、`dream_cocoa`。
-16. `GameDB.getCommissionRequiredItems()` 必須能讀取新 `requiredItems`，並保留舊 `cost` 相容。
-17. `GameDB.commissionConfig.dailyCount` 必須是正整數。
-18. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
-19. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
-20. `GameDB.commissionConfig.difficultyRules` 必須包含目前使用的委託星級。
-21. 每個 difficulty rule 都必須有 `rank`、`label`、`requiredProductQty` 與 `reward` 區間。
-22. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
+8. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes`、`GameDB.stories` 仍必須存在且結構不變。
+9. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
+10. `GameDB.commissionConfig.refreshCost` 必須指向存在的 currency，且 amount 大於 0。
+11. `GameDB.commissionConfig.categories` 必須包含 `daily`、`main`、`fairy`、`story`、`event`、`mvp`。
+12. `GameDB.stories.opening` 必須是非空陣列，每段都要有 `speaker`、`title`、`body`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -44,13 +36,11 @@
 3. 咖啡廳可以進入店內。
 4. 店內今日菜單、接委託、商品櫃、客人訂單可以切換。
 5. 返回地圖正常。
-6. 手機橫向滑動不造成整頁破版。
-7. 後山與溫室若已解鎖，地圖會顯示今日剩餘採集次數。
-8. 後山與溫室若已解鎖，地圖會顯示可能掉落預覽。
-9. 廚房按「開始製作」會顯示配方列表。
-10. 煉金室按「進入煉金」會顯示配方列表。
-11. 素材足夠的配方會顯示可點擊「製作」按鈕。
-12. 素材不足的配方按鈕會 disabled，不能扣素材。
+6. 後山與溫室若已解鎖，地圖會顯示今日剩餘採集次數與可能掉落預覽。
+7. 廚房按「開始製作」會顯示配方列表。
+8. 煉金室按「進入煉金」會顯示配方列表。
+9. 素材足夠的配方會顯示可點擊「製作」按鈕。
+10. 素材不足的配方按鈕會 disabled，不能扣素材。
 
 ## 4. 採集測試
 
@@ -62,53 +52,20 @@
 6. 第 6 次會提示今天這裡已採完。
 7. 掉落素材會出現在背包。
 8. 採集結果彈窗會顯示本次掉落、數量、稀有度、類型與今日剩餘次數。
-9. 採集結果彈窗會顯示該地點可能掉落表與機率。
-10. 採集成功時，小機率可能顯示特殊事件區塊。
-11. 特殊事件若有額外素材，額外素材會進背包。
-12. 特殊事件不會額外扣每日採集次數。
-13. 煉金室不會給原料，不會扣採集次數，只顯示煉金配方列表。
-14. 廚房不會透過採集流程給原料。
+9. 採集成功時，小機率可能顯示特殊事件區塊。
+10. 特殊事件若有額外素材，額外素材會進背包。
+11. 特殊事件不會額外扣每日採集次數。
+12. 煉金室不會給原料，不會扣採集次數，只顯示煉金配方列表。
 
-### 4-1. 採集刷新規則
-
-1. 採集刷新使用玩家本地日期字串 `YYYY-MM-DD`。
-2. 每個採集地點各自記錄 `lastDate` 與 `count`。
-3. 後山與溫室分開刷新、分開計數，不共用每日次數。
-4. 每個已解鎖採集地點每天最多採集 `GameDB.gatherConfig.dailyLimit` 次，目前預設為 5。
-5. 當 `record.lastDate !== today` 時，該地點的 `count` 會歸零並更新 `lastDate`。
-6. 採集用完時，不會掉落素材，只會顯示今日已採完。
-7. 未解鎖採集地點不顯示剩餘次數、不顯示掉落預覽。
-8. 未解鎖採集地點被點擊時，不會扣次數、不會掉落、不會寫入 inventory，只顯示解鎖提示。
-9. 掉落表、機率、素材名稱、圖示、描述都從 GameDB 讀取，不寫入 state。
-10. state 只保存動態資料：`gathering[sceneId].lastDate`、`gathering[sceneId].count`、`unlockedScenes[sceneId]`。
-
-### 4-2. 採集特殊事件規則
-
-1. 特殊事件只允許在正常採集成功後抽取。
-2. `locked`、`depleted`、`error` 或未開放地點都不可觸發特殊事件。
-3. 特殊事件機率由 `GameDB.gatherConfig.specialEventChance` 控制，但 action 端會把上限壓在 5%。
-4. 特殊事件資料放在 `GameDB.gatherTables[sceneId].specialEvents`，不可寫死在 page。
-5. 額外掉落必須由 `gather-actions.js` 透過既有 `addItem()` 流程處理。
-6. 特殊事件只回傳 `specialEvent` 給 UI 顯示，不新增 state 欄位。
-7. 本步不需要更新 `SAVE_VERSION`。
-
-## 5. 配方資料 / 製作測試
+## 5. 製作測試
 
 1. `GameDB.recipes` 可以正常被載入，不造成白屏。
 2. 每個 recipe 都有 `id`、`name`、`station`、`category`、`cost`、`output`。
-3. 每個 recipe 的 key 必須與 `recipe.id` 一致。
-4. `recipe.cost` 裡的 item 必須存在於 `GameDB.items`。
-5. `recipe.output.itemId` 必須存在於 `GameDB.items`。
-6. `recipe.output.qty` 必須大於 0。
-7. `recipe.station` 必須存在於 `GameDB.stations`。
-8. 廚房與煉金室配方列表必須從 `GameDB.recipes` 讀取，不可在 `home.js` 自建配方表。
-9. 配方列表會顯示需求素材、目前持有數、產出成品與說明。
-10. 製作邏輯必須由 `craft-actions.js` 處理，不可由 UI 直接改 state。
-11. 素材足夠時按「製作」會扣除 cost、增加 output、並呼叫 `persistState()`。
-12. 素材不足時不可扣素材、不可產出成品。
-13. 製作成功後成品會出現在背包，並自動標記為圖鑑已發現。
-14. 新增製作 action 不需要更新 `SAVE_VERSION`，除非新增玩家持久化欄位。
-15. 煉金室至少能看到 `月光露珠`、`星莓糖漿`、`夢境精華` 三個基礎配方。
+3. 廚房與煉金室配方列表必須從 `GameDB.recipes` 讀取。
+4. 製作邏輯必須由 `craft-actions.js` 處理，不可由 UI 直接改 state。
+5. 素材足夠時按「製作」會扣除 cost、增加 output、並呼叫 `persistState()`。
+6. 素材不足時不可扣素材、不可產出成品。
+7. 製作成功後成品會出現在背包，並自動標記為圖鑑已發現。
 
 ## 6. 委託測試
 
@@ -117,35 +74,19 @@
 3. 月光花瓣拿鐵委託應要求 `moon_latte ×1`，不是直接吃 `moon_petals`。
 4. 星屑莓果小塔委託應要求 `star_berry_tart ×1`。
 5. 夜空碎片可可委託應要求 `dream_cocoa ×1`。
-6. 缺少成品時顯示缺少數量。
-7. 缺少成品時按鈕導向廚房製作站。
-8. 成品足夠時可以完成委託。
-9. 完成後扣除 requiredItems，並發放獎勵。
-10. 已完成委託不可重複領獎。
-11. 舊 `cost` 委託若暫時存在，仍應由 `GameDB.getCommissionRequiredItems()` 相容讀取。
-12. 完成委託後，`state.commissions[questId].status` 必須寫入 `completed`。
-13. UI 顯示用的 `available`、`ready` 不可寫入 state。
-14. 舊存檔若存在 `status: 'claimed'`，migration 後應轉為 `completed`。
-15. state 中不存在於 `GameDB.commissions` 的委託紀錄應在 migration 時被清掉。
-16. 每日委託池只可抽 `category: 'daily'` 的委託。
-17. 非 daily 的 `fairy`、`story`、`event` 委託不可被塞進 `state.dailyCommissions.ids`。
-18. 每日委託洗牌必須用 Fisher-Yates，不使用 `sort(() => Math.random() - 0.5)`。
-19. 委託分類按鈕應顯示：全部、可交付、商品不足、已完成。
-20. 分類按鈕切換後，只影響畫面，不可寫入 state。
-21. 委託排序下拉選單應可切換：預設順序、狀態排序、難度高到低。
-22. 狀態排序時，順序應為可交付、商品不足、已完成。
-23. 難度高到低排序時，星等較高的委託應排在前面。
-24. 分類後若沒有符合的委託，應顯示空狀態，不可白屏。
-25. 每日委託應使用玩家本地日期刷新，不使用網路時間。
-26. 免費刷新每天只能使用一次。
-27. 付費刷新應讀取 `GameDB.commissionConfig.refreshCost`，目前為 `靈感券 ×1`。
-28. 委託難度必須登錄在 `GameDB.commissionConfig.difficultyRules`。
-29. `daily` / `mvp` 委託需求總數必須符合該難度的 `requiredProductQty` 區間。
-30. `daily` / `mvp` 委託葉幣與星糖獎勵必須符合該難度的 reward 區間。
-31. 一般委託不可顯示、保存或發放精靈好感度。
-32. 只有 `category: 'fairy'` 的精靈專屬委託才可以透過 `reward.affection` 發放好感。
-33. 未契約精靈即使被指定為 affection 目標，也不可累積好感。
-34. 委託頁事件應使用 event delegation，不可每次 `renderCommissions()` 後對每個按鈕重新綁一輪 listener。
+6. 缺少成品時顯示缺少數量、配方需求與導向按鈕。
+7. 成品足夠時可以完成委託。
+8. 完成後扣除 requiredItems，並發放獎勵。
+9. 已完成委託不可重複領獎。
+10. `state.commissions[questId].status` 只可寫入 `completed` 或 `in_progress`。
+11. UI 顯示用的 `available`、`ready` 不可寫入 state。
+12. 每日委託池只可抽 `category: 'daily'` 的委託。
+13. 非 daily 的 `fairy`、`story`、`event` 委託不可被塞進 `state.dailyCommissions.ids`。
+14. 每日委託洗牌必須用 Fisher-Yates，不使用 `sort(() => Math.random() - 0.5)`。
+15. 付費刷新應讀取 `GameDB.commissionConfig.refreshCost`，目前為 `靈感券 ×1`。
+16. 一般委託不可顯示、保存或發放精靈好感度。
+17. 只有 `category: 'fairy'` 的精靈專屬委託才可以透過 `reward.affection` 發放好感。
+18. 委託頁事件應使用 event delegation，不可每次 `renderCommissions()` 後對每個按鈕重新綁一輪 listener。
 
 ## 7. 祈願測試
 
@@ -155,6 +96,7 @@
 4. 掉落 item 會進背包。
 5. 掉落 fairy 會進 state.fairies。
 6. 祈願結果不造成白屏。
+7. 祈願頁事件應由 `initGachaPage()` 綁定一次，不可每次 `renderGacha()` 後重綁抽卡按鈕。
 
 ## 8. 背包測試
 
@@ -163,16 +105,20 @@
 3. item 名稱、icon、稀有度、描述從 GameDB 讀取。
 4. 沒有擁有的物品不應被誤判成擁有。
 5. 新增 item 後背包可正常顯示。
+6. 搜尋、分類、稀有度、排序都可運作。
+7. 點「查看詳情」可打開物品或精靈詳細資料。
+8. 背包頁事件應由 `initInventoryPage()` 綁定一次，不可每次 `renderInventory()` 後重綁大量 listener。
 
 ## 9. 精靈角色頁測試
 
 1. 底部導航的「精靈」可以打開精靈角色頁。
-2. 精靈頁使用角色卡格狀顯示，而不是背包清單。
-3. 每張角色卡顯示精靈 icon、名稱、稀有度、契約狀態、好感、來源與台詞。
-4. 點擊「查看角色資料」會打開角色詳細資料彈窗。
+2. 精靈頁使用小格角色圖鑑顯示。
+3. 每格顯示精靈 icon、名稱、稀有度、契約狀態、好感。
+4. 點擊小格角色卡會打開角色詳細資料彈窗。
 5. 未契約精靈好感顯示為 `—`。
-6. 未契約精靈說明應提示尚未契約前不會累積好感度。
+6. 未契約精靈不會累積好感度。
 7. 精靈頁背景應為棕色系，不使用過亮白底。
+8. 精靈頁事件應由 `initFairiesPage()` 綁定一次，不可每次 `renderFairies()` 後重綁每張卡片事件。
 
 ## 10. State / Migration 測試
 
@@ -181,14 +127,9 @@
 3. `SAVE_VERSION` 有正確更新。
 4. state 不存素材名稱、描述、圖示、來源文字。
 5. 清除 localStorage 後，新存檔可正常建立。
-6. `state.unlockedScenes` 只存 boolean，不存場景名稱、描述、掉落表。
-7. 舊存檔缺少 `unlockedScenes` 時，migration 會補上預設解鎖狀態。
-8. `state.commissions` 只保存 `completed` 或 `in_progress`。
-9. `state.commissions` 不保存 `available`、`ready`、`locked` 這種可計算狀態。
-10. 舊 `claimed` 委託狀態會被 migration 轉為 `completed`。
-11. 舊存檔載入後 `saveVersion` 應為最新版。
-12. 未契約精靈的 `affection` 應在 migration 後歸零。
-13. 已契約精靈才可以保留與增加 `affection`。
+6. 舊 `claimed` 委託狀態會被 migration 轉為 `completed`。
+7. 未契約精靈的 `affection` 應在 migration 後歸零。
+8. 已契約精靈才可以保留與增加 `affection`。
 
 ## 11. MVP 核心循環驗收
 
@@ -202,9 +143,7 @@
 8. EXP 達標時會升等，Lv.2 應解鎖煉金室。
 9. 解鎖後煉金室可以進入配方列表，不可白屏。
 10. 完成一輪採集 -> 製作 -> 委託 -> 獎勵後，重新整理頁面，存檔仍能正常載入。
-11. state 只保存玩家動態資料，不保存 GameDB 可推導資料。
-12. 使用 `?dev=1` 時，`validateGameDB()` 與 MVP Smoke Test 不應出現 error。
-13. 手機版底部導覽、委託頁、配方頁、精靈頁都必須可點、可捲動、不遮住主要按鈕。
+11. 使用 `?dev=1` 時，`validateGameDB()` 與 MVP Smoke Test 不應出現 error。
 
 ## 12. 手機 UI 測試
 
@@ -224,35 +163,27 @@
 
 ```text
 首頁
-祈願
-背包
-精靈角色頁
-委託
-委託分類 / 排序
+祈願 / 抽卡 / 結果顯示
+背包 / 搜尋 / 分類 / 排序 / 詳情
+精靈小格角色卡 / 詳情彈窗
+委託 / 分類 / 排序
 委託每日刷新 / 免費刷新 / 付費刷新
 一般委託不顯示 / 不保存 / 不發放精靈好感
-委託難度與獎勵平衡 validator
 每日委託只抽 category: daily
 後山採集
 溫室採集
 採集結果彈窗
 採集特殊事件
-採集掉落預覽
 廚房配方列表
-廚房製作成功/素材不足
+廚房製作成功 / 素材不足
 煉金室配方列表
-煉金室製作成功/素材不足
+煉金室製作成功 / 素材不足
 委託產品需求 / 完成扣成品
-委託狀態機 migration / completed 狀態
-配方資料 validator
-GameDB Facade 拆檔後仍能讀 items/recipes/stories
-產品/原料分類規則
 開場劇情從 GameDB.stories.opening 讀取
 設定匯入 / 匯出 / 清除存檔
-無原生 prompt / confirm
-未解鎖地點提示
-簽到
-設定
+無原生 alert / prompt / confirm
+main.js 只負責啟動
+code-export.html 包含 dev-checks.js
 ```
 
 全部正常後，才進下一步開發。
