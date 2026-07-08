@@ -47,6 +47,15 @@
 11. 所有關聯性資料的 Getter 邏輯必須封裝在 `game-data.js` 的 `GameDB` 內，例如來源解析、來源 label、item source 查詢。
 12. Page 與 Action 不可以知道 `GameDB` 內部是用 `routes`、`scenes` 還是 `stations` 分類；UI 只能呼叫 `GameDB.getItemSource()`、`GameDB.getSourceLabel()` 這類公開 getter。
 
+## 產品與原料分類規則
+
+1. `GameDB.materialTypes` 定義原料類型，目前包含 `material`、`refined_material`、`rare_material`、`event_material`。
+2. `GameDB.productTypes` 定義可交付產品類型，目前包含 `sweet`、`drink`、`product`。
+3. 新增 item type 時，必須決定它屬於 `materialTypes` 或 `productTypes`，不可兩邊都放。
+4. UI、Action、委託系統判斷「原料 / 產品」時，只能使用 `GameDB.isMaterialItem()`、`GameDB.isProductItem()` 或 `GameDB.getItemRole()`。
+5. 不要在 Page 或 Action 裡自己寫 `item.type === 'drink'` 這類產品判斷。
+6. 第 37 步開始委託支援產品需求時，應優先要求產品 item，例如 `moon_latte`，而不是直接消耗一階素材。
+
 ## ID 命名規範
 
 所有遊戲資料 ID 都必須使用穩定英文 snake_case，不使用中文、空白、emoji 或會隨文案改變的名稱。
