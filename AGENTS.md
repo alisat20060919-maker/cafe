@@ -21,11 +21,35 @@
 
 ## 模組快取與版本更新協議 (Import Maps 架構)
 
-本專案全面採用原生的 Import Maps 來管理 ES Modules 路徑與快取，請嚴格遵守以下規則：
+這個專案使用 GitHub Pages + Vanilla JS + 原生 ES Modules + Import Maps。
 
-1. **絕對禁止相對路徑 Import**：所有 JS 檔案間的互相引用，**一律使用別名**（例如 `@state`, `@ui`, `@events`），嚴禁出現 `./game-state.js` 這種寫法。
-2. **唯一版本控制中心**：所有的版本號（`?v=coreXX`）**只允許**出現在 `index.html` 的 `<script type="importmap">` 區塊以及主入口 `<script type="module" src="main.js">` 中。
-3. **改版更新流程**：每次進行邏輯升級時，只需修改 `index.html` 內 importmap 裡面的版本號即可，JS 檔案內部完全不需要更動。
+1. **絕對禁止相對路徑 Import**：所有 JS 檔案間的互相引用，一律使用別名，例如 `@state`、`@ui`、`@db`、`@eventBus`。
+2. **唯一版本控制中心**：所有 JS 模組版本號（`?v=coreXX`）只允許出現在 `index.html` 的 `<script type="importmap">` 區塊。
+3. **改版更新流程**：每次進行邏輯升級時，只修改 `index.html` 內 importmap 的版本號，JS 檔案內部完全不需要更動版本。
+4. 不要混用同一模組的不同 URL，避免瀏覽器載出兩份 module instance 造成 state 分裂。
+
+## GameDB 靜態資料庫規則
+
+本專案短期採用單一 `game-data.js` 作為靜態資料庫，對外統一匯出 `GameDB`。
+
+1. 不使用 JSON 檔案作為遊戲資料來源。避免 `fetch()`、async loading、快取與白屏風險。
+2. 靜態資料一律放在 `GameDB`，包含素材、精靈、產品、配方、採集表、來源提示、委託與祈願池。
+3. Page 與 Action 不可以自建資料表，例如不要在 `pages-commissions.js` 內寫 `itemSources`，也不要在 `gather-actions.js` 內寫 `gatherTables`。
+4. Page 與 Action 只負責讀取 `GameDB` 並執行渲染或遊戲邏輯。
+5. 新增素材、精靈、產品、配方或來源時，優先只修改 `game-data.js`。
+6. 煉金室不是原料採集點；煉金室用於一階素材煉成二階、三階素材，或製作正式商品。
+7. 未來 `game-data.js` 太肥時，才拆成 `data/items.js`、`data/recipes.js`、`data/gather.js` 等資料模組。
+8. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`，不可直接 import `@data/items`。
+
+## State 正規化規則
+
+`game-state.js` 與 localStorage 只存玩家動態資料，不存完整靜態敘述。
+
+1. State 只存 ID、數量、解鎖狀態、好感度、完成狀態與日期計數。
+2. State 不存素材名稱、描述、圖示、來源文字、稀有度與配方說明。
+3. UI 渲染時用 ID 回查 `GameDB`，例如 `inventory` 只存 `{ itemId: count }`。
+4. 擴充 state 時只新增欄位，不刪舊欄位，不改舊欄位語意。
+5. 新增 state 欄位時必須確認 `migrateSave()` 能讓舊存檔自動補上預設值。
 
 ## 事件流
 
