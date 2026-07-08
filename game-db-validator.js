@@ -8,6 +8,26 @@ function pushIssue(list, scope, message) {
   list.push(`[${scope}] ${message}`);
 }
 
+function validateRegistry(errors, registry = {}, scope = 'registry') {
+  Object.entries(registry || {}).forEach(([id, entry]) => {
+    if (!entry || typeof entry !== 'object') {
+      pushIssue(errors, `${scope}.${id}`, '登錄資料必須是物件。');
+      return;
+    }
+
+    if (entry.id !== id) pushIssue(errors, `${scope}.${id}`, `id 應為 ${id}，目前是 ${entry.id || '空值'}。`);
+    if (!entry.label) pushIssue(errors, `${scope}.${id}`, '缺少 label。');
+  });
+}
+
+function getSourceRegistry(sourceType) {
+  return {
+    route: GameDB.routes,
+    scene: GameDB.scenes,
+    station: GameDB.stations,
+  }[sourceType] || null;
+}
+
 function validateItems(errors, warnings) {
   Object.entries(GameDB.items || {}).forEach(([itemId, item]) => {
     if (!item || typeof item !== 'object') {
@@ -45,7 +65,16 @@ function validateItemSources(errors, warnings) {
 
     if (!source.type) pushIssue(errors, `itemSources.${itemId}`, '缺少 type。');
     if (!source.id) pushIssue(errors, `itemSources.${itemId}`, '缺少 id。');
-    if (!source.label) pushIssue(warnings, `itemSources.${itemId}`, '缺少 label，UI 可能 fallback。');
+
+    const registry = getSourceRegistry(source.type);
+    if (!registry) {
+      pushIssue(errors, `itemSources.${itemId}`, `未知的來源 type：${source.type}。`);
+      return;
+    }
+
+    if (!hasOwn(registry, source.id)) {
+      pushIssue(errors, `itemSources.${itemId}`, `${source.type}:${source.id} 沒有登錄在 GameDB。`);
+    }
 
     if (source.type === 'scene' && !hasOwn(GameDB.gatherTables, source.id)) {
       pushIssue(warnings, `itemSources.${itemId}`, `指向 scene:${source.id}，但 GameDB.gatherTables 沒有對應採集表；若這是製作站，請改成 station。`);
@@ -84,6 +113,7 @@ function validateDrops(errors, drops = [], scope = 'drops') {
 function validateGatherTables(errors) {
   Object.entries(GameDB.gatherTables || {}).forEach(([locationId, table]) => {
     const scope = `gatherTables.${locationId}`;
+    if (!hasOwn(GameDB.scenes, locationId)) pushIssue(errors, scope, '採集地點沒有登錄在 GameDB.scenes。');
     if (!table || typeof table !== 'object') {
       pushIssue(errors, scope, '採集表必須是物件。');
       return;
@@ -152,6 +182,9 @@ export function validateGameDB() {
   const errors = [];
   const warnings = [];
 
+  validateRegistry(errors, GameDB.routes, 'routes');
+  validateRegistry(errors, GameDB.scenes, 'scenes');
+  validateRegistry(errors, GameDB.stations, 'stations');
   validateItems(errors, warnings);
   validateFairies(errors, warnings);
   validateItemSources(errors, warnings);
