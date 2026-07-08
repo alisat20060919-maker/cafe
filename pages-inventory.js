@@ -16,6 +16,14 @@ function pageHeader(kicker, title, body) {
   `;
 }
 
+function escapeAttr(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function renderFilterTabs() {
   return GameDB.getInventoryCategories()
     .map((category, index) => `
@@ -36,6 +44,34 @@ function renderRarityTabs() {
     .join('');
 }
 
+function updateInventorySearch(page) {
+  const list = page.querySelector('#inventory-list');
+  const input = page.querySelector('#inventory-search');
+  const empty = page.querySelector('#inventory-search-empty');
+  if (!list) return;
+
+  const query = GameDB.normalizeSearchText(input?.value || '');
+  const currentFilter = list.dataset.currentFilter || 'all';
+  const currentRarity = list.dataset.currentRarity || 'all';
+  let visibleCount = 0;
+  let cardCount = 0;
+
+  list.dataset.searchMode = query ? 'filtered' : 'all';
+
+  $all('.core-item-card', list).forEach((card) => {
+    cardCount += 1;
+    const searchText = card.dataset.search || '';
+    const searchMatch = !query || searchText.includes(query);
+    const categoryMatch = currentFilter === 'all' || card.dataset.category === currentFilter;
+    const rarityMatch = currentRarity === 'all' || card.dataset.rarity === currentRarity;
+
+    card.dataset.searchMatch = searchMatch ? 'true' : 'false';
+    if (searchMatch && categoryMatch && rarityMatch) visibleCount += 1;
+  });
+
+  if (empty) empty.hidden = cardCount === 0 || visibleCount > 0;
+}
+
 function bindInventoryFilters(page) {
   const list = page.querySelector('#inventory-list');
   if (!list) return;
@@ -45,6 +81,7 @@ function bindInventoryFilters(page) {
       $all('[data-filter]', page).forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       list.dataset.currentFilter = button.dataset.filter || 'all';
+      updateInventorySearch(page);
     });
   });
 
@@ -53,8 +90,11 @@ function bindInventoryFilters(page) {
       $all('[data-rarity-filter]', page).forEach((item) => item.classList.remove('active'));
       button.classList.add('active');
       list.dataset.currentRarity = button.dataset.rarityFilter || 'all';
+      updateInventorySearch(page);
     });
   });
+
+  page.querySelector('#inventory-search')?.addEventListener('input', () => updateInventorySearch(page));
 }
 
 export function renderInventory() {
@@ -66,7 +106,7 @@ export function renderInventory() {
     .map((item) => ({ item, count: Number(state.inventory[item.id] || 0) }))
     .filter(({ count }) => count > 0)
     .map(({ item, count }) => `
-      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}">
+      <article class="core-item-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true">
         <div class="core-item-icon">${item.icon}</div>
         <div>
           <b>${item.name}</b>
@@ -84,7 +124,7 @@ export function renderInventory() {
     .map(([fairyId]) => {
       const fairy = GameDB.fairies[fairyId];
       return `
-        <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}">
+        <article class="core-item-card ssr" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true">
           <div class="core-item-icon">${fairy.icon}</div>
           <div>
             <b>${fairy.name}</b>
@@ -99,7 +139,11 @@ export function renderInventory() {
     .join('');
 
   page.innerHTML = `
-    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類與稀有度資料由 GameDB 提供。')}
+    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，分類、稀有度與搜尋資料由 GameDB 提供。')}
+    <div class="core-search-box">
+      <label for="inventory-search">搜尋背包</label>
+      <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度或用途" autocomplete="off" />
+    </div>
     <div class="core-filter-group">
       <p>分類</p>
       <div class="core-filter-tabs" aria-label="背包分類篩選">
@@ -112,13 +156,15 @@ export function renderInventory() {
         ${renderRarityTabs()}
       </div>
     </div>
-    <div class="core-list" id="inventory-list" data-current-filter="all" data-current-rarity="all">
+    <div class="core-list" id="inventory-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
       ${itemCards || '<p class="core-empty" data-category="empty" data-rarity="empty">背包還是空的。去祈願或簽到拿一點素材吧。</p>'}
       ${fairyCards}
+      <p class="core-empty core-search-empty" id="inventory-search-empty" hidden>沒有符合目前條件的物品。</p>
     </div>
   `;
 
   bindInventoryFilters(page);
+  updateInventorySearch(page);
 }
 
 export function initInventoryPage() {
