@@ -96,7 +96,7 @@ function getLocalDateKey(date = new Date()) {
 
 function getDailyCommissionPoolIds() {
   return Object.values(GameDB.commissions || {})
-    .filter((commission) => commission.category !== 'main')
+    .filter((commission) => commission.category === 'daily')
     .map((commission) => commission.id)
     .filter(Boolean);
 }
@@ -106,7 +106,11 @@ function getDailyCommissionLimit() {
 }
 
 function pickDailyCommissionIds(poolIds = []) {
-  const shuffled = [...poolIds].sort(() => Math.random() - 0.5);
+  const shuffled = [...poolIds];
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
+  }
   return shuffled.slice(0, Math.min(getDailyCommissionLimit(), shuffled.length));
 }
 
@@ -231,7 +235,7 @@ function syncCompletedCommissionUnlocks(nextState) {
 
 function resetDailyCommissionRecords(nextState, poolIds = []) {
   poolIds.forEach((commissionId) => {
-    if (GameDB.commissions?.[commissionId]?.category !== 'main') {
+    if (GameDB.commissions?.[commissionId]?.category === 'daily') {
       delete nextState.commissions[commissionId];
     }
   });
@@ -242,7 +246,7 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
   const poolIds = getDailyCommissionPoolIds();
   const current = isPlainObject(nextState.dailyCommissions) ? nextState.dailyCommissions : {};
   const rawIds = Array.isArray(current.ids) ? current.ids : [];
-  const currentIds = rawIds.filter((id) => GameDB.commissions?.[id]);
+  const currentIds = rawIds.filter((id) => poolIds.includes(id));
   const hasInvalidIds = rawIds.length !== currentIds.length;
   const sameDay = current.date === today;
   const shouldRefresh = force || !sameDay || !currentIds.length || hasInvalidIds;
