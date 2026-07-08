@@ -1,10 +1,10 @@
-import { initState } from './game-state.js?v=core03';
-import { initUI } from './ui.js?v=core03';
-import { initHome, renderHome } from './home.js?v=core03';
-import { initRouter } from './router.js?v=core03';
-import { renderGacha } from './pages-gacha.js?v=core03';
-import { initInventoryPage, renderInventory } from './pages-inventory.js?v=core03';
-import { initCommissionsPage, renderCommissions } from './pages-commissions.js?v=core03';
+import { initState } from './game-state.js?v=core04';
+import { initUI } from './ui.js?v=core04';
+import { initHome, renderHome } from './home.js?v=core04';
+import { initRouter } from './router.js?v=core04';
+import { renderGacha } from './pages-gacha.js?v=core04';
+import { initInventoryPage, renderInventory } from './pages-inventory.js?v=core04';
+import { initCommissionsPage, renderCommissions } from './pages-commissions.js?v=core04';
 
 function boot() {
   initState();
