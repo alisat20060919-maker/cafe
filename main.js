@@ -5,6 +5,7 @@ import { initHome, renderHome } from '@home';
 import { initRouter } from '@router';
 import { renderGacha } from '@pages/gacha';
 import { initInventoryPage, renderInventory } from '@pages/inventory';
+import { renderCollection } from '@pages/collection';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 
 function boot() {
@@ -20,6 +21,7 @@ function boot() {
     gacha: { render: renderGacha },
     commissions: { render: renderCommissions },
     inventory: { render: renderInventory },
+    collection: { render: renderCollection },
   }, 'home');
 }
 
