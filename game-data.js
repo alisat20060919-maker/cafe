@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 1,
+  version: 2,
 
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
@@ -40,8 +40,8 @@ export const GameDB = {
       typeName: '素材',
       rarity: 'SR',
       stars: 5,
-      source: ['祈願', '煉金室'],
-      use: '用於夜晚、夢境或情緒相關的魔法商品。',
+      source: ['祈願'],
+      use: '用於夜晚、夢境或情緒相關的魔法商品；之後可作為煉金高階材料。',
       description: '夜晚天空中掉落的碎片，彷彿封存了一小段星空。常用於與夜晚、夢境或情緒相關的魔法。',
     },
     forest_cookie: {
@@ -52,7 +52,7 @@ export const GameDB = {
       typeName: '甜點',
       rarity: 'R',
       stars: 2,
-      source: ['祈願'],
+      source: ['祈願', '後山'],
       use: '普通委託常見的小甜點。',
       description: '烤成葉片形狀的小餅乾，帶著淡淡蜂蜜與木質香。',
     },
@@ -64,7 +64,7 @@ export const GameDB = {
       typeName: '素材',
       rarity: 'R',
       stars: 3,
-      source: ['祈願', '簽到'],
+      source: ['祈願', '簽到', '後山', '溫室'],
       use: '澆灌魔法植物，或作為飲品基底。',
       description: '清晨凝在花瓣上的露水，映著細小星光。',
     },
@@ -79,6 +79,41 @@ export const GameDB = {
       source: ['委託製作'],
       use: '安定系飲品，可用於溫柔、祝福、月光主題委託。',
       description: '溫柔發光的奶泡像一層薄薄月色，喝下後心情會慢慢安定。',
+    },
+  },
+
+  itemSources: {
+    moon_petals: { type: 'scene', id: 'greenhouse', label: '溫室' },
+    star_berry: { type: 'scene', id: 'backyard', label: '後山' },
+    night_sky_fragment: { type: 'route', id: 'gacha', label: '祈願' },
+    forest_cookie: { type: 'scene', id: 'backyard', label: '後山' },
+    stardew_water: { type: 'scene', id: 'backyard', label: '後山' },
+  },
+
+  gatherConfig: {
+    dailyLimit: 5,
+  },
+
+  gatherTables: {
+    backyard: {
+      title: '後山採集完成',
+      emptyTitle: '今天後山採集完成',
+      drops: [
+        { itemId: 'star_berry', qty: 1, weight: 45 },
+        { itemId: 'stardew_water', qty: 1, weight: 30 },
+        { itemId: 'forest_cookie', qty: 1, weight: 20 },
+        { itemId: 'star_berry', qty: 2, weight: 5 },
+      ],
+    },
+    greenhouse: {
+      title: '溫室照顧完成',
+      emptyTitle: '今天溫室照顧完成',
+      drops: [
+        { itemId: 'moon_petals', qty: 1, weight: 55 },
+        { itemId: 'stardew_water', qty: 1, weight: 30 },
+        { itemId: 'moon_petals', qty: 2, weight: 10 },
+        { itemId: 'star_berry', qty: 1, weight: 5 },
+      ],
     },
   },
 
