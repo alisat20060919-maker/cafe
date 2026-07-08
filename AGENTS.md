@@ -18,6 +18,7 @@
 4. `game-state.js` 優先作為狀態容器與存檔入口，不直接操作 DOM。
 5. Page 模組只負責畫面渲染與按鈕事件，不直接管理複雜遊戲規則。
 6. `persistState()` 是狀態更新通知的核心，修改它時必須確認狀態列會更新。
+7. 絕對禁止 `ui.js` 與 `router.js` 互相 import；跨模組通知一律使用 `event-bus.js`。
 
 ## 模組快取與版本更新協議 (Import Maps 架構)
 
@@ -40,6 +41,8 @@
 6. 煉金室不是原料採集點；煉金室用於一階素材煉成二階、三階素材，或製作正式商品。
 7. 未來 `game-data.js` 太肥時，才拆成 `data/items.js`、`data/recipes.js`、`data/gather.js` 等資料模組。
 8. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`，不可直接 import `@data/items`。
+9. 所有關聯性資料的 Getter 邏輯必須封裝在 `game-data.js` 的 `GameDB` 內，例如來源解析、來源 label、item source 查詢。
+10. Page 與 Action 不可以知道 `GameDB` 內部是用 `routes`、`scenes` 還是 `stations` 分類；UI 只能呼叫 `GameDB.getItemSource()`、`GameDB.getSourceLabel()` 這類公開 getter。
 
 ## ID 命名規範
 
@@ -55,6 +58,7 @@
 8. 地點：`greenhouse`、`backyard`、`alchemy`。
 9. 新增 ID 前先確認 `GameDB` 沒有同名項目。
 10. 不要修改既有 ID；除非同時設計完整 migration，否則舊存檔會壞。
+11. 新增 item type 或 rarity 時，必須先登錄到 `GameDB.itemTypes` 或 `GameDB.rarities`，讓 `validateGameDB()` 能檢查拼字錯誤。
 
 ## State 正規化規則
 
