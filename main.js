@@ -11,8 +11,8 @@ import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 import { initShopPage, renderShop } from '@pages/shop';
 
 function boot() {
-  runDevChecks();
   initState();
+  runDevChecks();
   initUI();
   initHome();
   initGachaPage();
