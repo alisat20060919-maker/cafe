@@ -103,10 +103,10 @@
 .core-detail-quote{margin:8px 0 12px!important;padding:10px;border-radius:16px;background:rgba(255,255,255,.52);color:#6a4b21!important;font-weight:800}
 .core-detail-list{display:grid;gap:8px;margin:0}.core-detail-list div{padding:9px;border-radius:14px;background:rgba(255,255,255,.46);border:1px solid rgba(126,84,34,.16)}.core-detail-list dt{font-size:11px;letter-spacing:.08em;color:#8b672d;font-weight:900}.core-detail-list dd{margin:3px 0 0;color:#4a321c;line-height:1.55;font-size:13px;word-break:break-word}
 
-.core-search-box{display:grid;gap:6px;margin:0 0 10px;padding:10px;border:1px solid rgba(126,84,34,.22);border-radius:18px;background:rgba(255,255,246,.58)}
-.core-search-box label{color:#7a5a28;font-size:12px;font-weight:900;letter-spacing:.08em}
-.core-search-box input{width:100%;box-sizing:border-box;border:1px solid rgba(126,84,34,.28);border-radius:999px;background:rgba(255,255,255,.82);color:#4a321c;padding:10px 13px;font:inherit;font-size:13px;outline:none}
-.core-search-box input:focus{border-color:rgba(217,164,65,.75);box-shadow:0 0 0 3px rgba(217,164,65,.18)}
+.core-search-box,.core-sort-box{display:grid;gap:6px;margin:0 0 10px;padding:10px;border:1px solid rgba(126,84,34,.22);border-radius:18px;background:rgba(255,255,246,.58)}
+.core-search-box label,.core-sort-box label{color:#7a5a28;font-size:12px;font-weight:900;letter-spacing:.08em}
+.core-search-box input,.core-sort-box select{width:100%;box-sizing:border-box;border:1px solid rgba(126,84,34,.28);border-radius:999px;background:rgba(255,255,255,.82);color:#4a321c;padding:10px 13px;font:inherit;font-size:13px;outline:none}
+.core-search-box input:focus,.core-sort-box select:focus{border-color:rgba(217,164,65,.75);box-shadow:0 0 0 3px rgba(217,164,65,.18)}
 .core-filter-group{margin:0 0 10px}.core-filter-group p{margin:0 0 5px;color:#7a5a28;font-size:12px;font-weight:900;letter-spacing:.08em}
 .core-filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0;padding:8px;border:1px solid rgba(126,84,34,.22);border-radius:18px;background:rgba(255,255,246,.58)}
 .core-filter-tabs button{border:1px solid rgba(126,84,34,.22);border-radius:999px;background:rgba(255,255,255,.68);color:#6a4b21;font-weight:900;padding:8px 10px;font-size:12px;box-shadow:0 4px 10px rgba(45,32,14,.08)}
