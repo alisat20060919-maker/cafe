@@ -54,7 +54,7 @@
 4. 飲品或甜點產品：`moon_latte`、`star_berry_tart`。
 5. 精靈：`moon_petals_fairy`、`star_berry_fairy`。
 6. 委託：`quest_moon_latte`。
-7. 配方：`recipe_moon_dew`。
+7. 配方：`recipe_moon_latte`、`recipe_star_berry_tart`。
 8. 地點：`greenhouse`、`backyard`、`alchemy`。
 9. 新增 ID 前先確認 `GameDB` 沒有同名項目。
 10. 不要修改既有 ID；除非同時設計完整 migration，否則舊存檔會壞。
@@ -88,6 +88,17 @@
 13. 特殊事件不得新增 state 欄位；UI 只能讀取 action 回傳的 `specialEvent` 顯示文字與額外獎勵。
 14. 特殊事件不額外扣採集次數；一次採集永遠只讓該地點 count +1。
 15. 特殊事件機率必須維持低機率；action 端會把 `specialEventChance` 上限壓在 5%。
+
+## 配方資料規則
+
+1. 配方資料只允許定義在 `GameDB.recipes`。
+2. recipe id 必須使用 `recipe_` 前綴，例如 `recipe_moon_latte`。
+3. 每個 recipe 必須包含 `id`、`name`、`station`、`category`、`cost`、`output`。
+4. `station` 必須指向 `GameDB.stations` 已登錄的製作站。
+5. `cost` 只存 itemId 與數量，不存素材名稱、圖示或描述。
+6. `output` 必須是 `{ itemId, qty }`，且 itemId 必須存在於 `GameDB.items`。
+7. 新增配方資料本身不需要更新 `SAVE_VERSION`，除非新增玩家持久化欄位。
+8. UI 顯示配方時必須用 recipe 的 id 回查 `GameDB`，不可把配方資料複製到 page。
 
 ## 事件流
 
