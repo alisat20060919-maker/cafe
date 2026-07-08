@@ -94,7 +94,8 @@
 .core-empty{padding:16px;border:1px dashed rgba(126,84,34,.32);border-radius:18px;background:rgba(255,255,255,.45);color:#6d5439;text-align:center}
 .core-item-card{display:grid;grid-template-columns:48px 1fr auto;gap:10px;align-items:start}.core-item-icon{width:48px;height:48px;border-radius:16px;background:rgba(255,255,255,.66);display:grid;place-items:center;font-size:26px}.core-item-card strong{align-self:center;font-size:14px;color:#7a4b15}.core-item-card small{display:block;margin-top:5px;color:#6f5b43;line-height:1.45}
 
-.core-filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:8px;border:1px solid rgba(126,84,34,.22);border-radius:18px;background:rgba(255,255,246,.58)}
+.core-filter-group{margin:0 0 10px}.core-filter-group p{margin:0 0 5px;color:#7a5a28;font-size:12px;font-weight:900;letter-spacing:.08em}
+.core-filter-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0;padding:8px;border:1px solid rgba(126,84,34,.22);border-radius:18px;background:rgba(255,255,246,.58)}
 .core-filter-tabs button{border:1px solid rgba(126,84,34,.22);border-radius:999px;background:rgba(255,255,255,.68);color:#6a4b21;font-weight:900;padding:8px 10px;font-size:12px;box-shadow:0 4px 10px rgba(45,32,14,.08)}
 .core-filter-tabs button span{margin-right:3px}
 .core-filter-tabs button.active{background:linear-gradient(180deg,#fff2bd,#d9a441);color:#3d2a18;border-color:rgba(217,164,65,.62)}
@@ -106,6 +107,10 @@
 #inventory-list[data-current-filter="rare_material"] .core-item-card:not([data-category="rare_material"]),
 #inventory-list[data-current-filter="event_material"] .core-item-card:not([data-category="event_material"]),
 #inventory-list[data-current-filter="fairy"] .core-item-card:not([data-category="fairy"]){display:none}
+#inventory-list[data-current-rarity="N"] .core-item-card:not([data-rarity="N"]),
+#inventory-list[data-current-rarity="R"] .core-item-card:not([data-rarity="R"]),
+#inventory-list[data-current-rarity="SR"] .core-item-card:not([data-rarity="SR"]),
+#inventory-list[data-current-rarity="SSR"] .core-item-card:not([data-rarity="SSR"]){display:none}
 
 .core-quest-top{display:flex;justify-content:space-between;gap:8px}.core-quest-top span,.core-quest-top strong{font-size:12px;background:rgba(255,255,255,.65);border:1px solid rgba(126,84,34,.2);border-radius:999px;padding:5px 8px;color:#6a4b21}.core-quest-card h3{margin:8px 0 3px;color:var(--core-ink)}.core-customer{font-weight:800;color:#7b5723}.core-recipe,.core-reward{margin-top:8px;padding:8px;border-radius:14px;background:rgba(255,255,255,.55);font-size:13px;line-height:1.5}.core-quest-card button{width:100%;margin-top:10px}.core-quest-card.status-ready{border-color:rgba(145,240,208,.65);box-shadow:0 10px 24px rgba(20,80,60,.18)}
 
