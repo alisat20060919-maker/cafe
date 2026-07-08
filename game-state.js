@@ -312,6 +312,52 @@ function migrateSave(saved) {
   return migrated;
 }
 
+function getRequirementEntries(req = {}) {
+  const entries = [];
+
+  if (Number.isFinite(Number(req.level))) entries.push({ type: 'level', id: Number(req.level) });
+  if (req.scene) entries.push({ type: 'scene', id: req.scene });
+  if (Array.isArray(req.scenes)) req.scenes.forEach((id) => entries.push({ type: 'scene', id }));
+  if (req.station) entries.push({ type: 'station', id: req.station });
+  if (Array.isArray(req.stations)) req.stations.forEach((id) => entries.push({ type: 'station', id }));
+  if (req.recipe) entries.push({ type: 'recipe', id: req.recipe });
+  if (Array.isArray(req.recipes)) req.recipes.forEach((id) => entries.push({ type: 'recipe', id }));
+  if (req.item) entries.push({ type: 'item', id: req.item, qty: Number(req.qty || 1) });
+  if (req.fairy) entries.push({ type: 'fairy', id: req.fairy });
+
+  return entries;
+}
+
+function isRequirementEntryUnlocked(entry, currentState = state) {
+  if (!entry?.type) return true;
+
+  if (entry.type === 'level') return Number(currentState.player?.level || 1) >= Number(entry.id || 1);
+  if (entry.type === 'scene') return Boolean(currentState.unlockedScenes?.[entry.id]);
+  if (entry.type === 'station') {
+    if (!GameDB.stations?.[entry.id]) return false;
+    return isUnlocked({ scene: entry.id }, currentState);
+  }
+  if (entry.type === 'recipe') {
+    const recipe = GameDB.recipes?.[entry.id];
+    if (!recipe) return false;
+    return recipe.station ? isUnlocked({ station: recipe.station }, currentState) : true;
+  }
+  if (entry.type === 'item') return Number(currentState.inventory?.[entry.id] || 0) >= Math.max(1, Number(entry.qty || 1));
+  if (entry.type === 'fairy') return Boolean(currentState.fairies?.[entry.id]?.owned);
+
+  return false;
+}
+
+function getRequirementEntryText(entry = {}) {
+  if (entry.type === 'level') return `需要 Lv.${entry.id}`;
+  if (entry.type === 'scene') return `解鎖${GameDB.scenes?.[entry.id]?.label || entry.id}`;
+  if (entry.type === 'station') return `解鎖${GameDB.stations?.[entry.id]?.label || entry.id}`;
+  if (entry.type === 'recipe') return `解鎖配方：${GameDB.recipes?.[entry.id]?.name || entry.id}`;
+  if (entry.type === 'item') return `持有${GameDB.items?.[entry.id]?.name || entry.id} ×${Math.max(1, Number(entry.qty || 1))}`;
+  if (entry.type === 'fairy') return `契約${GameDB.fairies?.[entry.id]?.name || entry.id}`;
+  return '未知條件';
+}
+
 export function initState() {
   state = migrateSave(loadSave());
   persistState();
@@ -405,8 +451,32 @@ export function addPlayerExp(amount = 0) {
   return { expGained, oldLevel, newLevel, levelUps, unlocked };
 }
 
+export function isUnlocked(req = {}, currentState = state) {
+  if (!req) return true;
+  if (Array.isArray(req)) return req.every((entry) => isUnlocked(entry, currentState));
+  if (!isPlainObject(req)) return true;
+
+  if (Array.isArray(req.all)) return req.all.every((entry) => isUnlocked(entry, currentState));
+  if (Array.isArray(req.any)) return req.any.some((entry) => isUnlocked(entry, currentState));
+
+  const entries = getRequirementEntries(req);
+  if (!entries.length) return true;
+  return entries.every((entry) => isRequirementEntryUnlocked(entry, currentState));
+}
+
+export function getUnlockRequirementText(req = {}) {
+  if (!req) return '';
+  if (Array.isArray(req)) return req.map(getUnlockRequirementText).filter(Boolean).join('、');
+  if (!isPlainObject(req)) return '';
+
+  if (Array.isArray(req.all)) return req.all.map(getUnlockRequirementText).filter(Boolean).join('、');
+  if (Array.isArray(req.any)) return req.any.map(getUnlockRequirementText).filter(Boolean).join(' 或 ');
+
+  return getRequirementEntries(req).map(getRequirementEntryText).join('、');
+}
+
 export function isSceneUnlocked(sceneId) {
-  return Boolean(state.unlockedScenes?.[sceneId]);
+  return isUnlocked({ scene: sceneId });
 }
 
 export function unlockScene(sceneId) {
