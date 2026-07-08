@@ -1,8 +1,39 @@
 export const GameDB = {
-  version: 4,
+  version: 5,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
+  itemTypeMeta: {
+    material: { id: 'material', label: '素材', icon: '🌿' },
+    refined_material: { id: 'refined_material', label: '煉成素材', icon: '✨' },
+    sweet: { id: 'sweet', label: '甜點', icon: '🍪' },
+    drink: { id: 'drink', label: '飲品', icon: '☕' },
+    product: { id: 'product', label: '產品', icon: '🎁' },
+    rare_material: { id: 'rare_material', label: '稀有素材', icon: '💎' },
+    event_material: { id: 'event_material', label: '活動素材', icon: '🎟️' },
+    fairy: { id: 'fairy', label: '精靈', icon: '🧚' },
+  },
   rarities: ['N', 'R', 'SR', 'SSR'],
+
+  getItemTypeLabel(typeId) {
+    return this.itemTypeMeta?.[typeId]?.label || typeId || '未分類';
+  },
+
+  getInventoryCategories() {
+    const usedTypes = new Set(Object.values(this.items || {}).map((item) => item.type).filter(Boolean));
+    const categories = [
+      { id: 'all', label: '全部', icon: '🧺' },
+      ...this.itemTypes
+        .filter((typeId) => usedTypes.has(typeId))
+        .map((typeId) => ({
+          id: typeId,
+          label: this.getItemTypeLabel(typeId),
+          icon: this.itemTypeMeta?.[typeId]?.icon || '◇',
+        })),
+      { id: 'fairy', label: this.getItemTypeLabel('fairy'), icon: this.itemTypeMeta?.fairy?.icon || '🧚' },
+    ];
+
+    return categories;
+  },
 
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
