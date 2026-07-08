@@ -102,10 +102,41 @@ function validatePlayerProgressCheck() {
   return { ok: true, issues: [] };
 }
 
+function validateCommissionExpCheck() {
+  const issues = [];
+  const commissions = getMvpCommissions();
+
+  if (!commissions.length) addIssue(issues, 'commissions.exp', '沒有可驗收 EXP 的 daily 或 mvp 委託。');
+
+  commissions.forEach((commission) => {
+    const requiredItems = GameDB.getCommissionRequiredItems?.(commission) || {};
+    const exp = Number(commission.reward?.exp || 0);
+
+    if (!Object.keys(requiredItems).length) {
+      addIssue(issues, `commissions.${commission.id}.requiredItems`, '可獲得 EXP 的委託應該有產品需求。');
+    }
+
+    if (exp <= 0) {
+      addIssue(issues, `commissions.${commission.id}.reward.exp`, 'daily / mvp 委託必須提供正數 EXP。');
+    }
+  });
+
+  if (issues.length) {
+    console.groupCollapsed(`[Commission EXP Check] ${issues.length} issues`);
+    issues.forEach((message) => console.error(message));
+    console.groupEnd();
+    return { ok: false, issues };
+  }
+
+  console.info('[Commission EXP Check] ok');
+  return { ok: true, issues: [] };
+}
+
 export function runDevChecks() {
   if (!shouldRunDevChecks()) return { skipped: true };
   const db = validateGameDB();
   const mvp = validateMvpSmokeTest();
   const playerProgress = validatePlayerProgressCheck();
-  return { skipped: false, db, mvp, playerProgress };
+  const commissionExp = validateCommissionExpCheck();
+  return { skipped: false, db, mvp, playerProgress, commissionExp };
 }
