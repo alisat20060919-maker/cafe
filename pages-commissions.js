@@ -6,6 +6,22 @@ import { navigate } from '@router';
 import { goToScene } from '@home';
 import { Events, on, emitNotice } from '@eventBus';
 
+const COMMISSION_FILTERS = [
+  { id: 'all', label: '全部', icon: '📋' },
+  { id: 'ready', label: '可交付', icon: '✅' },
+  { id: 'available', label: '商品不足', icon: '🧺' },
+  { id: 'completed', label: '已完成', icon: '🎀' },
+];
+
+const COMMISSION_SORTS = [
+  { id: 'default', label: '預設順序' },
+  { id: 'status', label: '狀態排序' },
+  { id: 'difficulty_desc', label: '難度高到低' },
+];
+
+let currentCommissionFilter = 'all';
+let currentCommissionSort = 'default';
+
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
 }
@@ -61,6 +77,74 @@ function statusLabel(status) {
   }[status] || status;
 }
 
+function statusRank(status) {
+  return { ready: 0, available: 1, completed: 2 }[status] ?? 99;
+}
+
+function difficultyRank(quest) {
+  return [...String(quest.difficulty || '')].filter((char) => char === '★').length;
+}
+
+function getQuestEntries() {
+  return Object.values(GameDB.commissions).map((quest, index) => ({
+    quest,
+    index,
+    status: getQuestViewStatus(quest),
+  }));
+}
+
+function filterQuestEntries(entries) {
+  if (currentCommissionFilter === 'all') return entries;
+  return entries.filter((entry) => entry.status === currentCommissionFilter);
+}
+
+function sortQuestEntries(entries) {
+  return [...entries].sort((a, b) => {
+    if (currentCommissionSort === 'status') {
+      return statusRank(a.status) - statusRank(b.status) || a.index - b.index;
+    }
+
+    if (currentCommissionSort === 'difficulty_desc') {
+      return difficultyRank(b.quest) - difficultyRank(a.quest) || a.index - b.index;
+    }
+
+    return a.index - b.index;
+  });
+}
+
+function countByStatus(entries, filterId) {
+  if (filterId === 'all') return entries.length;
+  return entries.filter((entry) => entry.status === filterId).length;
+}
+
+function renderFilterTabs(entries) {
+  return `
+    <div class="core-filter-group" aria-label="委託分類">
+      <p>委託分類</p>
+      <div class="core-filter-tabs">
+        ${COMMISSION_FILTERS.map((filter) => `
+          <button type="button" class="${currentCommissionFilter === filter.id ? 'active' : ''}" data-commission-filter="${filter.id}">
+            <span>${filter.icon}</span>${filter.label} ${countByStatus(entries, filter.id)}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function renderSortBox() {
+  return `
+    <div class="core-sort-box">
+      <label for="commissionSort">排序</label>
+      <select id="commissionSort" data-commission-sort>
+        ${COMMISSION_SORTS.map((sort) => `
+          <option value="${sort.id}" ${currentCommissionSort === sort.id ? 'selected' : ''}>${sort.label}</option>
+        `).join('')}
+      </select>
+    </div>
+  `;
+}
+
 function getMissingItems(quest) {
   const state = getState();
   return Object.entries(getRequirements(quest))
@@ -110,6 +194,25 @@ function renderQuestButton(quest, status) {
   return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">${sourceButtonText(source)}</button>`;
 }
 
+function renderQuestCard(entry) {
+  const { quest, status } = entry;
+  return `
+    <article class="core-quest-card status-${status}">
+      <div class="core-quest-top">
+        <span>${quest.difficulty}</span>
+        <strong>${statusLabel(status)}</strong>
+      </div>
+      <h3>${quest.title}</h3>
+      <p class="core-customer">客人：${quest.customer}</p>
+      <p>${quest.description}</p>
+      <div class="core-recipe"><b>需要：</b>${renderRequirements(quest)}</div>
+      ${renderMissingHint(quest, status)}
+      <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
+      ${renderQuestButton(quest, status)}
+    </article>
+  `;
+}
+
 function goToSceneSource(sourceType = 'scene', sourceId = 'backyard') {
   const source = { type: sourceType, id: sourceId, label: GameDB.getSourceLabel({ type: sourceType, id: sourceId }) };
   navigate('home');
@@ -137,29 +240,30 @@ export function renderCommissions() {
   const page = document.querySelector('#page-commissions');
   if (!page) return;
 
-  const cards = Object.values(GameDB.commissions).map((quest) => {
-    const status = getQuestViewStatus(quest);
-    return `
-      <article class="core-quest-card status-${status}">
-        <div class="core-quest-top">
-          <span>${quest.difficulty}</span>
-          <strong>${statusLabel(status)}</strong>
-        </div>
-        <h3>${quest.title}</h3>
-        <p class="core-customer">客人：${quest.customer}</p>
-        <p>${quest.description}</p>
-        <div class="core-recipe"><b>需要：</b>${renderRequirements(quest)}</div>
-        ${renderMissingHint(quest, status)}
-        <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
-        ${renderQuestButton(quest, status)}
-      </article>
-    `;
-  }).join('');
+  const allEntries = getQuestEntries();
+  const visibleEntries = sortQuestEntries(filterQuestEntries(allEntries));
+  const cards = visibleEntries.length
+    ? visibleEntries.map(renderQuestCard).join('')
+    : '<div class="core-empty">目前沒有符合分類的委託。</div>';
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / PRODUCT DELIVERY', '委託', '委託畫面會即時計算商品不足或可交付；存檔只保存真正完成或進行中的狀態。')}
+    ${pageHeader('QUEST BOARD / PRODUCT DELIVERY', '委託', '可以依狀態分類與排序；分類結果只影響畫面，不會寫入存檔。')}
+    ${renderFilterTabs(allEntries)}
+    ${renderSortBox()}
     <div class="core-quest-list">${cards}</div>
   `;
+
+  $all('[data-commission-filter]', page).forEach((button) => {
+    button.addEventListener('click', () => {
+      currentCommissionFilter = button.dataset.commissionFilter || 'all';
+      renderCommissions();
+    });
+  });
+
+  page.querySelector('[data-commission-sort]')?.addEventListener('change', (event) => {
+    currentCommissionSort = event.target.value || 'default';
+    renderCommissions();
+  });
 
   $all('[data-complete]', page).forEach((button) => {
     button.addEventListener('click', () => {
