@@ -54,24 +54,6 @@ function statusLabel(status) {
   }[status] || status;
 }
 
-function getSourceRegistry(sourceType) {
-  return {
-    route: GameDB.routes,
-    scene: GameDB.scenes,
-    station: GameDB.stations,
-  }[sourceType] || {};
-}
-
-function getSourceLabel(source) {
-  if (!source) return '後山';
-  return source.label || getSourceRegistry(source.type)?.[source.id]?.label || source.id || '後山';
-}
-
-function getItemSource(itemId) {
-  const source = GameDB.itemSources?.[itemId] || { type: 'scene', id: 'backyard' };
-  return { ...source, label: getSourceLabel(source) };
-}
-
 function getMissingItems(cost = {}) {
   const state = getState();
   return Object.entries(cost)
@@ -79,14 +61,14 @@ function getMissingItems(cost = {}) {
       itemId,
       need: qty,
       owned: Number(state.inventory[itemId] || 0),
-      source: getItemSource(itemId),
+      source: GameDB.getItemSource(itemId),
     }))
     .filter((item) => item.owned < item.need);
 }
 
 function getFirstSource(quest) {
   const missingItems = getMissingItems(quest.cost);
-  return missingItems[0]?.source || getItemSource('star_berry');
+  return missingItems[0]?.source || GameDB.getItemSource('star_berry');
 }
 
 function renderMissingHint(quest, status) {
@@ -122,7 +104,7 @@ function renderQuestButton(quest, status) {
 }
 
 function goToSceneSource(sourceType = 'scene', sourceId = 'backyard') {
-  const source = { type: sourceType, id: sourceId, label: getSourceLabel({ type: sourceType, id: sourceId }) };
+  const source = { type: sourceType, id: sourceId, label: GameDB.getSourceLabel({ type: sourceType, id: sourceId }) };
   navigate('home');
   window.requestAnimationFrame(() => {
     goToScene(sourceId);
@@ -131,7 +113,7 @@ function goToSceneSource(sourceType = 'scene', sourceId = 'backyard') {
 }
 
 function goToSource(sourceType = 'scene', sourceId = 'backyard') {
-  const source = { type: sourceType, id: sourceId, label: getSourceLabel({ type: sourceType, id: sourceId }) };
+  const source = { type: sourceType, id: sourceId, label: GameDB.getSourceLabel({ type: sourceType, id: sourceId }) };
 
   if (sourceType === 'route') {
     navigate(sourceId);
@@ -168,7 +150,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會從 GameDB 讀取來源，按鈕可直接跳到收集地點、製作站或祈願頁。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會向 GameDB 詢問來源，按鈕可直接跳到收集地點、製作站或祈願頁。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
