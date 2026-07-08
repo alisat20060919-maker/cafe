@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 7,
+  version: 8,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -71,6 +71,26 @@ export const GameDB = {
     ];
   },
 
+  getItemSourceText(itemId) {
+    const item = typeof itemId === 'string' ? this.items?.[itemId] : itemId;
+    if (!item) return '未知來源';
+
+    if (Array.isArray(item.source) && item.source.length) return item.source.join('、');
+    if (typeof item.source === 'string' && item.source.trim()) return item.source;
+
+    return this.getItemSource(item.id)?.label || '未知來源';
+  },
+
+  getFairySourceText(fairyId) {
+    const fairy = typeof fairyId === 'string' ? this.fairies?.[fairyId] : fairyId;
+    if (!fairy) return '未知來源';
+
+    if (Array.isArray(fairy.source) && fairy.source.length) return fairy.source.join('、');
+    if (typeof fairy.source === 'string' && fairy.source.trim()) return fairy.source;
+
+    return '祈願';
+  },
+
   getItemSearchText(itemId) {
     const item = typeof itemId === 'string' ? this.items?.[itemId] : itemId;
     if (!item) return '';
@@ -84,6 +104,7 @@ export const GameDB = {
       item.rarity,
       this.getRarityLabel(item.rarity),
       item.source,
+      this.getItemSourceText(item),
       item.use,
       item.description,
     ]);
@@ -100,6 +121,7 @@ export const GameDB = {
       this.getItemTypeLabel('fairy'),
       fairy.rarity,
       this.getRarityLabel(fairy.rarity),
+      this.getFairySourceText(fairy),
       fairy.quote,
       fairy.description,
     ]);
@@ -267,6 +289,7 @@ export const GameDB = {
       name: '月光花瓣精靈',
       icon: '🧚‍♀️',
       rarity: 'SSR',
+      source: ['祈願'],
       quote: '今晚的月色，由我替你保管。',
       description: '守著滿月花園的小精靈，會把柔和的祝福藏進飲品泡沫裡。',
     },
@@ -275,6 +298,7 @@ export const GameDB = {
       name: '夜空碎片精靈',
       icon: '🌠',
       rarity: 'SSR',
+      source: ['祈願'],
       quote: '迷路的星星，也會找到回家的路。',
       description: '從夜空裂縫裡醒來的精靈，擅長保存夢境與微弱的光。',
     },
@@ -283,6 +307,7 @@ export const GameDB = {
       name: '蜂蜜燈籠精靈',
       icon: '🏮',
       rarity: 'SSR',
+      source: ['祈願'],
       quote: '我會替你照亮這間小店。',
       description: '提著蜂蜜色小燈籠，會在傍晚替咖啡屋點亮暖光。',
     },
@@ -291,6 +316,7 @@ export const GameDB = {
       name: '星星莓精靈',
       icon: '🍓',
       rarity: 'SSR',
+      source: ['祈願'],
       quote: '甜甜的好運，已經送到你手上囉。',
       description: '喜歡偷吃莓果塔的小精靈，走過的地方會留下金色糖屑。',
     },
