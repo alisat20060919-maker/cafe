@@ -50,6 +50,18 @@
 11. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`。
 12. 所有關聯性資料的 Getter 邏輯必須封裝在 `game-data.js` 的 `GameDB` 內。
 
+## 玩家 EXP / Level 規則
+
+1. 玩家等級與經驗值存放在 `state.player.level` 與 `state.player.exp`。
+2. 新玩家預設必須是 Lv.1 / EXP 0。
+3. 等級需求資料唯一來源是 `GameDB.levelConfig.thresholds`，不要再新增第二份 `levelRequirements` 表避免不同步。
+4. 判斷等級只能使用 `GameDB.getLevelByExp()`。
+5. 顯示等級進度只能使用 `GameDB.getLevelProgress()`。
+6. 等級解鎖資料使用 `GameDB.levelConfig.unlocks` 與 `GameDB.getLevelUnlocksFor()`。
+7. Lv.2 目前必須解鎖 `alchemy`。
+8. EXP 發放應透過 `addReward()` 或未來的 `player-actions.js`，不可由 UI 直接改 `state.player.exp`。
+9. 第 51 步只做 EXP / Level 基礎對齊；不重複建立資料、不重寫已穩定流程。
+
 ## 產品與原料分類規則
 
 1. `GameDB.materialTypes` 定義原料類型，目前包含 `material`、`refined_material`、`rare_material`、`event_material`。
@@ -82,6 +94,7 @@
 6. 更動 state 結構或 migration 規則時必須更新 `SAVE_VERSION`。
 7. 未契約精靈的 `affection` 必須為 0，且 UI 顯示為 `—`。
 8. 已契約精靈才可以保留與增加 `affection`。
+9. `state.player.level` 與 `state.player.exp` 缺少時，必須由 migration 補回合法數字。
 
 ## Page / UI 事件規則
 
@@ -94,7 +107,7 @@
 
 ## Dev Check 規則
 
-1. `validateGameDB()` 與 MVP Smoke Test 只在 `?dev=1`、`?checks=1` 或 localhost 執行。
+1. `validateGameDB()`、MVP Smoke Test 與 Player Progress Check 只在 `?dev=1`、`?checks=1` 或 localhost 執行。
 2. 正式玩家入口不應強制執行 validator / smoke test。
 3. `dev-checks.js` 可以 import `@validator`，但正式頁面邏輯不可依賴 dev check 結果才能運作。
 4. 新增 MVP 關鍵流程時，應擴充 `dev-checks.js` 或 `game-db-validator.js`。
