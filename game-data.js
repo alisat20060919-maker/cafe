@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 17,
+  version: 18,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -216,10 +216,58 @@ export const GameDB = {
     return Number(this.getCommissionDifficultyRule(commissionOrDifficulty)?.rank || 0);
   },
 
+  getLevelByExp(exp = 0) {
+    const points = Math.max(0, Number(exp || 0));
+    return Object.entries(this.levelConfig?.thresholds || { 1: 0 })
+      .map(([level, threshold]) => ({ level: Number(level), threshold: Number(threshold) }))
+      .sort((a, b) => b.threshold - a.threshold)
+      .find((entry) => points >= entry.threshold)?.level || 1;
+  },
+
+  getLevelProgress(player = {}) {
+    const exp = Math.max(0, Number(player.exp || 0));
+    const level = this.getLevelByExp(exp);
+    const thresholds = this.levelConfig?.thresholds || { 1: 0 };
+    const currentThreshold = Number(thresholds[level] || 0);
+    const nextThreshold = Number(thresholds[level + 1] ?? currentThreshold);
+    const isMax = !thresholds[level + 1];
+    return {
+      level,
+      exp,
+      currentThreshold,
+      nextThreshold,
+      currentLevelExp: Math.max(0, exp - currentThreshold),
+      neededForNext: isMax ? 0 : Math.max(1, nextThreshold - currentThreshold),
+      isMax,
+    };
+  },
+
+  getLevelUnlocksFor(level) {
+    return this.levelConfig?.unlocks?.[level] || {};
+  },
+
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
     leafCoin: { name: '葉幣', icon: '🪙' },
     tickets: { name: '靈感券', icon: '🎟️' },
+  },
+
+  levelConfig: {
+    maxLevel: 5,
+    thresholds: {
+      1: 0,
+      2: 60,
+      3: 160,
+      4: 320,
+      5: 520,
+    },
+    unlocks: {
+      2: {
+        scenes: ['alchemy'],
+        label: '煉金室開放',
+        description: '咖啡屋的魔力重新流動，封住的煉金室亮起了燈。',
+      },
+    },
   },
 
   commissionConfig: {
@@ -230,6 +278,7 @@ export const GameDB = {
         label: '簡單',
         requiredProductQty: { min: 1, max: 1 },
         reward: {
+          exp: { min: 20, max: 40 },
           leafCoin: { min: 80, max: 140 },
           starSugar: { min: 10, max: 25 },
         },
@@ -239,6 +288,7 @@ export const GameDB = {
         label: '普通',
         requiredProductQty: { min: 1, max: 2 },
         reward: {
+          exp: { min: 45, max: 75 },
           leafCoin: { min: 150, max: 240 },
           starSugar: { min: 25, max: 45 },
         },
@@ -248,6 +298,7 @@ export const GameDB = {
         label: '困難',
         requiredProductQty: { min: 2, max: 3 },
         reward: {
+          exp: { min: 80, max: 130 },
           leafCoin: { min: 260, max: 420 },
           starSugar: { min: 45, max: 80 },
           tickets: { min: 0, max: 1 },
@@ -431,8 +482,7 @@ export const GameDB = {
       difficulty: '★☆☆',
       request: '月光花瓣拿鐵 ×1',
       requiredItems: { moon_latte: 1 },
-      reward: { currencies: { leafCoin: 120, starSugar: 20 } },
-      unlocks: { scenes: ['alchemy'] },
+      reward: { exp: 30, currencies: { leafCoin: 120, starSugar: 20 } },
       description: '客人想要一杯會微微發光、可以安定心情的飲品。',
     },
     quest_berry_tart: {
@@ -442,7 +492,7 @@ export const GameDB = {
       difficulty: '★☆☆',
       request: '星星莓奶油塔 ×1',
       requiredItems: { star_berry_tart: 1 },
-      reward: { currencies: { leafCoin: 90, starSugar: 15 } },
+      reward: { exp: 25, currencies: { leafCoin: 90, starSugar: 15 } },
       description: '郵差兔想帶一份不會在路上融化的小甜點。',
     },
     quest_dream_cocoa: {
@@ -452,7 +502,7 @@ export const GameDB = {
       difficulty: '★★☆',
       request: '夜空碎片可可 ×1',
       requiredItems: { dream_cocoa: 1 },
-      reward: { currencies: { leafCoin: 180, starSugar: 30 } },
+      reward: { exp: 60, currencies: { leafCoin: 180, starSugar: 30 } },
       description: '夢境精靈需要一杯能把噩夢變柔和的可可。',
     },
   },
