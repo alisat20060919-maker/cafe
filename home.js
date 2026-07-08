@@ -1,5 +1,5 @@
 import { GameDB } from '@db';
-import { getState, isSceneUnlocked } from '@state';
+import { getState, isSceneUnlocked, isUnlocked, getUnlockRequirementText } from '@state';
 import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { canCraft, craftRecipe } from '@actions/craft';
 import { showModal } from '@ui';
@@ -86,7 +86,26 @@ function isRecipeStation(sceneId) {
 }
 
 function canEnterRecipeStation(sceneId) {
-  return isRecipeStation(sceneId) && isSceneUnlocked(sceneId);
+  return isRecipeStation(sceneId) && isUnlocked({ station: sceneId });
+}
+
+function getStationUnlockLevel(sceneId) {
+  return Number(Object.entries(GameDB.levelConfig?.unlocks || {})
+    .find(([, unlocks]) => (unlocks.scenes || []).includes(sceneId))?.[0] || 0);
+}
+
+function getStationRequirement(sceneId) {
+  const level = getStationUnlockLevel(sceneId);
+  return level > 1 ? { level } : { station: sceneId };
+}
+
+function getStationRequirementText(sceneId) {
+  return getUnlockRequirementText(getStationRequirement(sceneId)) || `解鎖${GameDB.stations?.[sceneId]?.label || sceneId}`;
+}
+
+function getStationLockMessage(sceneId) {
+  const label = GameDB.stations?.[sceneId]?.label || GameDB.scenes?.[sceneId]?.label || sceneId;
+  return `${label}尚未解鎖。${getStationRequirementText(sceneId)}後就能進入。`;
 }
 
 function renderRecipeCost(cost = {}) {
@@ -110,13 +129,32 @@ function renderRecipeOutput(output = {}) {
 function renderRecipeButton(recipe) {
   const craftStatus = canCraft(recipe.id);
   if (!craftStatus.ok) {
-    return `<button type="button" disabled>${craftStatus.status === 'not_enough_items' ? '素材不足' : '無法製作'}</button>`;
+    const label = craftStatus.status === 'locked_station'
+      ? craftStatus.unlockRequirementText || '尚未解鎖'
+      : craftStatus.status === 'not_enough_items'
+        ? '素材不足'
+        : '無法製作';
+    return `<button type="button" disabled>${label}</button>`;
   }
 
   return `<button type="button" data-craft-recipe="${recipe.id}">製作</button>`;
 }
 
 function renderRecipeCards(stationId) {
+  if (!canEnterRecipeStation(stationId)) {
+    const label = GameDB.stations?.[stationId]?.label || stationId;
+    return `
+      <div class="core-quest-list recipe-list">
+        <article class="core-quest-card recipe-card is-locked-card">
+          <div class="core-quest-top"><span>LOCKED</span><strong>${label}</strong></div>
+          <h3>${label}尚未解鎖</h3>
+          <p>${getStationLockMessage(stationId)}</p>
+          <button type="button" disabled>${getStationRequirementText(stationId)}</button>
+        </article>
+      </div>
+    `;
+  }
+
   const recipes = getStationRecipes(stationId);
   if (!recipes.length) {
     const stationName = GameDB.stations?.[stationId]?.label || stationId;
@@ -175,10 +213,36 @@ function renderSpecialEvent(event) {
   `;
 }
 
-function renderGatherStatusBadges() {
+function renderSceneStatusBadges() {
   $all('.scene-card').forEach((scene) => {
     scene.querySelector('.gather-status-badge')?.remove();
     scene.querySelector('.gather-preview-line')?.remove();
+    scene.querySelector('.station-lock-badge')?.remove();
+    scene.querySelector('.station-requirement-line')?.remove();
+
+    const enterButton = scene.querySelector('.enter-button');
+    if (enterButton && !enterButton.dataset.defaultLabel) enterButton.dataset.defaultLabel = enterButton.textContent;
+
+    const stationLocked = isRecipeStation(scene.id) && !canEnterRecipeStation(scene.id);
+    scene.classList.toggle('is-locked', stationLocked);
+
+    if (stationLocked) {
+      if (enterButton) enterButton.textContent = '查看解鎖條件';
+      const badge = document.createElement('div');
+      badge.className = 'station-lock-badge';
+      badge.textContent = '🔒 尚未解鎖';
+
+      const line = document.createElement('div');
+      line.className = 'station-requirement-line';
+      line.textContent = getStationRequirementText(scene.id);
+
+      const info = scene.querySelector('.scene-info');
+      info?.appendChild(badge);
+      info?.appendChild(line);
+      return;
+    }
+
+    if (enterButton) enterButton.textContent = enterButton.dataset.defaultLabel || enterButton.textContent;
 
     const status = getGatherStatus(scene.id);
     if (!status) return;
@@ -238,8 +302,15 @@ function showGatherResultModal(result) {
 }
 
 function showLocationHintModal(scene) {
-  const hint = getLocationHint(scene.id);
-  const icon = hint.kind === 'station' ? '🔒' : '🗺️';
+  const isLockedStation = isRecipeStation(scene.id) && !canEnterRecipeStation(scene.id);
+  const hint = isLockedStation
+    ? {
+      kind: 'station',
+      title: `${GameDB.stations?.[scene.id]?.label || scene.dataset.title}尚未解鎖`,
+      message: getStationLockMessage(scene.id),
+    }
+    : getLocationHint(scene.id);
+  const icon = isLockedStation || hint.kind === 'station' ? '🔒' : '🗺️';
 
   showModal(`
     <div class="core-modal-card compact location-hint-modal">
@@ -255,7 +326,7 @@ function showLocationHintModal(scene) {
 }
 
 function showCraftResultModal(result, scene) {
-  const icon = result.ok ? result.output?.icon || '🍳' : '🧺';
+  const icon = result.ok ? result.output?.icon || '🍳' : result.status === 'locked_station' ? '🔒' : '🧺';
 
   showModal(`
     <div class="core-modal-card compact location-hint-modal recipe-list-modal">
@@ -285,23 +356,26 @@ function bindRecipeCraftButtons(scene) {
 function showRecipeListModal(scene) {
   const station = GameDB.stations?.[scene.id];
   const recipes = getStationRecipes(scene.id);
+  const isLockedStation = isRecipeStation(scene.id) && !canEnterRecipeStation(scene.id);
   const title = station?.label ? `${station.label}配方` : `${scene.dataset.title}配方`;
-  const message = recipes.length
-    ? `目前可以查看 ${recipes.length} 份配方；素材足夠時可以製作成品。`
-    : `${station?.label || scene.dataset.title}目前還沒有可製作配方，之後會從 GameDB.recipes 開放。`;
+  const message = isLockedStation
+    ? getStationLockMessage(scene.id)
+    : recipes.length
+      ? `目前可以查看 ${recipes.length} 份配方；素材足夠時可以製作成品。`
+      : `${station?.label || scene.dataset.title}目前還沒有可製作配方，之後會從 GameDB.recipes 開放。`;
 
   showModal(`
     <div class="core-modal-card compact location-hint-modal recipe-list-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">RECIPE LIST</span>
-      <div class="gather-result-icon">🍳</div>
+      <div class="gather-result-icon">${isLockedStation ? '🔒' : '🍳'}</div>
       <h2>${title}</h2>
       <p>${message}</p>
       ${renderRecipeCards(scene.id)}
     </div>
   `);
 
-  bindRecipeCraftButtons(scene);
+  if (!isLockedStation) bindRecipeCraftButtons(scene);
   setDialogue(scene.dataset.speaker || '甜點精靈', scene.dataset.title, message);
 }
 
@@ -321,7 +395,7 @@ export function setActiveScene(index) {
     tab.classList.toggle('active', tab.dataset.target === scene.id);
   });
 
-  renderGatherStatusBadges();
+  renderSceneStatusBadges();
   setDialogue(scene.dataset.speaker, scene.dataset.title, scene.dataset.dialogue);
 }
 
@@ -356,7 +430,7 @@ function openCafeInside() {
 
 function handleGatherScene(scene) {
   const result = gatherAt(scene.id);
-  renderGatherStatusBadges();
+  renderSceneStatusBadges();
   showGatherResultModal(result);
   setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
 }
@@ -457,13 +531,13 @@ export function initHome() {
   if (!homeRoot || homeRoot.dataset.homeReady === 'true') return;
   homeRoot.dataset.homeReady = 'true';
   applyHotspotPositions();
-  renderGatherStatusBadges();
+  renderSceneStatusBadges();
   bindHomeEvents();
   setActiveScene(0);
 }
 
 export function renderHome() {
   homeRoot?.classList.remove('inside-mode');
-  renderGatherStatusBadges();
+  renderSceneStatusBadges();
   setActiveScene(activeIndex);
 }
