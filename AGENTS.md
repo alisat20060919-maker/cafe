@@ -41,6 +41,21 @@
 7. 未來 `game-data.js` 太肥時，才拆成 `data/items.js`、`data/recipes.js`、`data/gather.js` 等資料模組。
 8. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`，不可直接 import `@data/items`。
 
+## ID 命名規範
+
+所有遊戲資料 ID 都必須使用穩定英文 snake_case，不使用中文、空白、emoji 或會隨文案改變的名稱。
+
+1. 一階素材：`moon_petals`、`star_berry`。
+2. 二階素材：`moon_dew`、`star_berry_syrup`。
+3. 三階素材：`pure_moon_essence`。
+4. 飲品或甜點產品：`moon_latte`、`star_berry_tart`。
+5. 精靈：`moon_petals_fairy`、`star_berry_fairy`。
+6. 委託：`quest_moon_latte`。
+7. 配方：`recipe_moon_dew`。
+8. 地點：`greenhouse`、`backyard`、`alchemy`。
+9. 新增 ID 前先確認 `GameDB` 沒有同名項目。
+10. 不要修改既有 ID；除非同時設計完整 migration，否則舊存檔會壞。
+
 ## State 正規化規則
 
 `game-state.js` 與 localStorage 只存玩家動態資料，不存完整靜態敘述。
