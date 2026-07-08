@@ -1,5 +1,5 @@
-import { GameDB } from './game-data.js?v=core07';
-import { addItem, persistState } from './game-state.js?v=core07';
+import { GameDB } from '@db';
+import { addItem, persistState } from '@state';
 
 const gatherTables = {
   backyard: {
