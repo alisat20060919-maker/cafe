@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 5,
+  version: 6,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -13,9 +13,19 @@ export const GameDB = {
     fairy: { id: 'fairy', label: '精靈', icon: '🧚' },
   },
   rarities: ['N', 'R', 'SR', 'SSR'],
+  rarityMeta: {
+    N: { id: 'N', label: 'N', icon: '◇' },
+    R: { id: 'R', label: 'R', icon: '◆' },
+    SR: { id: 'SR', label: 'SR', icon: '✦' },
+    SSR: { id: 'SSR', label: 'SSR', icon: '✧' },
+  },
 
   getItemTypeLabel(typeId) {
     return this.itemTypeMeta?.[typeId]?.label || typeId || '未分類';
+  },
+
+  getRarityLabel(rarityId) {
+    return this.rarityMeta?.[rarityId]?.label || rarityId || '未知稀有度';
   },
 
   getInventoryCategories() {
@@ -33,6 +43,24 @@ export const GameDB = {
     ];
 
     return categories;
+  },
+
+  getInventoryRarities() {
+    const usedRarities = new Set([
+      ...Object.values(this.items || {}).map((item) => item.rarity).filter(Boolean),
+      ...Object.values(this.fairies || {}).map((fairy) => fairy.rarity).filter(Boolean),
+    ]);
+
+    return [
+      { id: 'all', label: '全部稀有度', icon: '✦' },
+      ...this.rarities
+        .filter((rarityId) => usedRarities.has(rarityId))
+        .map((rarityId) => ({
+          id: rarityId,
+          label: this.getRarityLabel(rarityId),
+          icon: this.rarityMeta?.[rarityId]?.icon || '◇',
+        })),
+    ];
   },
 
   currencies: {
