@@ -5,24 +5,7 @@ import { exportSave, importSave } from '@save';
 import { Events, on } from '@eventBus';
 
 let modalHost;
-
-const openingStory = [
-  {
-    speaker: '？？？',
-    title: '森林盡頭的邀請函',
-    body: '你在信箱裡發現一封沾著星屑的邀請函。信紙上寫著：「如果你願意照顧這間小店，迷路的精靈們就會找到回家的燈。」',
-  },
-  {
-    speaker: '小店長',
-    title: '精靈咖啡屋',
-    body: '推開木門後，咖啡香、月光花瓣和星星莓的甜味一起湧了出來。這裡曾經很熱鬧，但現在只剩下一盞還沒熄滅的小燈。',
-  },
-  {
-    speaker: '小店長',
-    title: '第一天營業',
-    body: '從今天開始，你要接下客人的委託、製作甜點與飲品、累積經驗，讓咖啡屋慢慢恢復原本的樣子。也許某一天，封住的煉金室會再次亮起來。',
-  },
-];
+let lockedScrollY = 0;
 
 function $(selector, root = document) {
   return root.querySelector(selector);
@@ -30,6 +13,33 @@ function $(selector, root = document) {
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
+}
+
+function getOpeningStory() {
+  return Array.isArray(GameDB.stories?.opening) ? GameDB.stories.opening : [];
+}
+
+function lockBodyScroll() {
+  if (document.body.classList.contains('core-modal-open')) return;
+  lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+  document.body.classList.add('core-modal-open');
+  document.body.style.position = 'fixed';
+  document.body.style.top = `-${lockedScrollY}px`;
+  document.body.style.left = '0';
+  document.body.style.right = '0';
+  document.body.style.width = '100%';
+}
+
+function unlockBodyScroll() {
+  if (!document.body.classList.contains('core-modal-open')) return;
+  document.body.classList.remove('core-modal-open');
+  document.body.style.position = '';
+  document.body.style.top = '';
+  document.body.style.left = '';
+  document.body.style.right = '';
+  document.body.style.width = '';
+  window.scrollTo(0, lockedScrollY);
+  lockedScrollY = 0;
 }
 
 export function initUI() {
@@ -97,6 +107,9 @@ function handleDaily() {
 }
 
 function renderOpeningStoryStep(index = 0) {
+  const openingStory = getOpeningStory();
+  if (!openingStory.length) return;
+
   const step = openingStory[index] || openingStory[0];
   const isLast = index >= openingStory.length - 1;
 
@@ -143,12 +156,14 @@ export function showModal(html) {
   if (!modalHost) initUI();
   modalHost.innerHTML = html;
   modalHost.hidden = false;
+  lockBodyScroll();
 }
 
 export function closeModal() {
   if (!modalHost) return;
   modalHost.hidden = true;
   modalHost.innerHTML = '';
+  unlockBodyScroll();
 }
 
 export function openSettings() {
