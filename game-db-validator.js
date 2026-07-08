@@ -230,6 +230,43 @@ function validateFairyMap(errors, map = {}, scope = 'fairyMap') {
   });
 }
 
+function validateRecipeOutput(errors, output = {}, scope = 'recipe.output') {
+  if (!output || typeof output !== 'object') {
+    pushIssue(errors, scope, 'output 必須是物件。');
+    return;
+  }
+
+  if (!output.itemId) {
+    pushIssue(errors, scope, '缺少 itemId。');
+  } else if (!hasOwn(GameDB.items, output.itemId)) {
+    pushIssue(errors, scope, `output.itemId ${output.itemId} 不存在。`);
+  }
+
+  if (Number(output.qty || 0) <= 0) pushIssue(errors, scope, 'output.qty 必須大於 0。');
+}
+
+function validateRecipes(errors) {
+  Object.entries(GameDB.recipes || {}).forEach(([recipeId, recipe]) => {
+    const scope = `recipes.${recipeId}`;
+    if (!recipe || typeof recipe !== 'object') {
+      pushIssue(errors, scope, 'recipe 必須是物件。');
+      return;
+    }
+
+    if (recipe.id !== recipeId) pushIssue(errors, scope, `recipe.id 應為 ${recipeId}，目前是 ${recipe.id || '空值'}。`);
+    if (!recipe.name) pushIssue(errors, scope, '缺少 name。');
+    if (!recipe.station) {
+      pushIssue(errors, scope, '缺少 station。');
+    } else if (!hasOwn(GameDB.stations, recipe.station)) {
+      pushIssue(errors, scope, `station ${recipe.station} 不存在。`);
+    }
+
+    if (!recipe.category) pushIssue(errors, scope, '缺少 category。');
+    validateItemMap(errors, recipe.cost || {}, `${scope}.cost`);
+    validateRecipeOutput(errors, recipe.output, `${scope}.output`);
+  });
+}
+
 function validateCommissions(errors) {
   Object.entries(GameDB.commissions || {}).forEach(([questId, quest]) => {
     const scope = `commissions.${questId}`;
@@ -271,6 +308,7 @@ export function validateGameDB() {
   validateItemSources(errors, warnings);
   validateGatherTables(errors);
   validateGachaPools(errors);
+  validateRecipes(errors);
   validateCommissions(errors);
   validateDailyRewards(errors);
 
