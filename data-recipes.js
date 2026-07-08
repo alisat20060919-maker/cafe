@@ -53,4 +53,13 @@ export const recipes = {
     output: { itemId: 'dream_essence', qty: 1 },
     description: '讓夜空碎片在星露水中沉澱，提取出安靜的夢境精華。',
   },
+  recipe_pure_moon_essence: {
+    id: 'recipe_pure_moon_essence',
+    name: '純月精華',
+    station: 'alchemy',
+    category: 'refined_material',
+    cost: { moon_dew: 1, night_sky_fragment: 1 },
+    output: { itemId: 'pure_moon_essence', qty: 1 },
+    description: '將月光露珠與夜空碎片再次穩定化，煉成高階月光與夢境商品使用的三階素材。',
+  },
 };
