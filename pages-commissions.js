@@ -1,6 +1,7 @@
 import { GameDB } from './game-data.js?v=core04';
-import { getState, formatReward } from './game-state.js?v=core04';
+import { getState } from './game-state.js?v=core04';
 import { canCompleteCommission, completeCommission } from './commission-actions.js?v=core04';
+import { formatReward } from './utils.js?v=core04';
 import { Events, on, emitNotice } from './event-bus.js?v=core04';
 
 function $all(selector, root = document) {
