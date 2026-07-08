@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>精靈咖啡屋 core16 All Code Export</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      background: #18111f;
+      color: #f8eefc;
+    }
+    h1, h2, p { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .panel {
+      max-width: 980px;
+      margin: 0 auto 16px;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 18px;
+      background: rgba(255,255,255,.06);
+    }
+    button {
+      margin: 6px 8px 6px 0;
+      padding: 10px 14px;
+      border: 0;
+      border-radius: 999px;
+      background: #f5d47a;
+      color: #24160d;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: #d8c2ff; }
+    #status { white-space: pre-wrap; color: #f5d47a; }
+    textarea {
+      box-sizing: border-box;
+      width: 100%;
+      height: 62vh;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.2);
+      background: #0f0b14;
+      color: #f8eefc;
+      font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+  <section class="panel">
+    <h1>精靈咖啡屋 core16 All Code Export</h1>
+    <p>這個頁面會把目前 repo 的核心檔案合併成一份純文字 Markdown，方便直接貼給 Gemini 審查。</p>
+    <p>流程：先按「產生 all_code.md」，等下方文字框出現完整內容，再按「下載 .md」或「複製全部」。</p>
+    <button type="button" id="generateBtn">產生 all_code.md</button>
+    <button type="button" id="copyBtn" class="secondary">複製全部</button>
+    <button type="button" id="downloadBtn" class="secondary">下載 .md</button>
+    <div id="status">尚未產生。</div>
+  </section>
+
+  <section class="panel">
+    <textarea id="output" spellcheck="false" placeholder="按上方按鈕後，完整程式碼會出現在這裡。"></textarea>
+  </section>
+
+  <script>
+    const files = [
+      { path: 'AGENTS.md', lang: 'md', role: 'AI 開發規範' },
+      { path: 'TESTING.md', lang: 'md', role: '測試清單' },
+      { path: 'index.html', lang: 'html', role: 'HTML / importmap / page shell' },
+      { path: 'main.js', lang: 'js', role: 'App bootstrap' },
+      { path: 'game-data.js', lang: 'js', role: 'GameDB 靜態資料庫' },
+      { path: 'game-db-validator.js', lang: 'js', role: 'GameDB 資料檢查器' },
+      { path: 'game-state.js', lang: 'js', role: 'State / localStorage / migration' },
+      { path: 'save.js', lang: 'js', role: '存檔輔助' },
+      { path: 'event-bus.js', lang: 'js', role: '事件匯流排' },
+      { path: 'router.js', lang: 'js', role: 'SPA router' },
+      { path: 'ui.js', lang: 'js', role: '共用 UI / notice / modal / status' },
+      { path: 'home.js', lang: 'js', role: '首頁地圖與場景互動' },
+      { path: 'utils.js', lang: 'js', role: '共用工具' },
+      { path: 'daily-actions.js', lang: 'js', role: '簽到邏輯' },
+      { path: 'gacha-actions.js', lang: 'js', role: '祈願邏輯' },
+      { path: 'gather-actions.js', lang: 'js', role: '採集邏輯' },
+      { path: 'commission-actions.js', lang: 'js', role: '委託完成邏輯' },
+      { path: 'pages-gacha.js', lang: 'js', role: '祈願頁' },
+      { path: 'pages-inventory.js', lang: 'js', role: '背包頁' },
+      { path: 'pages-commissions.js', lang: 'js', role: '委託頁' },
+      { path: 'style.css', lang: 'css', role: '基礎樣式' },
+      { path: 'game-ui.css', lang: 'css', role: '遊戲 UI 樣式' },
+      { path: 'mobile-fix.css', lang: 'css', role: '手機修正' },
+      { path: 'game-interior.css', lang: 'css', role: '咖啡廳內部樣式' },
+      { path: 'app-core-v1.css', lang: 'css', role: 'core page/card/modal 樣式' },
+    ];
+
+    const statusEl = document.querySelector('#status');
+    const outputEl = document.querySelector('#output');
+
+    function nowString() {
+      return new Date().toISOString();
+    }
+
+    async function fetchText(path) {
+      const response = await fetch(`${path}?export=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`${path}: HTTP ${response.status}`);
+      return response.text();
+    }
+
+    async function generateAllCode() {
+      statusEl.textContent = '讀取中...';
+      outputEl.value = '';
+
+      const chunks = [];
+      chunks.push('# 精靈咖啡屋 core16 全程式碼匯出');
+      chunks.push('');
+      chunks.push(`產生時間：${nowString()}`);
+      chunks.push('Repo：https://github.com/alisat20060919-maker/cafe');
+      chunks.push('Site：https://alisat20060919-maker.github.io/cafe/');
+      chunks.push('目前版本：core16');
+      chunks.push('');
+      chunks.push('## 給 Gemini 的審查重點');
+      chunks.push('');
+      chunks.push('1. GameDB 是否仍是唯一靜態資料來源。');
+      chunks.push('2. state 是否只存動態資料，沒有存素材名稱、描述、圖示。');
+      chunks.push('3. validateGameDB 是否足以防止未來 100+ 素材時 id 打錯。');
+      chunks.push('4. pages-inventory.js 第 11 步要做背包分類，請審查最安全寫法。');
+      chunks.push('5. 不要讓 ChatGPT 把資料表寫回 page/action。');
+      chunks.push('6. 不要讓煉金室變回採集點。');
+      chunks.push('');
+      chunks.push('## 檔案索引');
+      chunks.push('');
+      files.forEach((file, index) => chunks.push(`${index + 1}. ${file.path} — ${file.role}`));
+      chunks.push('');
+
+      for (let i = 0; i < files.length; i += 1) {
+        const file = files[i];
+        statusEl.textContent = `讀取中 ${i + 1}/${files.length}: ${file.path}`;
+        try {
+          const text = await fetchText(file.path);
+          chunks.push(`\n---\n\n## ${file.path}\n`);
+          chunks.push(`用途：${file.role}\n`);
+          chunks.push('```' + file.lang);
+          chunks.push(text.replace(/```/g, '`\u200b``'));
+          chunks.push('```');
+        } catch (error) {
+          chunks.push(`\n---\n\n## ${file.path}\n`);
+          chunks.push(`讀取失敗：${error.message}`);
+        }
+      }
+
+      outputEl.value = chunks.join('\n');
+      statusEl.textContent = `完成。已合併 ${files.length} 個檔案，共 ${outputEl.value.length.toLocaleString()} 字元。`;
+    }
+
+    async function copyAll() {
+      if (!outputEl.value) await generateAllCode();
+      outputEl.select();
+      await navigator.clipboard.writeText(outputEl.value);
+      statusEl.textContent = '已複製全部文字，可以直接貼給 Gemini。';
+    }
+
+    async function downloadMarkdown() {
+      if (!outputEl.value) await generateAllCode();
+      const blob = new Blob([outputEl.value], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'elf_cafe_core16_all_code.md';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      statusEl.textContent = '已下載 elf_cafe_core16_all_code.md。';
+    }
+
+    document.querySelector('#generateBtn').addEventListener('click', generateAllCode);
+    document.querySelector('#copyBtn').addEventListener('click', copyAll);
+    document.querySelector('#downloadBtn').addEventListener('click', downloadMarkdown);
+  </script>
+</body>
+</html>
