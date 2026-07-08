@@ -32,18 +32,20 @@
 
 ## GameDB 靜態資料庫規則
 
-本專案短期採用單一 `game-data.js` 作為靜態資料庫，對外統一匯出 `GameDB`。
+本專案採用 `game-data.js` 作為唯一 Facade，對外統一匯出 `GameDB`。部分高成長資料可拆成同步 ES Modules，例如 `data-items.js`、`data-recipes.js`，但只能由 `game-data.js` 組裝。
 
 1. 不使用 JSON 檔案作為遊戲資料來源。避免 `fetch()`、async loading、快取與白屏風險。
-2. 靜態資料一律放在 `GameDB`，包含素材、精靈、產品、配方、採集表、來源提示、委託與祈願池。
+2. 靜態資料一律透過 `GameDB` 對外提供，包含素材、精靈、產品、配方、採集表、來源提示、委託與祈願池。
 3. Page 與 Action 不可以自建資料表，例如不要在 `pages-commissions.js` 內寫 `itemSources`，也不要在 `gather-actions.js` 內寫 `gatherTables`。
 4. Page 與 Action 只負責讀取 `GameDB` 並執行渲染或遊戲邏輯。
-5. 新增素材、精靈、產品、配方或來源時，優先只修改 `game-data.js`。
-6. 煉金室不是原料採集點；煉金室用於一階素材煉成二階、三階素材，或製作正式商品。
-7. 未來 `game-data.js` 太肥時，才拆成 `data/items.js`、`data/recipes.js`、`data/gather.js` 等資料模組。
-8. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`，不可直接 import `@data/items`。
-9. 所有關聯性資料的 Getter 邏輯必須封裝在 `game-data.js` 的 `GameDB` 內，例如來源解析、來源 label、item source 查詢。
-10. Page 與 Action 不可以知道 `GameDB` 內部是用 `routes`、`scenes` 還是 `stations` 分類；UI 只能呼叫 `GameDB.getItemSource()`、`GameDB.getSourceLabel()` 這類公開 getter。
+5. 新增素材、產品或來源時，優先修改 `data-items.js`；新增配方時，優先修改 `data-recipes.js`。
+6. `game-data.js` 保留 helper/getter 與 Facade 組裝，不直接塞回大量 item/recipe 資料。
+7. 除了 `game-data.js` 以外，任何檔案都禁止 import `@data/*`；UI、Actions、Validator 一律只能 import `@db`。
+8. 煉金室不是原料採集點；煉金室用於一階素材煉成二階、三階素材，或製作正式商品。
+9. 未來其他資料變大時，才逐步拆 `data-fairies.js`、`data-gather.js`、`data-commissions.js`，不要一次全拆。
+10. 拆檔後仍維持 Facade Pattern：外部檔案只能 `import { GameDB } from '@db'`，不可直接 import `@data/items` 或 `@data/recipes`。
+11. 所有關聯性資料的 Getter 邏輯必須封裝在 `game-data.js` 的 `GameDB` 內，例如來源解析、來源 label、item source 查詢。
+12. Page 與 Action 不可以知道 `GameDB` 內部是用 `routes`、`scenes` 還是 `stations` 分類；UI 只能呼叫 `GameDB.getItemSource()`、`GameDB.getSourceLabel()` 這類公開 getter。
 
 ## ID 命名規範
 
@@ -92,7 +94,7 @@
 
 ## 配方資料與製作規則
 
-1. 配方資料只允許定義在 `GameDB.recipes`。
+1. 配方資料只允許透過 `GameDB.recipes` 對外提供；實體資料目前放在 `data-recipes.js`。
 2. recipe id 必須使用 `recipe_` 前綴，例如 `recipe_moon_latte`。
 3. 每個 recipe 必須包含 `id`、`name`、`station`、`category`、`cost`、`output`。
 4. `station` 必須指向 `GameDB.stations` 已登錄的製作站。
