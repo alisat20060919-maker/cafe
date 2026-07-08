@@ -5,6 +5,7 @@ import {
   spendItems,
   spendCurrency,
   addReward,
+  applyCommissionUnlocks,
   persistState,
   refreshDailyCommissions,
   useFreeDailyCommissionRefresh,
@@ -24,6 +25,11 @@ function isCommissionCompleted(record) {
 
 function currencyLabel(currencyId) {
   return GameDB.currencies?.[currencyId]?.name || currencyId;
+}
+
+function formatUnlocks(unlocks = []) {
+  if (!unlocks.length) return '';
+  return `｜新解鎖：${unlocks.map((entry) => entry.label).join('、')}`;
 }
 
 export function getPaidRefreshCostText() {
@@ -90,7 +96,9 @@ export function completeCommission(commissionId) {
     status: 'completed',
     completedAt: new Date().toISOString(),
   };
+
+  const unlocked = applyCommissionUnlocks(commissionId);
   persistState('commission');
 
-  return { ok: true, message: `委託完成：${formatReward(commission.reward)}` };
+  return { ok: true, message: `委託完成：${formatReward(commission.reward)}${formatUnlocks(unlocked)}` };
 }
