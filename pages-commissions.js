@@ -30,10 +30,6 @@ const COMMISSION_SORTS = [
 let currentCommissionFilter = 'all';
 let currentCommissionSort = 'default';
 
-function $all(selector, root = document) {
-  return [...root.querySelectorAll(selector)];
-}
-
 function pageHeader(kicker, title, body) {
   return `
     <div class="core-page-head">
@@ -326,6 +322,67 @@ function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   }
 }
 
+function handleRefreshResult(result, okTitle, failTitle) {
+  emitNotice(result.refreshed ? okTitle : failTitle, result.message);
+  renderCommissions();
+}
+
+function handleCommissionClick(event) {
+  const button = event.target.closest('button');
+  const page = document.querySelector('#page-commissions');
+  if (!button || !page?.contains(button)) return;
+
+  if (button.matches('[data-refresh-daily-commissions]')) {
+    handleRefreshResult(refreshDailyCommissionList(), '委託已刷新', '委託已是最新');
+    return;
+  }
+
+  if (button.matches('[data-refresh-free-commissions]')) {
+    handleRefreshResult(refreshDailyCommissionFree(), '免費刷新完成', '不能免費刷新');
+    return;
+  }
+
+  if (button.matches('[data-refresh-paid-commissions]')) {
+    handleRefreshResult(refreshDailyCommissionPaid(), '付費刷新完成', '不能付費刷新');
+    return;
+  }
+
+  if (button.dataset.commissionFilter) {
+    currentCommissionFilter = button.dataset.commissionFilter || 'all';
+    renderCommissions();
+    return;
+  }
+
+  if (button.dataset.complete) {
+    const result = completeCommission(button.dataset.complete);
+    emitNotice(result.ok ? '委託完成' : '還不能完成', result.message);
+    renderCommissions();
+    return;
+  }
+
+  if (button.dataset.sourceType) {
+    goToSource(button.dataset.sourceType, button.dataset.sourceId);
+  }
+}
+
+function handleCommissionChange(event) {
+  const page = document.querySelector('#page-commissions');
+  if (!page?.contains(event.target)) return;
+
+  if (event.target.matches('[data-commission-sort]')) {
+    currentCommissionSort = event.target.value || 'default';
+    renderCommissions();
+  }
+}
+
+function bindCommissionEvents() {
+  const page = document.querySelector('#page-commissions');
+  if (!page || page.dataset.eventsBound === 'true') return;
+  page.dataset.eventsBound = 'true';
+  page.addEventListener('click', handleCommissionClick);
+  page.addEventListener('change', handleCommissionChange);
+}
+
 export function renderCommissions() {
   const page = document.querySelector('#page-commissions');
   if (!page) return;
@@ -343,51 +400,10 @@ export function renderCommissions() {
     ${renderSortBox()}
     <div class="core-quest-list">${cards}</div>
   `;
-
-  page.querySelector('[data-refresh-daily-commissions]')?.addEventListener('click', () => {
-    const result = refreshDailyCommissionList();
-    emitNotice(result.refreshed ? '委託已刷新' : '委託已是最新', result.message);
-    renderCommissions();
-  });
-
-  page.querySelector('[data-refresh-free-commissions]')?.addEventListener('click', () => {
-    const result = refreshDailyCommissionFree();
-    emitNotice(result.refreshed ? '免費刷新完成' : '不能免費刷新', result.message);
-    renderCommissions();
-  });
-
-  page.querySelector('[data-refresh-paid-commissions]')?.addEventListener('click', () => {
-    const result = refreshDailyCommissionPaid();
-    emitNotice(result.refreshed ? '付費刷新完成' : '不能付費刷新', result.message);
-    renderCommissions();
-  });
-
-  $all('[data-commission-filter]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      currentCommissionFilter = button.datasetCommissionFilter || button.dataset.commissionFilter || 'all';
-      renderCommissions();
-    });
-  });
-
-  page.querySelector('[data-commission-sort]')?.addEventListener('change', (event) => {
-    currentCommissionSort = event.target.value || 'default';
-    renderCommissions();
-  });
-
-  $all('[data-complete]', page).forEach((button) => {
-    button.addEventListener('click', () => {
-      const result = completeCommission(button.dataset.complete);
-      emitNotice(result.ok ? '委託完成' : '還不能完成', result.message);
-      renderCommissions();
-    });
-  });
-
-  $all('[data-source-type]', page).forEach((button) => {
-    button.addEventListener('click', () => goToSource(button.dataset.sourceType, button.dataset.sourceId));
-  });
 }
 
 export function initCommissionsPage() {
+  bindCommissionEvents();
   on(Events.STATE_CHANGED, () => {
     const page = document.querySelector('#page-commissions');
     if (page?.classList.contains('active')) renderCommissions();
