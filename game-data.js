@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 6,
+  version: 7,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -18,6 +18,14 @@ export const GameDB = {
     R: { id: 'R', label: 'R', icon: '◆' },
     SR: { id: 'SR', label: 'SR', icon: '✦' },
     SSR: { id: 'SSR', label: 'SSR', icon: '✧' },
+  },
+
+  normalizeSearchText(value) {
+    return String(value ?? '').toLowerCase().trim();
+  },
+
+  buildSearchText(parts = []) {
+    return this.normalizeSearchText(parts.flat().filter(Boolean).join(' '));
   },
 
   getItemTypeLabel(typeId) {
@@ -61,6 +69,40 @@ export const GameDB = {
           icon: this.rarityMeta?.[rarityId]?.icon || '◇',
         })),
     ];
+  },
+
+  getItemSearchText(itemId) {
+    const item = typeof itemId === 'string' ? this.items?.[itemId] : itemId;
+    if (!item) return '';
+
+    return this.buildSearchText([
+      item.id,
+      item.name,
+      item.type,
+      item.typeName,
+      this.getItemTypeLabel(item.type),
+      item.rarity,
+      this.getRarityLabel(item.rarity),
+      item.source,
+      item.use,
+      item.description,
+    ]);
+  },
+
+  getFairySearchText(fairyId) {
+    const fairy = typeof fairyId === 'string' ? this.fairies?.[fairyId] : fairyId;
+    if (!fairy) return '';
+
+    return this.buildSearchText([
+      fairy.id,
+      fairy.name,
+      'fairy',
+      this.getItemTypeLabel('fairy'),
+      fairy.rarity,
+      this.getRarityLabel(fairy.rarity),
+      fairy.quote,
+      fairy.description,
+    ]);
   },
 
   currencies: {
