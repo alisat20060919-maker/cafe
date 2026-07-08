@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>精靈咖啡屋 core16 All Code Export</title>
+  <title>精靈咖啡屋 core17 All Code Export</title>
   <style>
     body {
       margin: 0;
@@ -49,7 +49,7 @@
 </head>
 <body>
   <section class="panel">
-    <h1>精靈咖啡屋 core16 All Code Export</h1>
+    <h1>精靈咖啡屋 core17 All Code Export</h1>
     <p>這個頁面會把目前 repo 的核心檔案合併成一份純文字 Markdown，方便直接貼給 Gemini 審查。</p>
     <p>流程：先按「產生 all_code.md」，等下方文字框出現完整內容，再按「下載 .md」或「複製全部」。</p>
     <button type="button" id="generateBtn">產生 all_code.md</button>
@@ -109,21 +109,22 @@
       outputEl.value = '';
 
       const chunks = [];
-      chunks.push('# 精靈咖啡屋 core16 全程式碼匯出');
+      chunks.push('# 精靈咖啡屋 core17 全程式碼匯出');
       chunks.push('');
       chunks.push(`產生時間：${nowString()}`);
       chunks.push('Repo：https://github.com/alisat20060919-maker/cafe');
       chunks.push('Site：https://alisat20060919-maker.github.io/cafe/');
-      chunks.push('目前版本：core16');
+      chunks.push('目前版本：core17');
       chunks.push('');
       chunks.push('## 給 Gemini 的審查重點');
       chunks.push('');
       chunks.push('1. GameDB 是否仍是唯一靜態資料來源。');
       chunks.push('2. state 是否只存動態資料，沒有存素材名稱、描述、圖示。');
-      chunks.push('3. validateGameDB 是否足以防止未來 100+ 素材時 id 打錯。');
-      chunks.push('4. pages-inventory.js 第 11 步要做背包分類，請審查最安全寫法。');
-      chunks.push('5. 不要讓 ChatGPT 把資料表寫回 page/action。');
-      chunks.push('6. 不要讓煉金室變回採集點。');
+      chunks.push('3. validateGameDB 是否已能抓出 item type / rarity 拼字錯誤。');
+      chunks.push('4. pages-commissions.js 是否只透過 GameDB getter 取得來源資訊。');
+      chunks.push('5. pages-inventory.js 第 11 步要做背包分類，請審查最安全寫法。');
+      chunks.push('6. 不要讓 ChatGPT 把資料表或 getter 寫回 page/action。');
+      chunks.push('7. 不要讓煉金室變回採集點。');
       chunks.push('');
       chunks.push('## 檔案索引');
       chunks.push('');
@@ -163,12 +164,12 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'elf_cafe_core16_all_code.md';
+      a.download = 'elf_cafe_core17_all_code.md';
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
-      statusEl.textContent = '已下載 elf_cafe_core16_all_code.md。';
+      statusEl.textContent = '已下載 elf_cafe_core17_all_code.md。';
     }
 
     document.querySelector('#generateBtn').addEventListener('click', generateAllCode);
