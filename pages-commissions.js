@@ -43,18 +43,21 @@ function renderRequirements(quest) {
     .join('、');
 }
 
-function getQuestStatus(quest) {
+function isSavedCompleted(record) {
+  return record?.status === 'completed' || record?.status === 'claimed';
+}
+
+function getQuestViewStatus(quest) {
   const state = getState();
-  if (state.commissions[quest.id]?.status === 'claimed') return 'claimed';
+  if (isSavedCompleted(state.commissions[quest.id])) return 'completed';
   return canCompleteCommission(quest.id) ? 'ready' : 'available';
 }
 
 function statusLabel(status) {
   return {
-    locked: '未解鎖',
     available: '商品不足',
     ready: '可交付',
-    claimed: '已完成',
+    completed: '已完成',
   }[status] || status;
 }
 
@@ -95,7 +98,7 @@ function sourceButtonText(source) {
 }
 
 function renderQuestButton(quest, status) {
-  if (status === 'claimed') {
+  if (status === 'completed') {
     return '<button type="button" disabled>已完成</button>';
   }
 
@@ -135,7 +138,7 @@ export function renderCommissions() {
   if (!page) return;
 
   const cards = Object.values(GameDB.commissions).map((quest) => {
-    const status = getQuestStatus(quest);
+    const status = getQuestViewStatus(quest);
     return `
       <article class="core-quest-card status-${status}">
         <div class="core-quest-top">
@@ -154,7 +157,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / PRODUCT DELIVERY', '委託', '委託現在會要求已製作完成的商品；缺少商品時會帶你前往對應製作站。')}
+    ${pageHeader('QUEST BOARD / PRODUCT DELIVERY', '委託', '委託畫面會即時計算商品不足或可交付；存檔只保存真正完成或進行中的狀態。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
