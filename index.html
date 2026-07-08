@@ -15,27 +15,28 @@
   <script type="importmap">
     {
       "imports": {
-        "@main": "./main.js?v=core57",
-        "@db": "./game-data.js?v=core57",
-        "@data/items": "./data-items.js?v=core57",
-        "@data/recipes": "./data-recipes.js?v=core57",
-        "@validator": "./game-db-validator.js?v=core57",
-        "@state": "./game-state.js?v=core57",
-        "@save": "./save.js?v=core57",
-        "@ui": "./ui.js?v=core57",
-        "@home": "./home.js?v=core57",
-        "@router": "./router.js?v=core57",
-        "@eventBus": "./event-bus.js?v=core57",
-        "@utils": "./utils.js?v=core57",
-        "@actions/daily": "./daily-actions.js?v=core57",
-        "@actions/gacha": "./gacha-actions.js?v=core57",
-        "@actions/commission": "./commission-actions.js?v=core57",
-        "@actions/gather": "./gather-actions.js?v=core57",
-        "@actions/craft": "./craft-actions.js?v=core57",
-        "@pages/gacha": "./pages-gacha.js?v=core57",
-        "@pages/inventory": "./pages-inventory.js?v=core57",
-        "@pages/collection": "./pages-collection.js?v=core57",
-        "@pages/commissions": "./pages-commissions.js?v=core57"
+        "@main": "./main.js?v=core58",
+        "@db": "./game-data.js?v=core58",
+        "@data/items": "./data-items.js?v=core58",
+        "@data/recipes": "./data-recipes.js?v=core58",
+        "@validator": "./game-db-validator.js?v=core58",
+        "@state": "./game-state.js?v=core58",
+        "@save": "./save.js?v=core58",
+        "@ui": "./ui.js?v=core58",
+        "@home": "./home.js?v=core58",
+        "@router": "./router.js?v=core58",
+        "@eventBus": "./event-bus.js?v=core58",
+        "@utils": "./utils.js?v=core58",
+        "@actions/daily": "./daily-actions.js?v=core58",
+        "@actions/gacha": "./gacha-actions.js?v=core58",
+        "@actions/commission": "./commission-actions.js?v=core58",
+        "@actions/gather": "./gather-actions.js?v=core58",
+        "@actions/craft": "./craft-actions.js?v=core58",
+        "@pages/gacha": "./pages-gacha.js?v=core58",
+        "@pages/inventory": "./pages-inventory.js?v=core58",
+        "@pages/fairies": "./pages-fairies.js?v=core58",
+        "@pages/collection": "./pages-collection.js?v=core58",
+        "@pages/commissions": "./pages-commissions.js?v=core58"
       }
     }
   </script>
@@ -51,10 +52,10 @@
               <strong id="levelRingValue">01</strong>
             </div>
           </div>
-          <div><p class="save-label">EXP 0/60 / Save v12</p><h1>精靈咖啡屋</h1></div>
+          <div><p class="save-label">EXP 0/60 / Save v14</p><h1>精靈咖啡屋</h1></div>
         </div>
         <div class="status-pills" aria-label="玩家狀態列"><span>☀️ 森林午後</span><span>✦ 星糖 128</span><span>🪙 葉幣 320</span></div>
-        <div class="top-actions" aria-label="快速功能"><button type="button" data-action="daily">🎁<span>簽到</span></button></div>
+        <div class="top-actions" aria-label="快速功能"><button type="button" data-action="daily">🎁<span>簽到</span></button><button type="button" data-action="settings">⚙️<span>設定</span></button></div>
       </header>
 
       <section class="page page-home active" id="page-home" aria-label="店鋪首頁">
@@ -101,9 +102,10 @@
       <section class="page core-page-host" id="page-gacha" aria-label="祈願頁"></section>
       <section class="page core-page-host" id="page-commissions" aria-label="委託頁"></section>
       <section class="page core-page-host" id="page-inventory" aria-label="背包頁"></section>
+      <section class="page core-page-host" id="page-fairies" aria-label="精靈角色頁"></section>
       <section class="page core-page-host" id="page-collection" aria-label="圖鑑頁"></section>
 
-      <footer class="bottom-dock" aria-label="底部功能列"><button type="button" data-route="gacha">🎰<span>祈願</span></button><button type="button" data-route="commissions">📋<span>委託</span></button><button type="button" class="dock-center" data-route="home">🏠<span>店鋪</span></button><button type="button" data-route="inventory">🧺<span>背包</span></button><button type="button" data-action="settings">⚙️<span>設定</span></button></footer>
+      <footer class="bottom-dock" aria-label="底部功能列"><button type="button" data-route="gacha">🎰<span>祈願</span></button><button type="button" data-route="commissions">📋<span>委託</span></button><button type="button" class="dock-center" data-route="home">🏠<span>店鋪</span></button><button type="button" data-route="inventory">🧺<span>背包</span></button><button type="button" data-route="fairies">🧚<span>精靈</span></button></footer>
     </section>
   </main>
   <div class="core-modal-host" id="modalHost" hidden></div>
