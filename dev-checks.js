@@ -1,6 +1,7 @@
 import { GameDB } from '@db';
 import { isUnlocked, getUnlockRequirementText } from '@state';
 import { canCraft } from '@actions/craft';
+import { isCommissionUnlocked, getCommissionUnlockText } from '@actions/commission';
 import { validateGameDB } from '@validator';
 
 function shouldRunDevChecks() {
@@ -177,6 +178,27 @@ function validateStationLockCheck() {
   return { ok: true, issues: [] };
 }
 
+function validateRecipeCommissionLockCheck() {
+  const issues = [];
+  const moonLatte = canCraft('recipe_moon_latte');
+  const dreamCocoa = canCraft('recipe_dream_cocoa');
+
+  if (moonLatte.status === 'locked_recipe') addIssue(issues, 'recipeLock.moonLatte', 'Lv.1 廚房基礎配方不應被配方等級鎖擋住。');
+  if (dreamCocoa.status !== 'locked_recipe') addIssue(issues, 'recipeLock.dreamCocoa', 'Lv.1 不應可製作 Lv.2 夜空碎片可可配方。');
+  if (isCommissionUnlocked('quest_dream_cocoa')) addIssue(issues, 'commissionLock.dreamCocoa', 'Lv.1 不應解鎖夜空碎片可可委託。');
+  if (!getCommissionUnlockText('quest_dream_cocoa')) addIssue(issues, 'commissionLock.text', '鎖定委託應提供解鎖條件文字。');
+
+  if (issues.length) {
+    console.groupCollapsed(`[Recipe Commission Lock Check] ${issues.length} issues`);
+    issues.forEach((message) => console.error(message));
+    console.groupEnd();
+    return { ok: false, issues };
+  }
+
+  console.info('[Recipe Commission Lock Check] ok');
+  return { ok: true, issues: [] };
+}
+
 export function runDevChecks() {
   if (!shouldRunDevChecks()) return { skipped: true };
   const db = validateGameDB();
@@ -185,5 +207,6 @@ export function runDevChecks() {
   const commissionExp = validateCommissionExpCheck();
   const unlockRequirement = validateUnlockRequirementCheck();
   const stationLock = validateStationLockCheck();
-  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement, stationLock };
+  const recipeCommissionLock = validateRecipeCommissionLockCheck();
+  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement, stationLock, recipeCommissionLock };
 }
