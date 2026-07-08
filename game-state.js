@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 12;
+export const SAVE_VERSION = 13;
 
 function createDefaultState() {
   return {
@@ -108,6 +108,23 @@ function getDailyCommissionLimit() {
 function pickDailyCommissionIds(poolIds = []) {
   const shuffled = [...poolIds].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(getDailyCommissionLimit(), shuffled.length));
+}
+
+function normalizeFairyState(nextState) {
+  const normalized = {};
+
+  Object.entries(nextState.fairies || {}).forEach(([fairyId, data]) => {
+    if (!GameDB.fairies?.[fairyId]) return;
+    if (!isPlainObject(data)) return;
+
+    normalized[fairyId] = {
+      ...data,
+      owned: Boolean(data.owned),
+      affection: Math.max(0, Number(data.affection || 0)),
+    };
+  });
+
+  nextState.fairies = normalized;
 }
 
 function syncCollectionFromOwned(nextState) {
@@ -267,6 +284,7 @@ function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
     normalizePlayerProgress(fresh, null);
+    normalizeFairyState(fresh);
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
     applyLevelUnlocksToState(fresh);
@@ -278,6 +296,7 @@ function migrateSave(saved) {
 
   const migrated = mergeDeep(fresh, saved);
   normalizePlayerProgress(migrated, saved);
+  normalizeFairyState(migrated);
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
   applyLevelUnlocksToState(migrated);
@@ -337,6 +356,7 @@ export function resetState() {
   clearSave();
   state = createDefaultState();
   normalizePlayerProgress(state, null);
+  normalizeFairyState(state);
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
   applyLevelUnlocksToState(state);
@@ -446,10 +466,34 @@ export function addFairy(fairyId) {
   markFairyDiscovered(fairyId);
 }
 
+export function addFairyAffection(fairyId, amount = 0) {
+  if (!GameDB.fairies[fairyId]) return null;
+  const gained = Math.max(0, Number(amount || 0));
+  if (gained <= 0) return null;
+
+  const current = state.fairies[fairyId] || { owned: false, affection: 0 };
+  state.fairies[fairyId] = {
+    ...current,
+    owned: Boolean(current.owned),
+    affection: Math.max(0, Number(current.affection || 0) + gained),
+  };
+
+  return {
+    fairyId,
+    amount: gained,
+    total: state.fairies[fairyId].affection,
+  };
+}
+
 export function addReward(reward = {}) {
   const growth = addPlayerExp(reward.exp || 0);
+  const affection = [];
   Object.entries(reward.currencies || {}).forEach(([currencyId, amount]) => addCurrency(currencyId, amount));
   Object.entries(reward.items || {}).forEach(([itemId, qty]) => addItem(itemId, qty));
   Object.keys(reward.fairies || {}).forEach((fairyId) => addFairy(fairyId));
-  return growth;
+  Object.entries(reward.affection || {}).forEach(([fairyId, amount]) => {
+    const result = addFairyAffection(fairyId, amount);
+    if (result) affection.push(result);
+  });
+  return { ...growth, affection };
 }
