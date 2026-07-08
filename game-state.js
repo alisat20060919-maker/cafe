@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 7;
+export const SAVE_VERSION = 8;
 
 function createDefaultState() {
   return {
@@ -35,6 +35,10 @@ function createDefaultState() {
     },
     gachaHistory: [],
     commissions: {},
+    dailyCommissions: {
+      date: null,
+      ids: [],
+    },
     daily: {
       lastCheckIn: null,
       streak: 0,
@@ -78,6 +82,20 @@ function mergeDeep(base, saved) {
   return output;
 }
 
+function getLocalDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getDailyCommissionPoolIds() {
+  return Object.values(GameDB.commissions || {})
+    .filter((commission) => commission.category !== 'main')
+    .map((commission) => commission.id)
+    .filter(Boolean);
+}
+
 function syncCollectionFromOwned(nextState) {
   if (!nextState.collection) nextState.collection = {};
   if (!nextState.collection.discoveredItems) nextState.collection.discoveredItems = {};
@@ -119,12 +137,44 @@ function normalizeCommissionState(nextState) {
   nextState.commissions = normalized;
 }
 
+function ensureDailyCommissions(nextState, { force = false } = {}) {
+  const today = getLocalDateKey();
+  const poolIds = getDailyCommissionPoolIds();
+  const current = isPlainObject(nextState.dailyCommissions) ? nextState.dailyCommissions : {};
+  const currentIds = Array.isArray(current.ids) ? current.ids.filter((id) => GameDB.commissions?.[id]) : [];
+  const missingIds = poolIds.some((id) => !currentIds.includes(id));
+  const shouldRefresh = force || current.date !== today || !currentIds.length || missingIds;
+
+  if (!shouldRefresh) {
+    nextState.dailyCommissions = {
+      date: current.date,
+      ids: currentIds,
+    };
+    return { changed: false, date: current.date, ids: currentIds };
+  }
+
+  const idsToReset = new Set([...currentIds, ...poolIds]);
+  idsToReset.forEach((commissionId) => {
+    if (GameDB.commissions?.[commissionId]?.category !== 'main') {
+      delete nextState.commissions[commissionId];
+    }
+  });
+
+  nextState.dailyCommissions = {
+    date: today,
+    ids: poolIds,
+  };
+
+  return { changed: true, date: today, ids: poolIds };
+}
+
 function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
     normalizeCommissionState(fresh);
+    ensureDailyCommissions(fresh);
     return fresh;
   }
 
@@ -132,6 +182,7 @@ function migrateSave(saved) {
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
   normalizeCommissionState(migrated);
+  ensureDailyCommissions(migrated);
   migrated.saveVersion = SAVE_VERSION;
   return migrated;
 }
@@ -151,12 +202,25 @@ export function persistState(reason = 'manual') {
   emitStateChanged(reason);
 }
 
+export function refreshDailyCommissions(options = {}) {
+  const result = ensureDailyCommissions(state, options);
+  if (result.changed) persistState('daily-commissions');
+  return result;
+}
+
+export function getActiveCommissionIds() {
+  const result = ensureDailyCommissions(state);
+  if (result.changed) persistState('daily-commissions');
+  return result.ids;
+}
+
 export function resetState() {
   clearSave();
   state = createDefaultState();
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
   normalizeCommissionState(state);
+  ensureDailyCommissions(state);
   persistState();
   return state;
 }
