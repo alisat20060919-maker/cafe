@@ -28,6 +28,7 @@
 2. **唯一版本控制中心**：所有 JS 模組版本號（`?v=coreXX`）只允許出現在 `index.html` 的 `<script type="importmap">` 區塊。
 3. **改版更新流程**：每次進行邏輯升級時，只修改 `index.html` 內 importmap 的版本號，JS 檔案內部完全不需要更動版本。
 4. 不要混用同一模組的不同 URL，避免瀏覽器載出兩份 module instance 造成 state 分裂。
+5. CSS 快取版本不可使用 `coreXX` 命名；CSS 使用獨立流水號，例如 `ui01`、`ui02`。
 
 ## GameDB 靜態資料庫規則
 
@@ -49,12 +50,12 @@
 所有遊戲資料 ID 都必須使用穩定英文 snake_case，不使用中文、空白、emoji 或會隨文案改變的名稱。
 
 1. 一階素材：`moon_petals`、`star_berry`。
-2. 二階素材：`moon_dew`、`star_berry_syrup`。
+2. 二階素材：`moon_dew`、`star_berry_syrup`、`dream_essence`。
 3. 三階素材：`pure_moon_essence`。
 4. 飲品或甜點產品：`moon_latte`、`star_berry_tart`。
 5. 精靈：`moon_petals_fairy`、`star_berry_fairy`。
 6. 委託：`quest_moon_latte`。
-7. 配方：`recipe_moon_latte`、`recipe_star_berry_tart`。
+7. 配方：`recipe_moon_latte`、`recipe_star_berry_tart`、`recipe_moon_dew`。
 8. 地點：`greenhouse`、`backyard`、`alchemy`。
 9. 新增 ID 前先確認 `GameDB` 沒有同名項目。
 10. 不要修改既有 ID；除非同時設計完整 migration，否則舊存檔會壞。
@@ -104,6 +105,8 @@
 11. `craft-actions.js` 可以呼叫 `canAffordItems()`、`spendItems()`、`addItem()` 與 `persistState()`。
 12. 製作失敗時不可改動 inventory；製作成功時必須先扣 cost，再加 output，最後 `persistState()`。
 13. UI 只能呼叫 `canCraft()` / `craftRecipe()`，不可自行修改 `state.inventory`。
+14. 煉金室配方使用 `station: 'alchemy'`，產出二階或三階素材。
+15. 不要一次大量新增配方；每一步最多新增少量可測試配方。
 
 ## 事件流
 
