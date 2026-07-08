@@ -1,6 +1,6 @@
-import { GameDB } from './game-data.js?v=core04';
-import { getState, addReward, persistState } from './game-state.js?v=core04';
-import { formatReward } from './utils.js?v=core04';
+import { GameDB } from './game-data.js?v=core06';
+import { getState, addReward, persistState } from './game-state.js?v=core06';
+import { formatReward } from './utils.js?v=core06';
 
 function localDateString(date = new Date()) {
   const y = date.getFullYear();
