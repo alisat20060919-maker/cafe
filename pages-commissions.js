@@ -28,9 +28,13 @@ function itemIcon(itemId) {
   return GameDB.items[itemId]?.icon || '◇';
 }
 
-function renderCost(cost = {}) {
+function getRequirements(quest) {
+  return GameDB.getCommissionRequiredItems(quest);
+}
+
+function renderRequirements(quest) {
   const state = getState();
-  return Object.entries(cost)
+  return Object.entries(getRequirements(quest))
     .map(([itemId, qty]) => {
       const owned = Number(state.inventory[itemId] || 0);
       const lackClass = owned < qty ? ' class="is-lacking"' : '';
@@ -48,15 +52,15 @@ function getQuestStatus(quest) {
 function statusLabel(status) {
   return {
     locked: '未解鎖',
-    available: '素材不足',
+    available: '商品不足',
     ready: '可交付',
     claimed: '已完成',
   }[status] || status;
 }
 
-function getMissingItems(cost = {}) {
+function getMissingItems(quest) {
   const state = getState();
-  return Object.entries(cost)
+  return Object.entries(getRequirements(quest))
     .map(([itemId, qty]) => ({
       itemId,
       need: qty,
@@ -67,21 +71,21 @@ function getMissingItems(cost = {}) {
 }
 
 function getFirstSource(quest) {
-  const missingItems = getMissingItems(quest.cost);
+  const missingItems = getMissingItems(quest);
   return missingItems[0]?.source || GameDB.getItemSource('star_berry');
 }
 
 function renderMissingHint(quest, status) {
   if (status !== 'available') return '';
 
-  const missingItems = getMissingItems(quest.cost);
+  const missingItems = getMissingItems(quest);
   if (!missingItems.length) return '';
 
   const hint = missingItems
     .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${item.source.label}`)
     .join('<br>');
 
-  return `<p class="core-missing-hint">缺少素材：<br>${hint}</p>`;
+  return `<p class="core-missing-hint">缺少商品：<br>${hint}</p>`;
 }
 
 function sourceButtonText(source) {
@@ -141,7 +145,7 @@ export function renderCommissions() {
         <h3>${quest.title}</h3>
         <p class="core-customer">客人：${quest.customer}</p>
         <p>${quest.description}</p>
-        <div class="core-recipe"><b>需要：</b>${renderCost(quest.cost)}</div>
+        <div class="core-recipe"><b>需要：</b>${renderRequirements(quest)}</div>
         ${renderMissingHint(quest, status)}
         <div class="core-reward"><b>獎勵：</b>${formatReward(quest.reward)}</div>
         ${renderQuestButton(quest, status)}
@@ -150,7 +154,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會向 GameDB 詢問來源，按鈕可直接跳到收集地點、製作站或祈願頁。')}
+    ${pageHeader('QUEST BOARD / PRODUCT DELIVERY', '委託', '委託現在會要求已製作完成的商品；缺少商品時會帶你前往對應製作站。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
