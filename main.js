@@ -8,6 +8,7 @@ import { initInventoryPage, renderInventory } from '@pages/inventory';
 import { initFairiesPage, renderFairies } from '@pages/fairies';
 import { renderCollection } from '@pages/collection';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
+import { initShopPage, renderShop } from '@pages/shop';
 
 function boot() {
   runDevChecks();
@@ -18,6 +19,7 @@ function boot() {
   initInventoryPage();
   initFairiesPage();
   initCommissionsPage();
+  initShopPage();
 
   initRouter({
     home: { render: renderHome },
@@ -26,6 +28,7 @@ function boot() {
     inventory: { render: renderInventory },
     fairies: { render: renderFairies },
     collection: { render: renderCollection },
+    shop: { render: renderShop },
   }, 'home');
 
   showOpeningStoryIfNeeded();
