@@ -4,13 +4,13 @@ import {
   canAffordItems,
   spendItems,
   spendCurrency,
-  addReward,
   applyCommissionUnlocks,
   persistState,
   refreshDailyCommissions,
   useFreeDailyCommissionRefresh,
   usePaidDailyCommissionRefresh,
 } from '@state';
+import { applyReward } from '@actions/player';
 import { formatReward } from '@utils';
 
 function getPaidRefreshCost() {
@@ -121,7 +121,7 @@ export function completeCommission(commissionId) {
   }
 
   const reward = getEffectiveReward(commission);
-  const growth = addReward(reward);
+  const growth = applyReward(reward);
   state.commissions[commissionId] = {
     status: 'completed',
     completedAt: new Date().toISOString(),
