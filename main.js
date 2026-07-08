@@ -1,6 +1,6 @@
 import { validateGameDB } from '@validator';
 import { initState } from '@state';
-import { initUI } from '@ui';
+import { initUI, showOpeningStoryIfNeeded } from '@ui';
 import { initHome, renderHome } from '@home';
 import { initRouter } from '@router';
 import { renderGacha } from '@pages/gacha';
@@ -23,6 +23,8 @@ function boot() {
     inventory: { render: renderInventory },
     collection: { render: renderCollection },
   }, 'home');
+
+  showOpeningStoryIfNeeded();
 }
 
 document.addEventListener('DOMContentLoaded', boot);
