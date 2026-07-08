@@ -1,15 +1,27 @@
 import { GameDB } from '@db';
 import { getState, spendCurrency, addItem, addFairy, persistState } from '@state';
 
+function getPoolDrops(pool) {
+  const drops = [...(pool.drops || [])];
+  const existingFairies = new Set(drops.filter((drop) => drop.kind === 'fairy').map((drop) => drop.id));
+
+  Object.values(GameDB.fairies || {}).forEach((fairy) => {
+    const sources = Array.isArray(fairy.source) ? fairy.source : [fairy.source].filter(Boolean);
+    if (sources.includes('祈願') && !existingFairies.has(fairy.id)) {
+      drops.push({ kind: 'fairy', id: fairy.id, qty: 1, weight: 1, autoIncluded: true });
+    }
+  });
+
+  return drops;
+}
+
 function pickWeighted(drops) {
   const total = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
   let roll = Math.random() * total;
-
   for (const drop of drops) {
     roll -= Number(drop.weight || 0);
     if (roll <= 0) return drop;
   }
-
   return drops[drops.length - 1];
 }
 
@@ -19,9 +31,9 @@ function isSsrDrop(drop) {
   return false;
 }
 
-function pickPityDrop(pool) {
-  const pityDrops = (pool.drops || []).filter(isSsrDrop);
-  return pickWeighted(pityDrops.length ? pityDrops : pool.drops);
+function pickPityDrop(drops) {
+  const pityDrops = drops.filter(isSsrDrop);
+  return pickWeighted(pityDrops.length ? pityDrops : drops);
 }
 
 function applyDrop(drop) {
@@ -77,10 +89,11 @@ export function drawGacha(poolId = 'standard') {
     return { ok: false, message: `${meta?.name || pool.cost.currency}不足。` };
   }
 
+  const drops = getPoolDrops(pool);
   const gacha = ensureGachaState();
   const hardPityAt = Number(GameDB.gachaConfig?.hardPityAt || 20);
   const pityHit = gacha.pityCounter + 1 >= hardPityAt;
-  const drop = pityHit ? pickPityDrop(pool) : pickWeighted(pool.drops);
+  const drop = pityHit ? pickPityDrop(drops) : pickWeighted(drops);
   applyDrop(drop);
 
   gacha.totalPulls += 1;
