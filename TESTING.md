@@ -15,7 +15,9 @@
 1. 開頁後確認 `validateGameDB()` 有執行。
 2. 正常資料不應顯示 error。
 3. warning 可以暫時存在，但必須確認不會導致白屏。
-4. 新增素材、精靈、委託、祈願池、採集表後，必須確認 validator 沒有抓到不存在的 id。
+4. 新增素材、精靈、委託、祈願池、採集表、配方後，必須確認 validator 沒有抓到不存在的 id。
+5. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
+6. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -68,7 +70,18 @@
 6. 特殊事件只回傳 `specialEvent` 給 UI 顯示，不新增 state 欄位。
 7. 本步不需要更新 `SAVE_VERSION`。
 
-## 5. 委託測試
+## 5. 配方資料測試
+
+1. `GameDB.recipes` 可以正常被載入，不造成白屏。
+2. 每個 recipe 都有 `id`、`name`、`station`、`category`、`cost`、`output`。
+3. 每個 recipe 的 key 必須與 `recipe.id` 一致。
+4. `recipe.cost` 裡的 item 必須存在於 `GameDB.items`。
+5. `recipe.output.itemId` 必須存在於 `GameDB.items`。
+6. `recipe.output.qty` 必須大於 0。
+7. `recipe.station` 必須存在於 `GameDB.stations`。
+8. 新增配方資料不需要更新 `SAVE_VERSION`，除非新增玩家持久化欄位。
+
+## 6. 委託測試
 
 1. 委託頁可以開啟。
 2. 委託卡片顯示需求與獎勵。
@@ -80,7 +93,7 @@
 8. 完成後扣除需求物品並發放獎勵。
 9. 已完成委託不可重複領獎。
 
-## 6. 祈願測試
+## 7. 祈願測試
 
 1. 祈願頁可以開啟。
 2. 星糖足夠時可以祈願。
@@ -89,7 +102,7 @@
 5. 掉落 fairy 會進 state.fairies。
 6. 祈願結果不造成白屏。
 
-## 7. 背包測試
+## 8. 背包測試
 
 1. 背包頁可以開啟。
 2. 已擁有 item 顯示數量。
@@ -97,7 +110,7 @@
 4. 沒有擁有的物品不應被誤判成擁有。
 5. 新增 item 後背包可正常顯示。
 
-## 8. State / Migration 測試
+## 9. State / Migration 測試
 
 1. 舊存檔可以正常開啟。
 2. 新增 state 欄位後，舊存檔會由 `migrateSave()` 補上預設值。
@@ -107,7 +120,7 @@
 6. `state.unlockedScenes` 只存 boolean，不存場景名稱、描述、掉落表。
 7. 舊存檔缺少 `unlockedScenes` 時，migration 會補上預設解鎖狀態。
 
-## 9. 手機 UI 測試
+## 10. 手機 UI 測試
 
 1. 底部導航不遮主要按鈕。
 2. 按鈕大小足夠點擊。
@@ -115,7 +128,7 @@
 4. 文字不溢出卡片。
 5. 橫向內容不讓整頁破版。
 
-## 10. 回歸測試
+## 11. 回歸測試
 
 每次改版後至少確認：
 
@@ -129,6 +142,7 @@
 採集結果彈窗
 採集特殊事件
 採集掉落預覽
+配方資料 validator
 未解鎖地點提示
 煉金室提示
 簽到
