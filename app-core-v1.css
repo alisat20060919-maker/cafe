@@ -220,3 +220,28 @@ body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
     overflow:visible!important;
   }
 }
+
+/* Commissions should scroll as one white panel too. */
+#page-commissions.core-page-host.active{
+  max-height:clamp(430px,58vh,560px);
+  min-height:0!important;
+  overflow-y:auto!important;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#page-commissions.core-page-host.active .core-quest-list{
+  max-height:none!important;
+  overflow:visible!important;
+}
+@media(max-width:520px){
+  #page-commissions.core-page-host.active{
+    max-height:calc(100svh - 250px);
+    min-height:0!important;
+    overflow-y:auto!important;
+  }
+  #page-commissions.core-page-host.active .core-quest-list{
+    max-height:none!important;
+    overflow:visible!important;
+  }
+}
