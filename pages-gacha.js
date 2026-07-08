@@ -1,5 +1,6 @@
 import { GameDB } from './game-data.js?v=core04';
-import { getState, drawGacha } from './game-state.js?v=core04';
+import { getState } from './game-state.js?v=core04';
+import { drawGacha } from './gacha-actions.js?v=core04';
 import { emitNotice } from './event-bus.js?v=core04';
 
 function $all(selector, root = document) {
@@ -35,7 +36,7 @@ export function renderGacha(results = []) {
   const costMeta = GameDB.currencies[pool.cost.currency];
 
   page.innerHTML = `
-    ${pageHeader('WISH / DATA CONNECTED', '星糖祈願', '現在抽卡會扣星糖，結果會寫進 gameState，背包會讀同一份資料。')}
+    ${pageHeader('WISH / ACTION MODULE', '星糖祈願', '祈願邏輯已經移出頁面，畫面只負責按鈕與結果顯示。')}
     <section class="core-gacha-layout">
       <div class="core-gacha-machine">
         <div class="core-orb">✦</div>
