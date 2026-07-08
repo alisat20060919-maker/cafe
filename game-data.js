@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 16,
+  version: 17,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -432,6 +432,7 @@ export const GameDB = {
       request: '月光花瓣拿鐵 ×1',
       requiredItems: { moon_latte: 1 },
       reward: { currencies: { leafCoin: 120, starSugar: 20 } },
+      unlocks: { scenes: ['alchemy'] },
       description: '客人想要一杯會微微發光、可以安定心情的飲品。',
     },
     quest_berry_tart: {
