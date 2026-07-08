@@ -1,5 +1,5 @@
 import { GameDB } from '@db';
-import { getState, addItem, persistState } from '@state';
+import { getState, addItem, persistState, isSceneUnlocked } from '@state';
 
 const locationHints = {
   cafe: {
@@ -25,6 +25,10 @@ function getDailyGatherLimit() {
 
 function getGatherTable(locationId) {
   return GameDB.gatherTables?.[locationId] || null;
+}
+
+function getSceneLabel(locationId) {
+  return GameDB.scenes?.[locationId]?.label || locationId;
 }
 
 function localDateString(date = new Date()) {
@@ -88,14 +92,28 @@ export function canGatherAt(locationId = 'backyard') {
   return Boolean(getGatherTable(locationId));
 }
 
+export function canEnterGatherArea(locationId = 'backyard') {
+  return canGatherAt(locationId) && isSceneUnlocked(locationId);
+}
+
 export function getLocationHint(locationId) {
   const table = getGatherTable(locationId);
-  if (table) {
+  if (table && isSceneUnlocked(locationId)) {
     return {
       kind: 'gather',
       isOpen: true,
       title: table.title,
       message: '這裡可以採集素材。每日採集次數會在地圖上顯示。',
+    };
+  }
+
+  if (table && !isSceneUnlocked(locationId)) {
+    const label = getSceneLabel(locationId);
+    return {
+      kind: 'locked',
+      isOpen: false,
+      title: `${label}尚未解鎖`,
+      message: `這裡之後會開放採集，目前還不能進入${label}。`,
     };
   }
 
@@ -112,7 +130,7 @@ export function getLocationHint(locationId) {
 
 export function getGatherDropPreview(locationId = 'backyard') {
   const table = getGatherTable(locationId);
-  if (!table) return [];
+  if (!table || !isSceneUnlocked(locationId)) return [];
 
   const totalWeight = table.drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
   return table.drops.map((drop) => getDropView(drop, totalWeight));
@@ -120,7 +138,7 @@ export function getGatherDropPreview(locationId = 'backyard') {
 
 export function getGatherStatus(locationId = 'backyard') {
   const table = getGatherTable(locationId);
-  if (!table) return null;
+  if (!table || !isSceneUnlocked(locationId)) return null;
 
   const limit = getDailyGatherLimit();
   const record = getState().gathering?.[locationId] || { lastDate: null, count: 0 };
@@ -141,7 +159,7 @@ export function getGatherStatus(locationId = 'backyard') {
 
 export function gatherAt(locationId = 'backyard') {
   const table = getGatherTable(locationId);
-  if (!table) {
+  if (!table || !isSceneUnlocked(locationId)) {
     const hint = getLocationHint(locationId);
     return {
       ok: false,
