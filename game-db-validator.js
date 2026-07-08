@@ -299,6 +299,48 @@ function validateRecipes(errors) {
   });
 }
 
+function getRecipeOutputId(recipe) {
+  return recipe?.output?.itemId || null;
+}
+
+function validateKitchenProductWorkflow(errors) {
+  const kitchenRecipes = Object.values(GameDB.recipes || {}).filter((recipe) => recipe.station === 'kitchen');
+  const kitchenOutputIds = new Set(kitchenRecipes.map(getRecipeOutputId).filter(Boolean));
+
+  if (!kitchenRecipes.length) {
+    pushIssue(errors, 'recipes.kitchen', '廚房至少需要一個產品配方。');
+    return;
+  }
+
+  kitchenRecipes.forEach((recipe) => {
+    const scope = `recipes.${recipe.id || 'unknown'}`;
+    const outputId = getRecipeOutputId(recipe);
+    if (!outputId || !hasOwn(GameDB.items, outputId)) return;
+
+    if (!GameDB.isProductItem(outputId)) {
+      pushIssue(errors, `${scope}.output`, `廚房配方必須產出產品類 item，目前 ${outputId} 不是產品。`);
+    }
+
+    if (recipe.category && !GameDB.productTypes?.includes(recipe.category)) {
+      pushIssue(errors, `${scope}.category`, `廚房配方 category 必須是產品分類，目前是 ${recipe.category}。`);
+    }
+
+    const source = GameDB.getItemSource?.(outputId);
+    if (!source || source.type !== 'station' || source.id !== 'kitchen') {
+      pushIssue(errors, `${scope}.output`, `廚房產品 ${outputId} 的 itemSources 必須指向 station:kitchen。`);
+    }
+  });
+
+  Object.entries(GameDB.commissions || {}).forEach(([questId, quest]) => {
+    Object.keys(GameDB.getCommissionRequiredItems?.(quest) || {}).forEach((itemId) => {
+      const source = GameDB.getItemSource?.(itemId);
+      if (source?.type === 'station' && source.id === 'kitchen' && !kitchenOutputIds.has(itemId)) {
+        pushIssue(errors, `commissions.${questId}.requiredItems`, `委託需要的廚房產品 ${itemId} 沒有對應的 kitchen recipe。`);
+      }
+    });
+  });
+}
+
 function validateCommissionProductSource(errors, itemId, scope) {
   const source = GameDB.getItemSource?.(itemId);
   if (!source || source.type !== 'station') {
@@ -381,6 +423,7 @@ export function validateGameDB() {
   validateGachaPools(errors);
   validateRecipes(errors);
   validateCommissions(errors, warnings);
+  validateKitchenProductWorkflow(errors);
   validateDailyRewards(errors);
 
   const result = {
