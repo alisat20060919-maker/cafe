@@ -138,43 +138,6 @@ export function addReward(reward = {}) {
   Object.keys(reward.fairies || {}).forEach((fairyId) => addFairy(fairyId));
 }
 
-function pickWeighted(drops) {
-  const total = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
-  let roll = Math.random() * total;
-  for (const drop of drops) {
-    roll -= Number(drop.weight || 0);
-    if (roll <= 0) return drop;
-  }
-  return drops[drops.length - 1];
-}
-
-export function drawGacha(poolId = 'standard') {
-  const pool = GameDB.gachaPools[poolId];
-  if (!pool) return { ok: false, message: '找不到祈願池。' };
-
-  if (!spendCurrency(pool.cost.currency, pool.cost.amount)) {
-    const meta = GameDB.currencies[pool.cost.currency];
-    return { ok: false, message: `${meta?.name || pool.cost.currency}不足。` };
-  }
-
-  const drop = pickWeighted(pool.drops);
-  if (drop.kind === 'fairy') addFairy(drop.id);
-  if (drop.kind === 'item') addItem(drop.id, drop.qty || 1);
-
-  const record = {
-    poolId,
-    kind: drop.kind,
-    id: drop.id,
-    qty: drop.qty || 1,
-    at: new Date().toISOString(),
-  };
-  state.gachaHistory.unshift(record);
-  state.gachaHistory = state.gachaHistory.slice(0, 30);
-  persistState();
-
-  return { ok: true, drop: record };
-}
-
 export function canCompleteCommission(commissionId) {
   const commission = GameDB.commissions[commissionId];
   if (!commission) return false;
