@@ -19,6 +19,21 @@ function getOpeningStory() {
   return Array.isArray(GameDB.stories?.opening) ? GameDB.stories.opening : [];
 }
 
+function getProgressRatio(progress) {
+  if (progress.isMax) return 1;
+  return Math.min(1, Math.max(0, progress.currentLevelExp / progress.neededForNext));
+}
+
+function getProgressPercent(progress) {
+  return Math.round(getProgressRatio(progress) * 100);
+}
+
+function getExpText(progress) {
+  return progress.isMax
+    ? `EXP ${progress.exp}`
+    : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`;
+}
+
 function lockBodyScroll() {
   if (document.body.classList.contains('core-modal-open')) return;
   lockedScrollY = window.scrollY || document.documentElement.scrollTop || 0;
@@ -75,22 +90,28 @@ export function updateStatus() {
   const ringValue = $('#levelRingValue');
   const ringSub = $('#levelRingSub');
   const progress = GameDB.getLevelProgress(state.player);
-  const ratio = progress.isMax ? 1 : Math.min(1, Math.max(0, progress.currentLevelExp / progress.neededForNext));
+  const ratio = getProgressRatio(progress);
+  const percent = getProgressPercent(progress);
   const degrees = Math.round(ratio * 360);
-  const expText = progress.isMax
-    ? `EXP ${progress.exp}`
-    : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`;
+  const expText = getExpText(progress);
+  const levelText = progress.isMax ? `MAX Lv.${state.player.level}` : `LV ${state.player.level}`;
 
-  if (saveLabel) saveLabel.textContent = `${expText} / Save v${state.saveVersion}`;
+  if (saveLabel) saveLabel.textContent = `${expText} / ${percent}% / Save v${state.saveVersion}`;
   if (ring) {
     ring.style.setProperty('--exp-deg', `${degrees}deg`);
-    ring.setAttribute('aria-label', `等級 ${state.player.level}，${expText}`);
+    ring.setAttribute('aria-label', `等級 ${state.player.level}，${expText}，${percent}%`);
   }
   if (ringValue) ringValue.textContent = String(state.player.level).padStart(2, '0');
   if (ringSub) ringSub.textContent = progress.isMax ? 'MAX' : 'LV';
 
   if (status) {
     status.innerHTML = `
+      <span class="player-level-chip">⭐ ${levelText}</span>
+      <span class="exp-progress-chip" aria-label="等級進度 ${percent}%">
+        <b>${expText}</b>
+        <i>${percent}%</i>
+        <em><strong style="width:${percent}%"></strong></em>
+      </span>
       <span>☀️ 森林午後</span>
       <span>✦ 星糖 ${state.player.starSugar}</span>
       <span>🪙 葉幣 ${state.player.leafCoin}</span>
