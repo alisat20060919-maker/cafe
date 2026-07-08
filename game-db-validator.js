@@ -1,0 +1,177 @@
+import { GameDB } from '@db';
+
+function hasOwn(record, key) {
+  return Object.prototype.hasOwnProperty.call(record || {}, key);
+}
+
+function pushIssue(list, scope, message) {
+  list.push(`[${scope}] ${message}`);
+}
+
+function validateItems(errors, warnings) {
+  Object.entries(GameDB.items || {}).forEach(([itemId, item]) => {
+    if (!item || typeof item !== 'object') {
+      pushIssue(errors, `items.${itemId}`, 'item 必須是物件。');
+      return;
+    }
+
+    if (item.id !== itemId) pushIssue(errors, `items.${itemId}`, `item.id 應為 ${itemId}，目前是 ${item.id || '空值'}。`);
+    if (!item.name) pushIssue(errors, `items.${itemId}`, '缺少 name。');
+    if (!item.type) pushIssue(errors, `items.${itemId}`, '缺少 type。');
+    if (!item.rarity) pushIssue(warnings, `items.${itemId}`, '缺少 rarity，背包篩選可能不完整。');
+  });
+}
+
+function validateFairies(errors, warnings) {
+  Object.entries(GameDB.fairies || {}).forEach(([fairyId, fairy]) => {
+    if (!fairy || typeof fairy !== 'object') {
+      pushIssue(errors, `fairies.${fairyId}`, 'fairy 必須是物件。');
+      return;
+    }
+
+    if (fairy.id !== fairyId) pushIssue(errors, `fairies.${fairyId}`, `fairy.id 應為 ${fairyId}，目前是 ${fairy.id || '空值'}。`);
+    if (!fairy.name) pushIssue(errors, `fairies.${fairyId}`, '缺少 name。');
+    if (!fairy.rarity) pushIssue(warnings, `fairies.${fairyId}`, '缺少 rarity。');
+  });
+}
+
+function validateItemSources(errors, warnings) {
+  Object.entries(GameDB.itemSources || {}).forEach(([itemId, source]) => {
+    if (!hasOwn(GameDB.items, itemId)) pushIssue(errors, `itemSources.${itemId}`, '來源規則指向不存在的 item。');
+    if (!source || typeof source !== 'object') {
+      pushIssue(errors, `itemSources.${itemId}`, 'source 必須是物件。');
+      return;
+    }
+
+    if (!source.type) pushIssue(errors, `itemSources.${itemId}`, '缺少 type。');
+    if (!source.id) pushIssue(errors, `itemSources.${itemId}`, '缺少 id。');
+    if (!source.label) pushIssue(warnings, `itemSources.${itemId}`, '缺少 label，UI 可能 fallback。');
+
+    if (source.type === 'scene' && !hasOwn(GameDB.gatherTables, source.id)) {
+      pushIssue(warnings, `itemSources.${itemId}`, `指向 scene:${source.id}，但 GameDB.gatherTables 沒有對應採集表；若這是製作站，請改成 station。`);
+    }
+  });
+}
+
+function validateDrops(errors, drops = [], scope = 'drops') {
+  if (!Array.isArray(drops) || !drops.length) {
+    pushIssue(errors, scope, 'drops 不可為空。');
+    return;
+  }
+
+  const totalWeight = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
+  if (totalWeight <= 0) pushIssue(errors, scope, '掉落權重總和必須大於 0。');
+
+  drops.forEach((drop, index) => {
+    const dropScope = `${scope}[${index}]`;
+    if (!drop || typeof drop !== 'object') {
+      pushIssue(errors, dropScope, 'drop 必須是物件。');
+      return;
+    }
+
+    if (Number(drop.weight || 0) <= 0) pushIssue(errors, dropScope, 'weight 必須大於 0。');
+    if (Number(drop.qty || 0) <= 0) pushIssue(errors, dropScope, 'qty 必須大於 0。');
+
+    const itemId = drop.itemId || (drop.kind === 'item' ? drop.id : null);
+    const fairyId = drop.kind === 'fairy' ? drop.id : null;
+
+    if (itemId && !hasOwn(GameDB.items, itemId)) pushIssue(errors, dropScope, `itemId ${itemId} 不存在。`);
+    if (fairyId && !hasOwn(GameDB.fairies, fairyId)) pushIssue(errors, dropScope, `fairyId ${fairyId} 不存在。`);
+    if (!itemId && !fairyId) pushIssue(errors, dropScope, '缺少 itemId，或缺少有效 kind/id。');
+  });
+}
+
+function validateGatherTables(errors) {
+  Object.entries(GameDB.gatherTables || {}).forEach(([locationId, table]) => {
+    const scope = `gatherTables.${locationId}`;
+    if (!table || typeof table !== 'object') {
+      pushIssue(errors, scope, '採集表必須是物件。');
+      return;
+    }
+    validateDrops(errors, table.drops, `${scope}.drops`);
+  });
+}
+
+function validateGachaPools(errors) {
+  Object.entries(GameDB.gachaPools || {}).forEach(([poolId, pool]) => {
+    const scope = `gachaPools.${poolId}`;
+    if (!pool || typeof pool !== 'object') {
+      pushIssue(errors, scope, '祈願池必須是物件。');
+      return;
+    }
+    validateDrops(errors, pool.drops, `${scope}.drops`);
+  });
+}
+
+function validateItemMap(errors, map = {}, scope = 'itemMap') {
+  Object.entries(map || {}).forEach(([itemId, qty]) => {
+    if (!hasOwn(GameDB.items, itemId)) pushIssue(errors, scope, `item ${itemId} 不存在。`);
+    if (Number(qty || 0) <= 0) pushIssue(errors, scope, `item ${itemId} 的數量必須大於 0。`);
+  });
+}
+
+function validateCurrencyMap(errors, map = {}, scope = 'currencyMap') {
+  Object.entries(map || {}).forEach(([currencyId, amount]) => {
+    if (!hasOwn(GameDB.currencies, currencyId)) pushIssue(errors, scope, `currency ${currencyId} 不存在。`);
+    if (Number(amount || 0) <= 0) pushIssue(errors, scope, `currency ${currencyId} 的數量必須大於 0。`);
+  });
+}
+
+function validateFairyMap(errors, map = {}, scope = 'fairyMap') {
+  Object.keys(map || {}).forEach((fairyId) => {
+    if (!hasOwn(GameDB.fairies, fairyId)) pushIssue(errors, scope, `fairy ${fairyId} 不存在。`);
+  });
+}
+
+function validateCommissions(errors) {
+  Object.entries(GameDB.commissions || {}).forEach(([questId, quest]) => {
+    const scope = `commissions.${questId}`;
+    if (!quest || typeof quest !== 'object') {
+      pushIssue(errors, scope, '委託必須是物件。');
+      return;
+    }
+
+    if (quest.id !== questId) pushIssue(errors, scope, `quest.id 應為 ${questId}，目前是 ${quest.id || '空值'}。`);
+    validateItemMap(errors, quest.cost || quest.requiredItems || {}, `${scope}.requirements`);
+    validateCurrencyMap(errors, quest.reward?.currencies, `${scope}.reward.currencies`);
+    validateItemMap(errors, quest.reward?.items, `${scope}.reward.items`);
+    validateFairyMap(errors, quest.reward?.fairies, `${scope}.reward.fairies`);
+  });
+}
+
+function validateDailyRewards(errors) {
+  (GameDB.dailyRewards || []).forEach((reward, index) => {
+    const scope = `dailyRewards[${index}]`;
+    validateCurrencyMap(errors, reward.currencies, `${scope}.currencies`);
+    validateItemMap(errors, reward.items, `${scope}.items`);
+    validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
+  });
+}
+
+export function validateGameDB() {
+  const errors = [];
+  const warnings = [];
+
+  validateItems(errors, warnings);
+  validateFairies(errors, warnings);
+  validateItemSources(errors, warnings);
+  validateGatherTables(errors);
+  validateGachaPools(errors);
+  validateCommissions(errors);
+  validateDailyRewards(errors);
+
+  const result = {
+    ok: errors.length === 0,
+    errors,
+    warnings,
+  };
+
+  if (!result.ok || warnings.length) {
+    console.groupCollapsed(`[GameDB Validator] ${errors.length} errors, ${warnings.length} warnings`);
+    errors.forEach((message) => console.error(message));
+    warnings.forEach((message) => console.warn(message));
+    console.groupEnd();
+  }
+
+  return result;
+}
