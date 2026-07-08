@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 18,
+  version: 19,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -482,7 +482,7 @@ export const GameDB = {
       difficulty: '★☆☆',
       request: '月光花瓣拿鐵 ×1',
       requiredItems: { moon_latte: 1 },
-      reward: { exp: 30, currencies: { leafCoin: 120, starSugar: 20 } },
+      reward: { exp: 30, currencies: { leafCoin: 120, starSugar: 20 }, affection: { moon_petals_fairy: 5 } },
       description: '客人想要一杯會微微發光、可以安定心情的飲品。',
     },
     quest_berry_tart: {
@@ -492,7 +492,7 @@ export const GameDB = {
       difficulty: '★☆☆',
       request: '星星莓奶油塔 ×1',
       requiredItems: { star_berry_tart: 1 },
-      reward: { exp: 25, currencies: { leafCoin: 90, starSugar: 15 } },
+      reward: { exp: 25, currencies: { leafCoin: 90, starSugar: 15 }, affection: { star_berry_fairy: 5 } },
       description: '郵差兔想帶一份不會在路上融化的小甜點。',
     },
     quest_dream_cocoa: {
@@ -502,7 +502,7 @@ export const GameDB = {
       difficulty: '★★☆',
       request: '夜空碎片可可 ×1',
       requiredItems: { dream_cocoa: 1 },
-      reward: { exp: 60, currencies: { leafCoin: 180, starSugar: 30 } },
+      reward: { exp: 60, currencies: { leafCoin: 180, starSugar: 30 }, affection: { night_sky_fairy: 8 } },
       description: '夢境精靈需要一杯能把噩夢變柔和的可可。',
     },
   },
