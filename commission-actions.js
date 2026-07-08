@@ -14,6 +14,7 @@ import {
   getUnlockRequirementText,
 } from '@state';
 import { applyReward } from '@actions/player';
+import { getTotalFairyBuffValue } from '@actions/fairy';
 import { formatReward } from '@utils';
 
 function getPaidRefreshCost() {
@@ -38,18 +39,35 @@ function getCommissionUnlockRequirement(commission) {
     .filter(Boolean)
     .map((recipe) => recipe.unlockRequirement || (recipe.station ? { station: recipe.station } : {}));
 
+  return { all: [commission?.unlockRequirement || {}, ...recipeRequirements] };
+}
+
+function cloneRewardWithoutAffection(commission) {
+  if (commission?.category === 'fairy') return commission.reward || {};
+  const { affection, ...reward } = commission?.reward || {};
   return {
-    all: [
-      commission?.unlockRequirement || {},
-      ...recipeRequirements,
-    ],
+    ...reward,
+    currencies: { ...(reward.currencies || {}) },
+    items: { ...(reward.items || {}) },
+    fairies: { ...(reward.fairies || {}) },
+  };
+}
+
+function applyFairyCommissionBuffs(reward = {}) {
+  const leafCoinBonus = getTotalFairyBuffValue('leafCoinBonus', 'commission');
+  if (leafCoinBonus <= 0 || !reward.currencies?.leafCoin) return reward;
+
+  return {
+    ...reward,
+    currencies: {
+      ...reward.currencies,
+      leafCoin: Math.max(0, Math.round(Number(reward.currencies.leafCoin || 0) * (1 + leafCoinBonus))),
+    },
   };
 }
 
 function getEffectiveReward(commission) {
-  if (commission?.category === 'fairy') return commission.reward || {};
-  const { affection, ...reward } = commission?.reward || {};
-  return reward;
+  return applyFairyCommissionBuffs(cloneRewardWithoutAffection(commission));
 }
 
 function isCommissionCompleted(record) {
@@ -119,17 +137,13 @@ export function canCompleteCommission(commissionId) {
 
 export function refreshDailyCommissionList() {
   const result = refreshDailyCommissions();
-  if (result.changed) {
-    return { ok: true, refreshed: true, message: `今日委託已刷新：${result.ids.length} 件。` };
-  }
-
+  if (result.changed) return { ok: true, refreshed: true, message: `今日委託已刷新：${result.ids.length} 件。` };
   return { ok: true, refreshed: false, message: '今天的委託已經是最新的。' };
 }
 
 export function refreshDailyCommissionFree() {
   const result = useFreeDailyCommissionRefresh();
   if (!result.ok) return { ok: false, refreshed: false, message: result.message || '免費刷新失敗。' };
-
   return { ok: true, refreshed: true, message: `已使用今日免費刷新：${result.ids.length} 件委託。` };
 }
 
@@ -137,70 +151,35 @@ export function refreshDailyCommissionPaid() {
   const state = getState();
   const cost = getPaidRefreshCost();
   const current = Number(state.player?.[cost.currency] || 0);
-  if (current < cost.amount) {
-    return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
-  }
-
-  if (!spendCurrency(cost.currency, cost.amount)) {
-    return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
-  }
-
+  if (current < cost.amount) return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
+  if (!spendCurrency(cost.currency, cost.amount)) return { ok: false, refreshed: false, message: `${getPaidRefreshCostText()}不足，不能付費刷新。` };
   const result = usePaidDailyCommissionRefresh();
-  return {
-    ok: true,
-    refreshed: true,
-    message: `已花費${getPaidRefreshCostText()}刷新今日委託：${result.ids.length} 件。`,
-  };
+  return { ok: true, refreshed: true, message: `已花費${getPaidRefreshCostText()}刷新今日委託：${result.ids.length} 件。` };
 }
 
 export function rerollDifficultCommissions() {
   const state = getState();
   const cost = getRerollCost();
   const current = Number(state.player?.[cost.currency] || 0);
-  if (current < cost.amount) {
-    return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
-  }
-
-  if (!spendCurrency(cost.currency, cost.amount)) {
-    return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
-  }
-
+  if (current < cost.amount) return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
+  if (!spendCurrency(cost.currency, cost.amount)) return { ok: false, refreshed: false, message: `${getRerollCostText()}不足，不能重抽委託。` };
   const result = useStarSugarCommissionReroll();
-  return {
-    ok: true,
-    refreshed: true,
-    message: `已花費${getRerollCostText()}重抽今日委託：${result.ids.length} 件。`,
-  };
+  return { ok: true, refreshed: true, message: `已花費${getRerollCostText()}重抽今日委託：${result.ids.length} 件。` };
 }
 
 export function completeCommission(commissionId) {
   const state = getState();
   const commission = GameDB.commissions[commissionId];
-
   if (!commission) return { ok: false, message: '找不到委託。' };
-  if (isCommissionCompleted(state.commissions[commissionId])) {
-    return { ok: false, message: '這份委託已經完成過了。' };
-  }
-  if (!isCommissionUnlocked(commissionId)) {
-    return { ok: false, message: `這份委託尚未解鎖：${getCommissionUnlockText(commissionId)}。` };
-  }
-  if (!spendItems(getRequirements(commission))) {
-    return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
-  }
+  if (isCommissionCompleted(state.commissions[commissionId])) return { ok: false, message: '這份委託已經完成過了。' };
+  if (!isCommissionUnlocked(commissionId)) return { ok: false, message: `這份委託尚未解鎖：${getCommissionUnlockText(commissionId)}。` };
+  if (!spendItems(getRequirements(commission))) return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
 
   const reward = getEffectiveReward(commission);
   const growth = applyReward(reward);
-  state.commissions[commissionId] = {
-    status: 'completed',
-    completedAt: new Date().toISOString(),
-  };
-
+  state.commissions[commissionId] = { status: 'completed', completedAt: new Date().toISOString() };
   const directUnlocks = applyCommissionUnlocks(commissionId);
   const unlocked = mergeUnlocks(growth.unlocked || [], directUnlocks);
   persistState('commission');
-
-  return {
-    ok: true,
-    message: `委託完成：${formatReward(reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}`,
-  };
+  return { ok: true, message: `委託完成：${formatReward(reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}` };
 }
