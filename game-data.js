@@ -1,5 +1,5 @@
 export const GameDB = {
-  version: 9,
+  version: 10,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   itemTypeMeta: {
@@ -160,6 +160,7 @@ export const GameDB = {
     home: { id: 'home', label: '店鋪' },
     gacha: { id: 'gacha', label: '祈願' },
     inventory: { id: 'inventory', label: '背包' },
+    collection: { id: 'collection', label: '圖鑑' },
     commissions: { id: 'commissions', label: '委託' },
   },
 
