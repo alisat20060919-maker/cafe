@@ -160,6 +160,32 @@ function validateDrops(errors, drops = [], scope = 'drops') {
   });
 }
 
+function validateSpecialEvents(errors, events = [], scope = 'specialEvents') {
+  if (!Array.isArray(events)) {
+    pushIssue(errors, scope, 'specialEvents 必須是陣列。');
+    return;
+  }
+
+  if (!events.length) return;
+
+  const totalWeight = events.reduce((sum, event) => sum + Number(event.weight || 0), 0);
+  if (totalWeight <= 0) pushIssue(errors, scope, '特殊事件權重總和必須大於 0。');
+
+  events.forEach((event, index) => {
+    const eventScope = `${scope}[${index}]`;
+    if (!event || typeof event !== 'object') {
+      pushIssue(errors, eventScope, 'event 必須是物件。');
+      return;
+    }
+
+    if (!event.id) pushIssue(errors, eventScope, '缺少 id。');
+    if (!event.title) pushIssue(errors, eventScope, '缺少 title。');
+    if (!event.message) pushIssue(errors, eventScope, '缺少 message。');
+    if (Number(event.weight || 0) <= 0) pushIssue(errors, eventScope, 'weight 必須大於 0。');
+    validateItemMap(errors, event.bonus?.items || {}, `${eventScope}.bonus.items`);
+  });
+}
+
 function validateGatherTables(errors) {
   Object.entries(GameDB.gatherTables || {}).forEach(([locationId, table]) => {
     const scope = `gatherTables.${locationId}`;
@@ -169,6 +195,7 @@ function validateGatherTables(errors) {
       return;
     }
     validateDrops(errors, table.drops, `${scope}.drops`);
+    validateSpecialEvents(errors, table.specialEvents || [], `${scope}.specialEvents`);
   });
 }
 
