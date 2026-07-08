@@ -2,7 +2,7 @@ import { items, itemSources } from '@data/items';
 import { recipes } from '@data/recipes';
 
 export const GameDB = {
-  version: 13,
+  version: 14,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -200,6 +200,11 @@ export const GameDB = {
     ]);
   },
 
+  getCommissionRequiredItems(commissionOrId) {
+    const commission = typeof commissionOrId === 'string' ? this.commissions?.[commissionOrId] : commissionOrId;
+    return commission?.requiredItems || commission?.cost || {};
+  },
+
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
     leafCoin: { name: '葉幣', icon: '🪙' },
@@ -380,8 +385,8 @@ export const GameDB = {
       customer: '迷路的夜貓精靈',
       difficulty: '★☆☆',
       request: '月光花瓣拿鐵 ×1',
-      cost: { moon_petals: 1, star_berry: 1 },
-      reward: { currencies: { leafCoin: 120, starSugar: 20 }, items: { moon_latte: 1 } },
+      requiredItems: { moon_latte: 1 },
+      reward: { currencies: { leafCoin: 120, starSugar: 20 } },
       description: '客人想要一杯會微微發光、可以安定心情的飲品。',
     },
     quest_berry_tart: {
@@ -390,7 +395,7 @@ export const GameDB = {
       customer: '森林郵差兔',
       difficulty: '★☆☆',
       request: '星星莓奶油塔 ×1',
-      cost: { star_berry: 2, forest_cookie: 1 },
+      requiredItems: { star_berry_tart: 1 },
       reward: { currencies: { leafCoin: 90, starSugar: 15 } },
       description: '郵差兔想帶一份不會在路上融化的小甜點。',
     },
@@ -400,7 +405,7 @@ export const GameDB = {
       customer: '失眠的夢境精靈',
       difficulty: '★★☆',
       request: '夜空碎片可可 ×1',
-      cost: { night_sky_fragment: 1, stardew_water: 1 },
+      requiredItems: { dream_cocoa: 1 },
       reward: { currencies: { leafCoin: 180, starSugar: 30 } },
       description: '夢境精靈需要一杯能把噩夢變柔和的可可。',
     },
