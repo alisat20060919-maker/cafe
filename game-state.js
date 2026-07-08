@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 6;
+export const SAVE_VERSION = 7;
 
 function createDefaultState() {
   return {
@@ -101,17 +101,37 @@ function syncUnlockedScenes(nextState) {
   nextState.unlockedScenes = mergeDeep(fresh.unlockedScenes, nextState.unlockedScenes || {});
 }
 
+function normalizeCommissionState(nextState) {
+  const normalized = {};
+
+  Object.entries(nextState.commissions || {}).forEach(([commissionId, record]) => {
+    if (!GameDB.commissions?.[commissionId] || !isPlainObject(record)) return;
+
+    const status = record.status === 'claimed' ? 'completed' : record.status;
+    if (!['completed', 'in_progress'].includes(status)) return;
+
+    normalized[commissionId] = {
+      ...record,
+      status,
+    };
+  });
+
+  nextState.commissions = normalized;
+}
+
 function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
+    normalizeCommissionState(fresh);
     return fresh;
   }
 
   const migrated = mergeDeep(fresh, saved);
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
+  normalizeCommissionState(migrated);
   migrated.saveVersion = SAVE_VERSION;
   return migrated;
 }
@@ -136,6 +156,7 @@ export function resetState() {
   state = createDefaultState();
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
+  normalizeCommissionState(state);
   persistState();
   return state;
 }
