@@ -19,6 +19,8 @@
 5. `GameDB.recipes` 的 `cost` 與 `output.itemId` 都必須指向存在的 item。
 6. `GameDB.recipes` 的 `station` 必須指向存在的 `GameDB.stations`。
 7. 新增煉成素材時，`item.type` 必須是已登錄的 `refined_material`。
+8. 拆檔後，`GameDB.items`、`GameDB.itemSources`、`GameDB.recipes` 仍必須存在且結構不變。
+9. 除了 `game-data.js` 以外，不可有任何檔案 `import '@data/*'` 或 `from '@data/*'`。
 
 ## 3. 首頁 / 地圖測試
 
@@ -159,6 +161,7 @@
 煉金室配方列表
 煉金室製作成功/素材不足
 配方資料 validator
+GameDB Facade 拆檔後仍能讀 items/recipes
 未解鎖地點提示
 簽到
 設定
