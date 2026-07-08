@@ -1,5 +1,4 @@
-import { canGatherAt, gatherAt, getGatherStatus } from '@actions/gather';
-import { emitNotice } from '@eventBus';
+import { canGatherAt, gatherAt, getGatherStatus, getLocationHint } from '@actions/gather';
 import { showModal } from '@ui';
 
 let activeIndex = 0;
@@ -112,6 +111,23 @@ function showGatherResultModal(result) {
   `);
 }
 
+function showLocationHintModal(scene) {
+  const hint = getLocationHint(scene.id);
+  const icon = hint.kind === 'station' ? '🔒' : '🗺️';
+
+  showModal(`
+    <div class="core-modal-card compact location-hint-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">AREA INFO</span>
+      <div class="gather-result-icon">${icon}</div>
+      <h2>${hint.title}</h2>
+      <p>${hint.message}</p>
+    </div>
+  `);
+
+  setDialogue(scene.dataset.speaker || '小店長', scene.dataset.title, hint.message);
+}
+
 export function setActiveScene(index) {
   const scenes = $all('.scene-card');
   const tabs = $all('.tab');
@@ -166,12 +182,6 @@ function handleGatherScene(scene) {
   renderGatherStatusBadges();
   showGatherResultModal(result);
   setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
-}
-
-function handleAlchemyScene() {
-  const message = '煉金室不是採集點。這裡之後會用來把一階素材煉成二階、三階素材，或製作正式商品。';
-  emitNotice('煉金室規劃', message);
-  setDialogue('煉金助手', '煉金室', message);
 }
 
 function scrollToScene(index) {
@@ -229,12 +239,7 @@ function bindHomeEvents() {
         return;
       }
 
-      if (scene.id === 'alchemy') {
-        handleAlchemyScene();
-        return;
-      }
-
-      setDialogue('小店長', scene.dataset.title, `你選擇了「${scene.dataset.title}」。這裡之後可以做成獨立頁面或任務清單。`);
+      showLocationHintModal(scene);
     });
   });
 
