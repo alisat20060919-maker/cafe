@@ -1,4 +1,5 @@
 import { GameDB } from '@db';
+import { isUnlocked, getUnlockRequirementText } from '@state';
 import { validateGameDB } from '@validator';
 
 function shouldRunDevChecks() {
@@ -132,11 +133,35 @@ function validateCommissionExpCheck() {
   return { ok: true, issues: [] };
 }
 
+function validateUnlockRequirementCheck() {
+  const issues = [];
+
+  if (!isUnlocked({ level: 1 })) addIssue(issues, 'unlock.level.1', '新玩家應符合 Lv.1 條件。');
+  if (!isUnlocked({ scene: 'cafe' })) addIssue(issues, 'unlock.scene.cafe', '咖啡廳應預設解鎖。');
+  if (!isUnlocked({ station: 'kitchen' })) addIssue(issues, 'unlock.station.kitchen', '廚房製作站應預設解鎖。');
+  if (!isUnlocked({ recipe: 'recipe_moon_latte' })) addIssue(issues, 'unlock.recipe_moon_latte', '月光花瓣拿鐵配方應因廚房解鎖而可用。');
+  if (isUnlocked({ station: 'alchemy' })) addIssue(issues, 'unlock.station.alchemy', '新玩家 Lv.1 不應預設解鎖煉金室。');
+  if (!isUnlocked({ any: [{ station: 'alchemy' }, { station: 'kitchen' }] })) addIssue(issues, 'unlock.any', 'any 條件應在廚房解鎖時通過。');
+  if (isUnlocked({ all: [{ station: 'kitchen' }, { station: 'alchemy' }] })) addIssue(issues, 'unlock.all', 'all 條件應在煉金室未解鎖時失敗。');
+  if (!getUnlockRequirementText({ all: [{ level: 2 }, { station: 'alchemy' }] })) addIssue(issues, 'unlock.text', '解鎖條件應可輸出提示文字。');
+
+  if (issues.length) {
+    console.groupCollapsed(`[Unlock Requirement Check] ${issues.length} issues`);
+    issues.forEach((message) => console.error(message));
+    console.groupEnd();
+    return { ok: false, issues };
+  }
+
+  console.info('[Unlock Requirement Check] ok');
+  return { ok: true, issues: [] };
+}
+
 export function runDevChecks() {
   if (!shouldRunDevChecks()) return { skipped: true };
   const db = validateGameDB();
   const mvp = validateMvpSmokeTest();
   const playerProgress = validatePlayerProgressCheck();
   const commissionExp = validateCommissionExpCheck();
-  return { skipped: false, db, mvp, playerProgress, commissionExp };
+  const unlockRequirement = validateUnlockRequirementCheck();
+  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement };
 }
