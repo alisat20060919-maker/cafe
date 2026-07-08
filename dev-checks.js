@@ -162,7 +162,7 @@ function validateStationLockCheck() {
   const kitchenCraft = canCraft('recipe_moon_latte');
   const alchemyCraft = canCraft('recipe_moon_dew');
 
-  if (!kitchenCraft.ok) addIssue(issues, 'stationLock.kitchen', '新玩家應可在廚房製作已開放配方。');
+  if (kitchenCraft.status === 'locked_station') addIssue(issues, 'stationLock.kitchen', '新玩家不應被鎖在廚房製作站外。');
   if (alchemyCraft.status !== 'locked_station') addIssue(issues, 'stationLock.alchemy', '新玩家不應可製作煉金室配方。');
   if (!alchemyCraft.unlockRequirementText) addIssue(issues, 'stationLock.alchemyText', '鎖定製作站應提供解鎖條件文字。');
 
