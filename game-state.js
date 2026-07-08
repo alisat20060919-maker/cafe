@@ -2,14 +2,14 @@ import { GameDB } from '@db';
 import { loadSave, saveSave, clearSave } from '@save';
 import { emitStateChanged } from '@eventBus';
 
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 function createDefaultState() {
   return {
     saveVersion: SAVE_VERSION,
     player: {
-      level: 5,
-      exp: 120,
+      level: 1,
+      exp: 0,
       starSugar: 128,
       leafCoin: 320,
       tickets: 3,
@@ -134,6 +134,45 @@ function syncUnlockedScenes(nextState) {
   nextState.unlockedScenes.kitchen = true;
 }
 
+function normalizePlayerProgress(nextState, saved) {
+  const savedVersion = Number(saved?.saveVersion || 0);
+  const wasDemoDefault = savedVersion < SAVE_VERSION
+    && Number(saved?.player?.level || 0) === 5
+    && Number(saved?.player?.exp || 0) === 120;
+
+  if (wasDemoDefault) {
+    nextState.player.level = 1;
+    nextState.player.exp = 0;
+    return;
+  }
+
+  const exp = Math.max(0, Number(nextState.player?.exp || 0));
+  nextState.player.exp = exp;
+  nextState.player.level = GameDB.getLevelByExp?.(exp) || 1;
+}
+
+function applyLevelUnlocksToState(nextState) {
+  const unlocked = [];
+  const level = Math.max(1, Number(nextState.player?.level || 1));
+
+  for (let currentLevel = 1; currentLevel <= level; currentLevel += 1) {
+    const unlocks = GameDB.getLevelUnlocksFor?.(currentLevel) || {};
+    (unlocks.scenes || []).forEach((sceneId) => {
+      if (!GameDB.scenes?.[sceneId]) return;
+      const wasUnlocked = Boolean(nextState.unlockedScenes?.[sceneId]);
+      nextState.unlockedScenes[sceneId] = true;
+      if (!wasUnlocked) unlocked.push({
+        type: 'scene',
+        id: sceneId,
+        label: GameDB.scenes[sceneId].label || sceneId,
+        level: currentLevel,
+      });
+    });
+  }
+
+  return unlocked;
+}
+
 function normalizeCommissionState(nextState) {
   const normalized = {};
 
@@ -227,8 +266,10 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
 function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
+    normalizePlayerProgress(fresh, null);
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
+    applyLevelUnlocksToState(fresh);
     normalizeCommissionState(fresh);
     syncCompletedCommissionUnlocks(fresh);
     ensureDailyCommissions(fresh);
@@ -236,8 +277,10 @@ function migrateSave(saved) {
   }
 
   const migrated = mergeDeep(fresh, saved);
+  normalizePlayerProgress(migrated, saved);
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
+  applyLevelUnlocksToState(migrated);
   normalizeCommissionState(migrated);
   syncCompletedCommissionUnlocks(migrated);
   ensureDailyCommissions(migrated);
@@ -293,8 +336,10 @@ export function getActiveCommissionIds() {
 export function resetState() {
   clearSave();
   state = createDefaultState();
+  normalizePlayerProgress(state, null);
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
+  applyLevelUnlocksToState(state);
   normalizeCommissionState(state);
   syncCompletedCommissionUnlocks(state);
   ensureDailyCommissions(state);
@@ -317,6 +362,22 @@ export function spendCurrency(currencyId, amount) {
   if (current < amount) return false;
   state.player[currencyId] = current - amount;
   return true;
+}
+
+export function addPlayerExp(amount = 0) {
+  const expGained = Math.max(0, Number(amount || 0));
+  const oldLevel = GameDB.getLevelByExp?.(state.player.exp || 0) || Number(state.player.level || 1);
+  if (expGained <= 0) return { expGained: 0, oldLevel, newLevel: oldLevel, levelUps: [], unlocked: [] };
+
+  state.player.exp = Math.max(0, Number(state.player.exp || 0) + expGained);
+  const newLevel = GameDB.getLevelByExp?.(state.player.exp) || oldLevel;
+  state.player.level = newLevel;
+
+  const levelUps = [];
+  for (let level = oldLevel + 1; level <= newLevel; level += 1) levelUps.push(level);
+
+  const unlocked = applyLevelUnlocksToState(state);
+  return { expGained, oldLevel, newLevel, levelUps, unlocked };
 }
 
 export function isSceneUnlocked(sceneId) {
@@ -386,7 +447,9 @@ export function addFairy(fairyId) {
 }
 
 export function addReward(reward = {}) {
+  const growth = addPlayerExp(reward.exp || 0);
   Object.entries(reward.currencies || {}).forEach(([currencyId, amount]) => addCurrency(currencyId, amount));
   Object.entries(reward.items || {}).forEach(([itemId, qty]) => addItem(itemId, qty));
   Object.keys(reward.fairies || {}).forEach((fairyId) => addFairy(fairyId));
+  return growth;
 }
