@@ -1,6 +1,6 @@
 import { getState, claimDailyReward, resetState, replaceState, persistState } from './game-state.js?v=core03';
 import { exportSave, importSave } from './save.js?v=core03';
-import { Events, on, emitStateChanged } from './event-bus.js?v=core03';
+import { Events, on } from './event-bus.js?v=core03';
 
 let modalHost;
 
@@ -57,7 +57,6 @@ export function updateStatus() {
 
 function handleDaily() {
   const result = claimDailyReward();
-  emitStateChanged('daily');
   showNotice(result.ok ? `連續簽到 Day ${result.streak}` : '今日簽到', result.message);
 }
 
@@ -107,8 +106,7 @@ export function openSettings() {
       const key = button.dataset.setting;
       const next = getState();
       next.settings[key] = !next.settings[key];
-      persistState();
-      emitStateChanged(`setting:${key}`);
+      persistState(`setting:${key}`);
       openSettings();
     });
   });
@@ -131,7 +129,6 @@ export function openSettings() {
     try {
       replaceState(importSave(text));
       closeModal();
-      emitStateChanged('import-save');
       showNotice('匯入成功', '存檔已更新。');
     } catch (error) {
       showNotice('匯入失敗', '存檔文字格式不正確。');
@@ -142,7 +139,6 @@ export function openSettings() {
     if (!confirm('確定要清除精靈咖啡屋存檔嗎？')) return;
     resetState();
     closeModal();
-    emitStateChanged('reset-save');
     showNotice('已清除', '存檔已重置。');
   });
 }
