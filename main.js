@@ -1,4 +1,5 @@
 import { validateGameDB } from '@validator';
+import { runMvpSmokeTest } from '@mvp/smoke';
 import { initState } from '@state';
 import { initUI, showOpeningStoryIfNeeded } from '@ui';
 import { initHome, renderHome } from '@home';
@@ -11,6 +12,7 @@ import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 
 function boot() {
   validateGameDB();
+  runMvpSmokeTest();
   initState();
   initUI();
   initHome();
