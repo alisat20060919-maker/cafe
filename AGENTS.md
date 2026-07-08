@@ -84,6 +84,8 @@
 7. 付費刷新成本必須讀 `GameDB.commissionConfig.refreshCost`，不可硬寫在 action。
 8. 每日委託洗牌必須使用 Fisher-Yates，不使用 `sort(() => Math.random() - 0.5)`。
 9. 完成委託套用獎勵時，應使用 `@actions/player` 的 `applyReward()`，不要直接從 `@state` 呼叫 `addReward()`。
+10. `category: daily` 或 `category: mvp` 的委託必須有正數 `reward.exp`。
+11. 第 53 步驗收以 `dev-checks.js` 的 Commission EXP Check 為準。
 
 ## State 正規化規則
 
@@ -110,7 +112,7 @@
 
 ## Dev Check 規則
 
-1. `validateGameDB()`、MVP Smoke Test 與 Player Progress Check 只在 `?dev=1`、`?checks=1` 或 localhost 執行。
+1. `validateGameDB()`、MVP Smoke Test、Player Progress Check 與 Commission EXP Check 只在 `?dev=1`、`?checks=1` 或 localhost 執行。
 2. 正式玩家入口不應強制執行 validator / smoke test。
 3. `dev-checks.js` 可以 import `@validator`，但正式頁面邏輯不可依賴 dev check 結果才能運作。
 4. 新增 MVP 關鍵流程時，應擴充 `dev-checks.js` 或 `game-db-validator.js`。
