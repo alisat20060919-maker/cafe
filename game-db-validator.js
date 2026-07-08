@@ -289,7 +289,29 @@ function validateRecipes(errors) {
   });
 }
 
-function validateCommissions(errors) {
+function validateCommissionRequirements(errors, warnings, quest, scope) {
+  const requirements = GameDB.getCommissionRequiredItems?.(quest) || {};
+  if (!Object.keys(requirements).length) {
+    pushIssue(errors, scope, '缺少 requiredItems 或舊 cost 需求。');
+    return;
+  }
+
+  if (!quest.requiredItems && quest.cost) {
+    pushIssue(warnings, scope, '仍使用舊 cost 欄位；建議改用 requiredItems。');
+  }
+
+  validateItemMap(errors, requirements, `${scope}.requiredItems`);
+
+  if (quest.requiredItems) {
+    Object.keys(quest.requiredItems).forEach((itemId) => {
+      if (hasOwn(GameDB.items, itemId) && !GameDB.isProductItem(itemId)) {
+        pushIssue(errors, `${scope}.requiredItems`, `requiredItems 只能要求產品類 item，目前 ${itemId} 不是產品。`);
+      }
+    });
+  }
+}
+
+function validateCommissions(errors, warnings) {
   Object.entries(GameDB.commissions || {}).forEach(([questId, quest]) => {
     const scope = `commissions.${questId}`;
     if (!quest || typeof quest !== 'object') {
@@ -298,7 +320,7 @@ function validateCommissions(errors) {
     }
 
     if (quest.id !== questId) pushIssue(errors, scope, `quest.id 應為 ${questId}，目前是 ${quest.id || '空值'}。`);
-    validateItemMap(errors, quest.cost || quest.requiredItems || {}, `${scope}.requirements`);
+    validateCommissionRequirements(errors, warnings, quest, scope);
     validateCurrencyMap(errors, quest.reward?.currencies, `${scope}.reward.currencies`);
     validateItemMap(errors, quest.reward?.items, `${scope}.reward.items`);
     validateFairyMap(errors, quest.reward?.fairies, `${scope}.reward.fairies`);
@@ -332,7 +354,7 @@ export function validateGameDB() {
   validateGatherTables(errors);
   validateGachaPools(errors);
   validateRecipes(errors);
-  validateCommissions(errors);
+  validateCommissions(errors, warnings);
   validateDailyRewards(errors);
 
   const result = {
