@@ -6,20 +6,12 @@ import { navigate } from '@router';
 import { goToScene } from '@home';
 import { Events, on, emitNotice } from '@eventBus';
 
-const itemSourceScene = {
-  moon_petals: 'greenhouse',
-  star_berry: 'backyard',
-  night_sky_fragment: 'alchemy',
-  forest_cookie: 'backyard',
-  stardew_water: 'backyard',
-};
-
-const sceneNames = {
-  cafe: '咖啡廳',
-  backyard: '後山',
-  kitchen: '廚房',
-  alchemy: '煉金室',
-  greenhouse: '溫室',
+const itemSources = {
+  moon_petals: { type: 'scene', id: 'greenhouse', label: '溫室' },
+  star_berry: { type: 'scene', id: 'backyard', label: '後山' },
+  night_sky_fragment: { type: 'route', id: 'gacha', label: '祈願' },
+  forest_cookie: { type: 'scene', id: 'backyard', label: '後山' },
+  stardew_water: { type: 'scene', id: 'backyard', label: '後山' },
 };
 
 function $all(selector, root = document) {
@@ -70,6 +62,10 @@ function statusLabel(status) {
   }[status] || status;
 }
 
+function getItemSource(itemId) {
+  return itemSources[itemId] || { type: 'scene', id: 'backyard', label: '後山' };
+}
+
 function getMissingItems(cost = {}) {
   const state = getState();
   return Object.entries(cost)
@@ -77,14 +73,14 @@ function getMissingItems(cost = {}) {
       itemId,
       need: qty,
       owned: Number(state.inventory[itemId] || 0),
-      sceneId: itemSourceScene[itemId] || 'backyard',
+      source: getItemSource(itemId),
     }))
     .filter((item) => item.owned < item.need);
 }
 
-function getCollectionScene(quest) {
+function getFirstSource(quest) {
   const missingItems = getMissingItems(quest.cost);
-  return missingItems[0]?.sceneId || 'backyard';
+  return missingItems[0]?.source || { type: 'scene', id: 'backyard', label: '後山' };
 }
 
 function renderMissingHint(quest, status) {
@@ -94,7 +90,7 @@ function renderMissingHint(quest, status) {
   if (!missingItems.length) return '';
 
   const hint = missingItems
-    .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${sceneNames[item.sceneId] || '後山'}`)
+    .map((item) => `${itemIcon(item.itemId)} ${itemName(item.itemId)}：${item.owned}/${item.need}，來源：${item.source.label}`)
     .join('<br>');
 
   return `<p class="core-missing-hint">缺少素材：<br>${hint}</p>`;
@@ -109,15 +105,22 @@ function renderQuestButton(quest, status) {
     return `<button type="button" data-complete="${quest.id}">完成委託</button>`;
   }
 
-  const targetScene = getCollectionScene(quest);
-  return `<button type="button" data-collect="${targetScene}">前往${sceneNames[targetScene] || '後山'}收集</button>`;
+  const source = getFirstSource(quest);
+  return `<button type="button" data-source-type="${source.type}" data-source-id="${source.id}">前往${source.label}</button>`;
 }
 
-function goCollect(targetScene = 'backyard') {
+function goToSource(sourceType = 'scene', sourceId = 'backyard') {
+  if (sourceType === 'route') {
+    navigate(sourceId);
+    emitNotice('前往祈願', '夜空碎片目前先透過祈願取得；之後會把煉金室做成二階素材與商品製作。');
+    return;
+  }
+
   navigate('home');
   window.requestAnimationFrame(() => {
-    goToScene(targetScene);
-    emitNotice('前往收集', `已帶你前往${sceneNames[targetScene] || '後山'}。`);
+    goToScene(sourceId);
+    const source = Object.values(itemSources).find((item) => item.type === 'scene' && item.id === sourceId);
+    emitNotice('前往收集', `已帶你前往${source?.label || '後山'}。`);
   });
 }
 
@@ -145,7 +148,7 @@ export function renderCommissions() {
   }).join('');
 
   page.innerHTML = `
-    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會標出缺少素材與來源，按鈕可直接跳到收集地點。')}
+    ${pageHeader('QUEST BOARD / ACTION MODULE', '委託', '素材不足時會標出缺少素材與來源，按鈕可直接跳到收集地點或祈願頁。')}
     <div class="core-quest-list">${cards}</div>
   `;
 
@@ -157,8 +160,8 @@ export function renderCommissions() {
     });
   });
 
-  $all('[data-collect]', page).forEach((button) => {
-    button.addEventListener('click', () => goCollect(button.dataset.collect));
+  $all('[data-source-type]', page).forEach((button) => {
+    button.addEventListener('click', () => goToSource(button.dataset.sourceType, button.dataset.sourceId));
   });
 }
 
