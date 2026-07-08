@@ -6,11 +6,15 @@ function getRequirements(commission) {
   return GameDB.getCommissionRequiredItems(commission);
 }
 
+function isCommissionCompleted(record) {
+  return record?.status === 'completed' || record?.status === 'claimed';
+}
+
 export function canCompleteCommission(commissionId) {
   const state = getState();
   const commission = GameDB.commissions[commissionId];
   if (!commission) return false;
-  if (state.commissions[commissionId]?.status === 'claimed') return false;
+  if (isCommissionCompleted(state.commissions[commissionId])) return false;
   return canAffordItems(getRequirements(commission));
 }
 
@@ -19,7 +23,7 @@ export function completeCommission(commissionId) {
   const commission = GameDB.commissions[commissionId];
 
   if (!commission) return { ok: false, message: '找不到委託。' };
-  if (state.commissions[commissionId]?.status === 'claimed') {
+  if (isCommissionCompleted(state.commissions[commissionId])) {
     return { ok: false, message: '這份委託已經完成過了。' };
   }
   if (!spendItems(getRequirements(commission))) {
@@ -28,7 +32,7 @@ export function completeCommission(commissionId) {
 
   addReward(commission.reward);
   state.commissions[commissionId] = {
-    status: 'claimed',
+    status: 'completed',
     completedAt: new Date().toISOString(),
   };
   persistState('commission');
