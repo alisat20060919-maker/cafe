@@ -1,10 +1,30 @@
 export const GameDB = {
-  version: 2,
+  version: 3,
 
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
     leafCoin: { name: '葉幣', icon: '🪙' },
     tickets: { name: '靈感券', icon: '🎟️' },
+  },
+
+  routes: {
+    home: { id: 'home', label: '店鋪' },
+    gacha: { id: 'gacha', label: '祈願' },
+    inventory: { id: 'inventory', label: '背包' },
+    commissions: { id: 'commissions', label: '委託' },
+  },
+
+  scenes: {
+    cafe: { id: 'cafe', label: '咖啡廳' },
+    backyard: { id: 'backyard', label: '後山' },
+    kitchen: { id: 'kitchen', label: '廚房' },
+    alchemy: { id: 'alchemy', label: '煉金室' },
+    greenhouse: { id: 'greenhouse', label: '溫室' },
+  },
+
+  stations: {
+    kitchen: { id: 'kitchen', label: '廚房', role: '製作甜點、飲品與正式產品' },
+    alchemy: { id: 'alchemy', label: '煉金室', role: '煉成二階、三階素材與魔法產品' },
   },
 
   items: {
@@ -53,7 +73,7 @@ export const GameDB = {
       rarity: 'R',
       stars: 2,
       source: ['祈願', '後山'],
-      use: '普通委託常見的小甜點。',
+      use: '普通委託常見的小甜點，也能作為廚房產品的基底。',
       description: '烤成葉片形狀的小餅乾，帶著淡淡蜂蜜與木質香。',
     },
     stardew_water: {
@@ -65,7 +85,7 @@ export const GameDB = {
       rarity: 'R',
       stars: 3,
       source: ['祈願', '簽到', '後山', '溫室'],
-      use: '澆灌魔法植物，或作為飲品基底。',
+      use: '澆灌魔法植物，或作為飲品與煉成的基底。',
       description: '清晨凝在花瓣上的露水，映著細小星光。',
     },
     moon_latte: {
@@ -76,18 +96,19 @@ export const GameDB = {
       typeName: '飲品',
       rarity: 'SR',
       stars: 5,
-      source: ['委託製作'],
+      source: ['廚房製作（規劃中）', '委託獎勵'],
       use: '安定系飲品，可用於溫柔、祝福、月光主題委託。',
       description: '溫柔發光的奶泡像一層薄薄月色，喝下後心情會慢慢安定。',
     },
   },
 
   itemSources: {
-    moon_petals: { type: 'scene', id: 'greenhouse', label: '溫室' },
-    star_berry: { type: 'scene', id: 'backyard', label: '後山' },
-    night_sky_fragment: { type: 'route', id: 'gacha', label: '祈願' },
-    forest_cookie: { type: 'scene', id: 'backyard', label: '後山' },
-    stardew_water: { type: 'scene', id: 'backyard', label: '後山' },
+    moon_petals: { type: 'scene', id: 'greenhouse' },
+    star_berry: { type: 'scene', id: 'backyard' },
+    night_sky_fragment: { type: 'route', id: 'gacha' },
+    forest_cookie: { type: 'scene', id: 'backyard' },
+    stardew_water: { type: 'scene', id: 'backyard' },
+    moon_latte: { type: 'station', id: 'kitchen' },
   },
 
   gatherConfig: {
