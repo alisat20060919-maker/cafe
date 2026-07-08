@@ -19,6 +19,18 @@
 5. Page 模組只負責畫面渲染與按鈕事件，不直接管理複雜遊戲規則。
 6. `persistState()` 是狀態更新通知的核心，修改它時必須確認狀態列會更新。
 
+## ES Modules 快取版本規則
+
+這個專案目前是 GitHub Pages + 原生 ES Modules，沒有使用 Vite / Webpack 等打包工具。
+
+1. 所有 JS 模組 import 都必須保留一致的 query 版本號，例如 `?v=core07`。
+2. 不要只版本化 `index.html` 裡的 `main.js`，同時移除內部 import 的 query string。這會讓手機瀏覽器可能吃到舊子模組快取。
+3. 不要混用不同版本號，例如同時存在 `game-state.js?v=core07` 與 `game-state.js?v=core08`。瀏覽器會把它們視為兩個不同 module instance，可能造成 state 分裂。
+4. 暫時不要導入 Import Maps。它比較優雅，但對非常舊的 iOS Safari 有相容性風險；在這個專案未導入打包工具前，保守方案優先。
+5. 每次需要升版時，必須使用全域搜尋取代，把舊版本號一次改成新版本號。
+6. 升版後一定要搜尋舊版本號，例如 `core07`、`core06`，確認沒有殘留。
+7. 不要每個小修改都升版。可以累積一小批功能後，再一次性升版，減少等待時間與同步成本。
+
 ## 事件流
 
 資料更新的標準流程：
