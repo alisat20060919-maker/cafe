@@ -51,6 +51,21 @@ function renderSortOptions() {
     .join('');
 }
 
+function renderEmptyInventoryState() {
+  return `
+    <section class="core-empty-state" aria-label="背包空狀態">
+      <div class="core-empty-orb">🧺</div>
+      <h3>背包還是空的</h3>
+      <p>目前沒有已擁有的素材或精靈。可以先去祈願、回店鋪採集，或打開圖鑑預覽全部世界資料。</p>
+      <div class="core-actions-row core-empty-actions">
+        <button type="button" data-route="gacha">前往祈願</button>
+        <button type="button" data-route="home">回到店鋪</button>
+        <button type="button" data-route="collection">打開圖鑑</button>
+      </div>
+    </section>
+  `;
+}
+
 function getCardNumber(card, key) {
   return Number(card.dataset[key] || 0);
 }
@@ -269,36 +284,40 @@ export function renderInventory() {
     })
     .join('');
 
+  const hasInventoryContent = Boolean(itemCards || fairyCards);
+
   page.innerHTML = `
-    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成，排序只調整畫面順序，不改存檔。')}
+    ${pageHeader('BAG / RENDER FROM STATE', '背包', '這裡讀取 gameState.inventory 和 gameState.fairies 動態生成；空狀態只顯示引導，不改存檔。')}
     <div class="core-actions-row collection-entry-actions">
       <button type="button" data-route="collection">打開圖鑑</button>
     </div>
-    <div class="core-search-box">
-      <label for="inventory-search">搜尋背包</label>
-      <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度、來源或用途" autocomplete="off" />
-    </div>
-    <div class="core-sort-box">
-      <label for="inventory-sort">排序</label>
-      <select id="inventory-sort">${renderSortOptions()}</select>
-    </div>
-    <div class="core-filter-group">
-      <p>分類</p>
-      <div class="core-filter-tabs" aria-label="背包分類篩選">
-        ${renderFilterTabs()}
+    ${hasInventoryContent ? `
+      <div class="core-search-box">
+        <label for="inventory-search">搜尋背包</label>
+        <input id="inventory-search" type="search" placeholder="輸入素材、甜點、稀有度、來源或用途" autocomplete="off" />
       </div>
-    </div>
-    <div class="core-filter-group">
-      <p>稀有度</p>
-      <div class="core-filter-tabs" aria-label="背包稀有度篩選">
-        ${renderRarityTabs()}
+      <div class="core-sort-box">
+        <label for="inventory-sort">排序</label>
+        <select id="inventory-sort">${renderSortOptions()}</select>
       </div>
-    </div>
-    <div class="core-list" id="inventory-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
-      ${itemCards || '<p class="core-empty" data-category="empty" data-rarity="empty">背包還是空的。去祈願或簽到拿一點素材吧。</p>'}
-      ${fairyCards}
-      <p class="core-empty core-search-empty" id="inventory-search-empty" hidden>沒有符合目前條件的物品。</p>
-    </div>
+      <div class="core-filter-group">
+        <p>分類</p>
+        <div class="core-filter-tabs" aria-label="背包分類篩選">
+          ${renderFilterTabs()}
+        </div>
+      </div>
+      <div class="core-filter-group">
+        <p>稀有度</p>
+        <div class="core-filter-tabs" aria-label="背包稀有度篩選">
+          ${renderRarityTabs()}
+        </div>
+      </div>
+      <div class="core-list" id="inventory-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
+        ${itemCards}
+        ${fairyCards}
+        <p class="core-empty core-search-empty" id="inventory-search-empty" hidden>沒有符合目前條件的物品。</p>
+      </div>
+    ` : renderEmptyInventoryState()}
   `;
 
   bindInventoryFilters(page);
