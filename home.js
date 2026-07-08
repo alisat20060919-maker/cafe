@@ -26,7 +26,6 @@ const interiorDialogue = {
 const gatherSpeakers = {
   backyard: '採集精靈',
   greenhouse: '花園精靈',
-  alchemy: '煉金助手',
 };
 
 const hotspotPositions = {
@@ -118,6 +117,12 @@ function handleGatherScene(scene) {
   setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
 }
 
+function handleAlchemyScene() {
+  const message = '煉金室不是採集點。這裡之後會用來把一階素材煉成二階、三階素材，或製作正式商品。';
+  emitNotice('煉金室規劃', message);
+  setDialogue('煉金助手', '煉金室', message);
+}
+
 function scrollToScene(index) {
   closeInsidePage();
   const viewport = $('#mapViewport');
@@ -170,6 +175,11 @@ function bindHomeEvents() {
 
       if (canGatherAt(scene.id)) {
         handleGatherScene(scene);
+        return;
+      }
+
+      if (scene.id === 'alchemy') {
+        handleAlchemyScene();
         return;
       }
 
