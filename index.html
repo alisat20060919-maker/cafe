@@ -15,35 +15,40 @@
   <link rel="stylesheet" href="progress.css?v=ui09" />
   <link rel="stylesheet" href="level-up.css?v=ui10" />
   <link rel="stylesheet" href="locks.css?v=ui12" />
-  <link rel="stylesheet" href="fairies.css?v=ui08" />
+  <link rel="stylesheet" href="gacha.css?v=ui13" />
+  <link rel="stylesheet" href="shop.css?v=ui13" />
+  <link rel="stylesheet" href="fairies.css?v=ui13" />
   <script type="importmap">
     {
       "imports": {
-        "@main": "./main.js?v=core71",
-        "@dev/checks": "./dev-checks.js?v=core71",
-        "@db": "./game-data.js?v=core71",
-        "@data/items": "./data-items.js?v=core71",
-        "@data/recipes": "./data-recipes.js?v=core71",
-        "@data/story": "./data-story.js?v=core71",
-        "@validator": "./game-db-validator.js?v=core71",
-        "@state": "./game-state.js?v=core71",
-        "@save": "./save.js?v=core71",
-        "@ui": "./ui.js?v=core71",
-        "@home": "./home.js?v=core71",
-        "@router": "./router.js?v=core71",
-        "@eventBus": "./event-bus.js?v=core71",
-        "@utils": "./utils.js?v=core71",
-        "@actions/daily": "./daily-actions.js?v=core71",
-        "@actions/gacha": "./gacha-actions.js?v=core71",
-        "@actions/commission": "./commission-actions.js?v=core71",
-        "@actions/gather": "./gather-actions.js?v=core71",
-        "@actions/craft": "./craft-actions.js?v=core71",
-        "@actions/player": "./player-actions.js?v=core71",
-        "@pages/gacha": "./pages-gacha.js?v=core71",
-        "@pages/inventory": "./pages-inventory.js?v=core71",
-        "@pages/fairies": "./pages-fairies.js?v=core71",
-        "@pages/collection": "./pages-collection.js?v=core71",
-        "@pages/commissions": "./pages-commissions.js?v=core71"
+        "@main": "./main.js?v=core72",
+        "@dev/checks": "./dev-checks.js?v=core72",
+        "@db": "./game-data.js?v=core72",
+        "@data/items": "./data-items.js?v=core72",
+        "@data/recipes": "./data-recipes.js?v=core72",
+        "@data/story": "./data-story.js?v=core72",
+        "@validator": "./game-db-validator.js?v=core72",
+        "@state": "./game-state.js?v=core72",
+        "@save": "./save.js?v=core72",
+        "@ui": "./ui.js?v=core72",
+        "@home": "./home.js?v=core72",
+        "@router": "./router.js?v=core72",
+        "@eventBus": "./event-bus.js?v=core72",
+        "@utils": "./utils.js?v=core72",
+        "@actions/daily": "./daily-actions.js?v=core72",
+        "@actions/gacha": "./gacha-actions.js?v=core72",
+        "@actions/commission": "./commission-actions.js?v=core72",
+        "@actions/gather": "./gather-actions.js?v=core72",
+        "@actions/craft": "./craft-actions.js?v=core72",
+        "@actions/player": "./player-actions.js?v=core72",
+        "@actions/fairy": "./fairy-actions.js?v=core72",
+        "@actions/shop": "./shop-actions.js?v=core72",
+        "@pages/gacha": "./pages-gacha.js?v=core72",
+        "@pages/inventory": "./pages-inventory.js?v=core72",
+        "@pages/fairies": "./pages-fairies.js?v=core72",
+        "@pages/collection": "./pages-collection.js?v=core72",
+        "@pages/commissions": "./pages-commissions.js?v=core72",
+        "@pages/shop": "./pages-shop.js?v=core72"
       }
     }
   </script>
@@ -53,65 +58,25 @@
     <section class="game-window" aria-label="精靈咖啡屋遊戲介面" data-current-page="home">
       <header class="top-bar">
         <div class="profile-card">
-          <div class="level-ring" aria-label="等級 1，EXP 0/60" style="--exp-deg:0deg">
-            <div class="level-ring-inner">
-              <span id="levelRingSub">LV</span>
-              <strong id="levelRingValue">01</strong>
-            </div>
-          </div>
-          <div><p class="save-label">EXP 0/60 / Save v14</p><h1>精靈咖啡屋</h1></div>
+          <div class="level-ring" aria-label="等級 1，EXP 0/60" style="--exp-deg:0deg"><div class="level-ring-inner"><span id="levelRingSub">LV</span><strong id="levelRingValue">01</strong></div></div>
+          <div><p class="save-label">EXP 0/60 / Save v16</p><h1>精靈咖啡屋</h1></div>
         </div>
         <div class="status-pills" aria-label="玩家狀態列"><span>☀️ 森林午後</span><span>✦ 星糖 128</span><span>🪙 葉幣 320</span></div>
         <div class="top-actions" aria-label="快速功能"><button type="button" data-action="daily">🎁<span>簽到</span></button><button type="button" data-action="settings">⚙️<span>設定</span></button></div>
       </header>
-
       <section class="page page-home active" id="page-home" aria-label="店鋪首頁">
         <nav class="location-tabs" aria-label="地圖快捷選單"><button class="tab active" data-target="cafe">咖啡廳</button><button class="tab" data-target="backyard">後山</button><button class="tab" data-target="kitchen">廚房</button><button class="tab" data-target="alchemy">煉金室</button><button class="tab" data-target="greenhouse">溫室</button></nav>
-        <section class="map-area">
-          <button class="arrow left" id="prevScene" type="button" aria-label="上一個場景">‹</button>
-          <div class="map-viewport" id="mapViewport" tabindex="0" aria-label="森林咖啡廳地圖"><div class="map-track">
-            <article class="scene-card cafe active" id="cafe" data-speaker="小店長" data-title="咖啡廳" data-dialogue="歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？"><div class="scene-sky"></div><div class="forest-layer back"></div><div class="forest-layer front"></div><div class="cottage"><span class="roof"></span><span class="sign">CAFE</span><span class="door"></span><span class="window w1"></span><span class="window w2"></span></div><button class="object-tag tag-menu" type="button">菜單</button><button class="object-tag tag-order" type="button">委託</button><button class="object-tag tag-daily" type="button">今日推薦</button><div class="npc npc-main">🧚</div><div class="npc npc-cat">🐾</div><div class="speech-bubble">新甜點完成！</div><div class="scene-info"><span class="chapter">AREA 01</span><h2>咖啡廳</h2><p>主店面。販售魔法飲品、甜點與今日推薦，也是客人接委託的地方。</p></div><button class="enter-button" type="button">進入店內</button></article>
-            <article class="scene-card backyard" id="backyard" data-speaker="採集精靈" data-title="後山" data-dialogue="後山今天長出了星星莓！如果天黑前採回來，可以做成閃閃發光的莓果塔。"><div class="scene-sky"></div><div class="forest-layer back"></div><div class="forest-layer front"></div><div class="magic-tree"></div><button class="object-tag tag-menu" type="button">採集</button><button class="object-tag tag-order" type="button">素材</button><div class="npc npc-main">🦌</div><div class="speech-bubble">星星莓成熟了！</div><div class="scene-info"><span class="chapter">AREA 02</span><h2>後山</h2><p>採集素材、遇見森林居民，也能找到委託需要的稀有果實。</p></div><button class="enter-button" type="button">前往採集</button></article>
-            <article class="scene-card kitchen" id="kitchen" data-speaker="甜點精靈" data-title="廚房" data-dialogue="烤箱剛剛叮了一聲！紅豆湯圓糖漿比例好像更完美了。"><div class="scene-sky"></div><div class="kitchen-counter"></div><button class="object-tag tag-menu" type="button">甜點</button><button class="object-tag tag-order" type="button">配方</button><div class="npc npc-main">🧁</div><div class="speech-bubble">香香的</div><div class="scene-info"><span class="chapter">AREA 03</span><h2>廚房</h2><p>製作甜點、飲品與活動限定商品，把素材變成可愛菜單。</p></div><button class="enter-button" type="button">開始製作</button></article>
-            <article class="scene-card alchemy" id="alchemy" data-speaker="煉金助手" data-title="煉金室" data-dialogue="夜空碎片正在穩定發光。這次的夢境商品也許可以提升委託評級。"><div class="scene-sky"></div><div class="alchemy-table"></div><button class="object-tag tag-menu" type="button">藥水</button><button class="object-tag tag-order" type="button">實驗</button><div class="npc npc-main">🧪</div><div class="speech-bubble">咕嚕咕嚕</div><div class="scene-info"><span class="chapter">AREA 04</span><h2>煉金室</h2><p>調配材料、研究特殊素材屬性，開發更高星等的商品。</p></div><button class="enter-button" type="button">進入煉金</button></article>
-            <article class="scene-card greenhouse" id="greenhouse" data-speaker="花園精靈" data-title="溫室" data-dialogue="月光花瓣需要等到夜晚才會發亮。先幫它們澆一點星露水吧。"><div class="scene-sky"></div><div class="greenhouse-house"></div><button class="object-tag tag-menu" type="button">種植</button><button class="object-tag tag-order" type="button">收成</button><div class="npc npc-main">🌙</div><div class="speech-bubble">花瓣在發光</div><div class="scene-info"><span class="chapter">AREA 05</span><h2>溫室</h2><p>培育花草、莓果與魔法植物，是咖啡屋素材的主要來源。</p></div><button class="enter-button" type="button">照顧植物</button></article>
-          </div></div>
-          <button class="arrow right" id="nextScene" type="button" aria-label="下一個場景">›</button>
-        </section>
-        <section class="cafe-inside" id="cafeInside" aria-label="咖啡廳店內介面">
-          <div class="inside-head">
-            <div><p class="inside-label">INTERIOR / PLAYABLE ROOM</p><h2 class="inside-title">咖啡廳內部</h2><p class="inside-subtitle">點擊店內物件，查看今日菜單、委託、商品櫃與客人訂單。</p></div>
-            <button class="inside-back" id="backToMap" type="button">返回地圖</button>
-          </div>
-          <div class="cafe-room-scene" aria-label="咖啡廳店內場景">
-            <button class="room-hotspot hotspot-menu" type="button" data-panel="menu" aria-label="查看今日菜單"><span>今日菜單</span></button>
-            <button class="room-hotspot hotspot-quest" type="button" data-panel="quest" aria-label="查看接委託"><span>接委託</span></button>
-            <button class="room-hotspot hotspot-cabinet" type="button" data-panel="cabinet" aria-label="查看商品櫃"><span>商品櫃</span></button>
-            <button class="room-hotspot hotspot-order" type="button" data-panel="order" aria-label="查看客人訂單"><span>客人訂單</span></button>
-            <div class="room-tip">✦ 可互動區域</div>
-          </div>
-          <div class="inside-actions" aria-label="咖啡廳功能按鈕">
-            <button class="inside-action menu active" type="button" data-panel="menu" data-title="今日菜單">今日菜單</button>
-            <button class="inside-action quest" type="button" data-panel="quest" data-title="接委託">接委託</button>
-            <button class="inside-action cabinet" type="button" data-panel="cabinet" data-title="商品櫃">商品櫃</button>
-            <button class="inside-action order" type="button" data-panel="order" data-title="客人訂單">客人訂單</button>
-          </div>
-          <div class="inside-panel-wrap" aria-live="polite">
-            <article class="inside-panel active" data-panel="menu"><span class="panel-kicker">MENU BOARD</span><h3>今日菜單</h3><div class="item-grid"><section class="item-card"><b>月光花瓣拿鐵</b><span>安定系飲品</span><p>溫柔發光的奶泡，適合想讓委託氛圍變柔和的客人。</p></section><section class="item-card"><b>星星莓奶油塔</b><span>人氣甜點</span><p>甜中帶微酸，會在盤邊留下金色星屑。</p></section><section class="item-card"><b>夜空碎片可可</b><span>夢境限定</span><p>喝下去像把一小片夜空含在舌尖，適合夢核與星空主題。</p></section></div></article>
-            <article class="inside-panel" data-panel="quest"><span class="panel-kicker">COMMISSION COUNTER</span><h3>接委託</h3><div class="quest-board"><p>這裡把委託包裝成「點餐」。客人可以選擇品項，也可以自帶價請店長調配。</p><ul><li>先出圖後收款</li><li>無固定工期，可詢問進度</li><li>自帶價：有底價品項約底價 × 1.5～2，未定價品項由客人提供預算</li></ul></div></article>
-            <article class="inside-panel" data-panel="cabinet"><span class="panel-kicker">DISPLAY CABINET</span><h3>商品櫃</h3><div class="item-grid"><section class="item-card"><b>QQ 小甜點</b><span>可愛系</span><p>適合大頭、果凍感、輕鬆可愛的角色展示。</p></section><section class="item-card"><b>亮晶晶郵票</b><span>收藏系</span><p>像小型魔法貼紙，適合同色雙人或閃亮紀念感。</p></section><section class="item-card"><b>插圖驚喜包</b><span>盲盒系</span><p>保底形式，店長依靈感加料，像拆一份魔法禮盒。</p></section></div></article>
-            <article class="inside-panel" data-panel="order"><span class="panel-kicker">ORDER LOG</span><h3>客人訂單</h3><div class="order-list"><section><b>待確認</b><p>客人送來需求單，等待店長確認素材與預算。</p></section><section><b>製作中</b><p>已進入廚房或煉金室，正在調配草圖與色彩。</p></section><section><b>已完成</b><p>完成後會像魔法包裹一樣交付給客人。</p></section></div></article>
-          </div>
-        </section>
+        <section class="map-area"><button class="arrow left" id="prevScene" type="button" aria-label="上一個場景">‹</button><div class="map-viewport" id="mapViewport" tabindex="0" aria-label="森林咖啡廳地圖"><div class="map-track">
+          <article class="scene-card cafe active" id="cafe" data-speaker="小店長" data-title="咖啡廳" data-dialogue="歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？"><div class="scene-sky"></div><div class="forest-layer back"></div><div class="forest-layer front"></div><div class="cottage"><span class="roof"></span><span class="sign">CAFE</span><span class="door"></span><span class="window w1"></span><span class="window w2"></span></div><button class="object-tag tag-menu" type="button">菜單</button><button class="object-tag tag-order" type="button">委託</button><button class="object-tag tag-daily" type="button">今日推薦</button><div class="npc npc-main">🧚</div><div class="npc npc-cat">🐾</div><div class="speech-bubble">新甜點完成！</div><div class="scene-info"><span class="chapter">AREA 01</span><h2>咖啡廳</h2><p>主店面。販售魔法飲品、甜點與今日推薦，也是客人接委託的地方。</p></div><button class="enter-button" type="button">進入店內</button></article>
+          <article class="scene-card backyard" id="backyard" data-speaker="採集精靈" data-title="後山" data-dialogue="後山今天長出了星星莓！如果天黑前採回來，可以做成閃閃發光的莓果塔。"><div class="scene-sky"></div><div class="forest-layer back"></div><div class="forest-layer front"></div><div class="magic-tree"></div><button class="object-tag tag-menu" type="button">採集</button><button class="object-tag tag-order" type="button">素材</button><div class="npc npc-main">🦌</div><div class="speech-bubble">星星莓成熟了！</div><div class="scene-info"><span class="chapter">AREA 02</span><h2>後山</h2><p>採集素材、遇見森林居民，也能找到委託需要的稀有果實。</p></div><button class="enter-button" type="button">前往採集</button></article>
+          <article class="scene-card kitchen" id="kitchen" data-speaker="甜點精靈" data-title="廚房" data-dialogue="烤箱剛剛叮了一聲！紅豆湯圓糖漿比例好像更完美了。"><div class="scene-sky"></div><div class="kitchen-counter"></div><button class="object-tag tag-menu" type="button">甜點</button><button class="object-tag tag-order" type="button">配方</button><div class="npc npc-main">🧁</div><div class="speech-bubble">香香的</div><div class="scene-info"><span class="chapter">AREA 03</span><h2>廚房</h2><p>製作甜點、飲品與活動限定商品，把素材變成可愛菜單。</p></div><button class="enter-button" type="button">開始製作</button></article>
+          <article class="scene-card alchemy" id="alchemy" data-speaker="煉金助手" data-title="煉金室" data-dialogue="夜空碎片正在穩定發光。這次的夢境商品也許可以提升委託評級。"><div class="scene-sky"></div><div class="alchemy-table"></div><button class="object-tag tag-menu" type="button">藥水</button><button class="object-tag tag-order" type="button">實驗</button><div class="npc npc-main">🧪</div><div class="speech-bubble">咕嚕咕嚕</div><div class="scene-info"><span class="chapter">AREA 04</span><h2>煉金室</h2><p>調配材料、研究特殊素材屬性，開發更高星等的商品。</p></div><button class="enter-button" type="button">進入煉金</button></article>
+          <article class="scene-card greenhouse" id="greenhouse" data-speaker="花園精靈" data-title="溫室" data-dialogue="月光花瓣需要等到夜晚才會發亮。先幫它們澆一點星露水吧。"><div class="scene-sky"></div><div class="greenhouse-house"></div><button class="object-tag tag-menu" type="button">種植</button><button class="object-tag tag-order" type="button">收成</button><div class="npc npc-main">🌙</div><div class="speech-bubble">花瓣在發光</div><div class="scene-info"><span class="chapter">AREA 05</span><h2>溫室</h2><p>培育花草、莓果與魔法植物，是咖啡屋素材的主要來源。</p></div><button class="enter-button" type="button">照顧植物</button></article>
+        </div></div><button class="arrow right" id="nextScene" type="button" aria-label="下一個場景">›</button></section>
+        <section class="cafe-inside" id="cafeInside" aria-label="咖啡廳店內介面"><div class="inside-head"><div><p class="inside-label">INTERIOR / PLAYABLE ROOM</p><h2 class="inside-title">咖啡廳內部</h2><p class="inside-subtitle">點擊店內物件，查看今日菜單、委託、商品櫃與客人訂單。</p></div><button class="inside-back" id="backToMap" type="button">返回地圖</button></div><div class="cafe-room-scene" aria-label="咖啡廳店內場景"><button class="room-hotspot hotspot-menu" type="button" data-panel="menu" aria-label="查看今日菜單"><span>今日菜單</span></button><button class="room-hotspot hotspot-quest" type="button" data-panel="quest" aria-label="查看接委託"><span>接委託</span></button><button class="room-hotspot hotspot-cabinet" type="button" data-panel="cabinet" aria-label="查看商品櫃"><span>商品櫃</span></button><button class="room-hotspot hotspot-order" type="button" data-panel="order" aria-label="查看客人訂單"><span>客人訂單</span></button><div class="room-tip">✦ 可互動區域</div></div><div class="inside-actions" aria-label="咖啡廳功能按鈕"><button class="inside-action menu active" type="button" data-panel="menu" data-title="今日菜單">今日菜單</button><button class="inside-action quest" type="button" data-panel="quest" data-title="接委託">接委託</button><button class="inside-action cabinet" type="button" data-panel="cabinet" data-title="商品櫃">商品櫃</button><button class="inside-action order" type="button" data-panel="order" data-title="客人訂單">客人訂單</button></div><div class="inside-panel-wrap" aria-live="polite"><article class="inside-panel active" data-panel="menu"><span class="panel-kicker">MENU BOARD</span><h3>今日菜單</h3><div class="item-grid"><section class="item-card"><b>月光花瓣拿鐵</b><span>安定系飲品</span><p>溫柔發光的奶泡，適合想讓委託氛圍變柔和的客人。</p></section><section class="item-card"><b>星星莓奶油塔</b><span>人氣甜點</span><p>甜中帶微酸，會在盤邊留下金色星屑。</p></section><section class="item-card"><b>夜空碎片可可</b><span>夢境限定</span><p>喝下去像把一小片夜空含在舌尖，適合夢核與星空主題。</p></section></div></article><article class="inside-panel" data-panel="quest"><span class="panel-kicker">COMMISSION COUNTER</span><h3>接委託</h3><div class="quest-board"><p>這裡把委託包裝成「點餐」。客人可以選擇品項，也可以自帶價請店長調配。</p><ul><li>先出圖後收款</li><li>無固定工期，可詢問進度</li><li>自帶價：有底價品項約底價 × 1.5～2，未定價品項由客人提供預算</li></ul></div></article><article class="inside-panel" data-panel="cabinet"><span class="panel-kicker">DISPLAY CABINET</span><h3>商品櫃 / 精靈商鋪</h3><div class="item-grid"><section class="item-card"><b>QQ 小甜點</b><span>可愛系</span><p>適合大頭、果凍感、輕鬆可愛的角色展示。</p></section><section class="item-card"><b>亮晶晶郵票</b><span>收藏系</span><p>像小型魔法貼紙，適合同色雙人或閃亮紀念感。</p></section><section class="item-card"><b>精靈商鋪</b><span>葉幣商店</span><p>用葉幣購買少量素材與可送禮點心，每日限購。</p><button type="button" data-route="shop">進入精靈商鋪</button></section></div></article><article class="inside-panel" data-panel="order"><span class="panel-kicker">ORDER LOG</span><h3>客人訂單</h3><div class="order-list"><section><b>待確認</b><p>客人送來需求單，等待店長確認素材與預算。</p></section><section><b>製作中</b><p>已進入廚房或煉金室，正在調配草圖與色彩。</p></section><section><b>已完成</b><p>完成後會像魔法包裹一樣交付給客人。</p></section></div></article></div></section>
         <section class="dialogue-box" aria-live="polite"><div class="npc-portrait">👩‍🍳</div><div class="dialogue-content"><div class="dialogue-meta"><span class="speaker" id="speakerName">小店長</span><span class="place" id="placeName">咖啡廳</span></div><p id="dialogueText">歡迎回來！今天要先點一杯月光花瓣拿鐵，還是看看新的委託菜單呢？</p></div></section>
       </section>
-
-      <section class="page core-page-host" id="page-gacha" aria-label="祈願頁"></section>
-      <section class="page core-page-host" id="page-commissions" aria-label="委託頁"></section>
-      <section class="page core-page-host" id="page-inventory" aria-label="背包頁"></section>
-      <section class="page core-page-host" id="page-fairies" aria-label="精靈角色頁"></section>
-      <section class="page core-page-host" id="page-collection" aria-label="圖鑑頁"></section>
-
+      <section class="page core-page-host" id="page-gacha" aria-label="祈願頁"></section><section class="page core-page-host" id="page-commissions" aria-label="委託頁"></section><section class="page core-page-host" id="page-inventory" aria-label="背包頁"></section><section class="page core-page-host" id="page-fairies" aria-label="精靈角色頁"></section><section class="page core-page-host" id="page-collection" aria-label="圖鑑頁"></section><section class="page core-page-host" id="page-shop" aria-label="精靈商鋪頁"></section>
       <footer class="bottom-dock" aria-label="底部功能列"><button type="button" data-route="gacha">🎰<span>祈願</span></button><button type="button" data-route="commissions">📋<span>委託</span></button><button type="button" class="dock-center" data-route="home">🏠<span>店鋪</span></button><button type="button" data-route="inventory">🧺<span>背包</span></button><button type="button" data-route="fairies">🧚<span>精靈</span></button></footer>
     </section>
   </main>
