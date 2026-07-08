@@ -25,6 +25,8 @@
 11. `GameDB.materialTypes` 與 `GameDB.productTypes` 不可重疊。
 12. 每個 `GameDB.items` 都必須能被 `GameDB.getItemRole()` 判定為 `material` 或 `product`。
 13. `GameDB.isProductItem('moon_latte')` 應為 true，`GameDB.isMaterialItem('moon_petals')` 應為 true。
+14. 新委託的 `requiredItems` 必須指向產品類 item，例如 `moon_latte`、`star_berry_tart`、`dream_cocoa`。
+15. `GameDB.getCommissionRequiredItems()` 必須能讀取新 `requiredItems`，並保留舊 `cost` 相容。
 
 ## 3. 首頁 / 地圖測試
 
@@ -102,14 +104,16 @@
 ## 6. 委託測試
 
 1. 委託頁可以開啟。
-2. 委託卡片顯示需求與獎勵。
-3. 缺素材時顯示缺少數量。
-4. 月光花瓣缺少時導向溫室。
-5. 星星莓、森林餅乾、星露水缺少時導向後山。
-6. 夜空碎片缺少時導向祈願。
-7. 素材足夠時可以完成委託。
-8. 完成後扣除需求物品並發放獎勵。
-9. 已完成委託不可重複領獎。
+2. 委託卡片顯示產品需求與獎勵。
+3. 月光花瓣拿鐵委託應要求 `moon_latte ×1`，不是直接吃 `moon_petals`。
+4. 星屑莓果小塔委託應要求 `star_berry_tart ×1`。
+5. 夜空碎片可可委託應要求 `dream_cocoa ×1`。
+6. 缺少成品時顯示缺少數量。
+7. 缺少成品時按鈕導向廚房製作站。
+8. 成品足夠時可以完成委託。
+9. 完成後扣除 requiredItems，並發放獎勵。
+10. 已完成委託不可重複領獎。
+11. 舊 `cost` 委託若暫時存在，仍應由 `GameDB.getCommissionRequiredItems()` 相容讀取。
 
 ## 7. 祈願測試
 
@@ -164,6 +168,7 @@
 廚房製作成功/素材不足
 煉金室配方列表
 煉金室製作成功/素材不足
+委託產品需求 / 完成扣成品
 配方資料 validator
 GameDB Facade 拆檔後仍能讀 items/recipes
 產品/原料分類規則
