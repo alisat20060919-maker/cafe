@@ -62,8 +62,11 @@ function pickWeighted(drops) {
   return drops[drops.length - 1];
 }
 
-function getDropView(drop) {
+function getDropView(drop, totalWeight = 0) {
   const item = GameDB.items[drop.itemId];
+  const weight = Number(drop.weight || 0);
+  const chance = totalWeight > 0 ? Math.round((weight / totalWeight) * 100) : 0;
+
   return {
     itemId: drop.itemId,
     name: item?.name || drop.itemId,
@@ -71,6 +74,8 @@ function getDropView(drop) {
     rarity: item?.rarity || 'N',
     typeLabel: GameDB.getItemTypeLabel(item?.type),
     qty: drop.qty || 1,
+    weight,
+    chance,
   };
 }
 
@@ -103,6 +108,14 @@ export function getLocationHint(locationId) {
     title: fallbackTitle,
     message: '這個地點之後會開放更多互動功能，目前還不能採集或製作。',
   };
+}
+
+export function getGatherDropPreview(locationId = 'backyard') {
+  const table = getGatherTable(locationId);
+  if (!table) return [];
+
+  const totalWeight = table.drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
+  return table.drops.map((drop) => getDropView(drop, totalWeight));
 }
 
 export function getGatherStatus(locationId = 'backyard') {
@@ -154,11 +167,13 @@ export function gatherAt(locationId = 'backyard') {
       limit,
       used: limit,
       isDepleted: true,
+      preview: getGatherDropPreview(locationId),
     };
   }
 
   const drop = pickWeighted(table.drops);
-  const dropView = getDropView(drop);
+  const totalWeight = table.drops.reduce((sum, item) => sum + Number(item.weight || 0), 0);
+  const dropView = getDropView(drop, totalWeight);
   addItem(drop.itemId, drop.qty || 1);
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
@@ -174,6 +189,7 @@ export function gatherAt(locationId = 'backyard') {
     limit,
     used: record.count,
     isDepleted: remaining <= 0,
+    preview: getGatherDropPreview(locationId),
     message: `你找到了 ${formatGatherDrop(drop)}。今日還能採集 ${remaining} 次。`,
   };
 }
