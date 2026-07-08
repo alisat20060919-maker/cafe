@@ -32,6 +32,21 @@ function formatUnlocks(unlocks = []) {
   return `｜新解鎖：${unlocks.map((entry) => entry.label).join('、')}`;
 }
 
+function formatLevelUps(growth = {}) {
+  if (!growth.levelUps?.length) return '';
+  return `｜升到 Lv.${growth.newLevel}`;
+}
+
+function mergeUnlocks(...groups) {
+  const seen = new Set();
+  return groups.flat().filter((entry) => {
+    const key = `${entry.type}:${entry.id}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 export function getPaidRefreshCostText() {
   return `${currencyLabel(PAID_REFRESH_COST.currency)} ×${PAID_REFRESH_COST.amount}`;
 }
@@ -91,14 +106,18 @@ export function completeCommission(commissionId) {
     return { ok: false, message: '需要的商品不足，還不能完成這份委託。' };
   }
 
-  addReward(commission.reward);
+  const growth = addReward(commission.reward);
   state.commissions[commissionId] = {
     status: 'completed',
     completedAt: new Date().toISOString(),
   };
 
-  const unlocked = applyCommissionUnlocks(commissionId);
+  const directUnlocks = applyCommissionUnlocks(commissionId);
+  const unlocked = mergeUnlocks(growth.unlocked || [], directUnlocks);
   persistState('commission');
 
-  return { ok: true, message: `委託完成：${formatReward(commission.reward)}${formatUnlocks(unlocked)}` };
+  return {
+    ok: true,
+    message: `委託完成：${formatReward(commission.reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}`,
+  };
 }
