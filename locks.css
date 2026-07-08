@@ -36,16 +36,30 @@
   font-size:11px;
 }
 
-.recipe-card.is-locked-card{
+.recipe-card.is-locked-card,
+.core-quest-card.status-locked{
   border-color:rgba(255,226,145,.34);
   background:linear-gradient(180deg,rgba(255,247,220,.88),rgba(203,169,114,.72));
+  filter:saturate(.9);
 }
 
-.recipe-card.is-locked-card h3{
+.recipe-card.is-locked-card h3,
+.core-quest-card.status-locked h3{
   color:#4d3119;
 }
 
-.recipe-card.is-locked-card p{
+.recipe-card.is-locked-card p,
+.core-quest-card.status-locked p{
   color:#6d4726;
   font-weight:800;
+}
+
+.core-lock-hint{
+  border-color:rgba(255,226,145,.42);
+  background:rgba(255,247,220,.62);
+}
+
+.core-quest-card.status-locked button[disabled]{
+  background:linear-gradient(180deg,#ead9b8,#b58a54);
+  color:#3d2a18;
 }
