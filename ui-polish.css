@@ -1,157 +1,170 @@
 /* =========================================
-   《精靈咖啡屋》經典療癒風 視覺還原包
-   作為 ui-polish.css 覆蓋層，不直接覆蓋 app-core-v1.css 的功能規則
+   core76 緊急可讀性回復
+   先停止實驗風格，保留乾淨可讀、對比足夠、按鈕清楚
    ========================================= */
 
 :root{
-  --color-bg:#fdf8ee;
-  --color-text-main:#4a3623;
-  --color-text-muted:#8b7355;
-  --color-card:#ffffff;
-  --color-accent:#d4a373;
-  --color-success:#7fa977;
-  --color-danger:#d96b5f;
-  --shadow-soft:0 4px 16px rgba(139,115,85,.08);
-  --shadow-hover:0 8px 22px rgba(139,115,85,.12);
+  --ui-bg:#f7edda;
+  --ui-panel:#fff9ea;
+  --ui-card:#fffdf7;
+  --ui-green:#315f39;
+  --ui-green-2:#456f41;
+  --ui-brown:#5a3924;
+  --ui-brown-2:#7a4e2b;
+  --ui-gold:#e8bf68;
+  --ui-cream:#fff0bd;
+  --ui-text:#2f2418;
+  --ui-muted:#6d5a42;
+  --ui-line:rgba(90,57,36,.28);
+  --ui-shadow:0 8px 22px rgba(54,38,22,.14);
 }
 
-body{
-  font-family:'Nunito','Varela Round','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
-  color:var(--color-text-main);
-  background-color:var(--color-bg);
+html,body{
+  color:var(--ui-text)!important;
+  background:var(--ui-bg)!important;
+  font-family:'Nunito','Varela Round','PingFang TC','Microsoft JhengHei',system-ui,sans-serif!important;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
 }
 
-button{
-  font-family:inherit;
-  border:none;
-  color:var(--color-text-main);
-  font-weight:800;
-  cursor:pointer;
-  border-radius:99px;
-  transition:transform .15s ease,opacity .2s ease,box-shadow .2s ease,background .2s ease;
+body *{
+  text-shadow:none!important;
 }
-button:active{transform:scale(.98)}
+
+button{
+  font-family:inherit!important;
+  font-weight:900!important;
+  letter-spacing:0!important;
+}
+
+.game-window{
+  background:linear-gradient(180deg,#29405f 0%,#f7edda 26%,#d8e4b2 100%)!important;
+}
 
 .top-bar{
-  gap:10px!important;
-  align-items:center!important;
+  background:#283854!important;
+  border-bottom:3px solid var(--ui-brown)!important;
+  color:#fff8dc!important;
 }
-.save-label{
-  color:rgba(255,241,204,.82)!important;
-  font-weight:900!important;
-  letter-spacing:.02em;
+.save-label,
+.top-bar h1,
+.profile-card h1{
+  color:#fff8dc!important;
 }
 .status-pills{
   display:flex!important;
   flex-wrap:wrap!important;
   gap:8px!important;
-  align-items:center!important;
-  justify-content:flex-end!important;
 }
 .status-pills>span{
-  display:flex!important;
-  align-items:center!important;
-  gap:4px!important;
-  background:var(--color-card)!important;
-  color:var(--color-text-main)!important;
-  padding:6px 12px!important;
-  border:1px solid rgba(212,163,115,.16)!important;
-  border-radius:20px!important;
-  font-size:.9rem!important;
-  font-weight:900!important;
-  box-shadow:var(--shadow-soft)!important;
+  color:var(--ui-text)!important;
+  background:var(--ui-cream)!important;
+  border:2px solid var(--ui-brown)!important;
+  border-radius:999px!important;
+  padding:6px 10px!important;
+  font-size:13px!important;
+  line-height:1.2!important;
+  box-shadow:0 3px 0 rgba(90,57,36,.22)!important;
 }
 
-.core-page-host{
-  background:rgba(253,248,238,.74)!important;
-  border-color:rgba(212,163,115,.16)!important;
-  box-shadow:inset 0 0 24px rgba(255,255,255,.32)!important;
+.core-page-host,
+#page-gacha.core-page-host,
+#page-commissions.core-page-host,
+#page-inventory.core-page-host,
+#page-fairies.core-page-host,
+#page-shop.core-page-host,
+#page-collection.core-page-host{
+  background:linear-gradient(180deg,#789b56 0%,#426f3d 100%)!important;
+  border:3px solid var(--ui-brown)!important;
+  border-radius:24px!important;
+  color:var(--ui-text)!important;
+  box-shadow:inset 0 0 0 3px rgba(255,240,189,.2),var(--ui-shadow)!important;
 }
-.core-page-head{
-  background:rgba(255,255,255,.82)!important;
-  border:1px solid rgba(212,163,115,.16)!important;
-  box-shadow:var(--shadow-soft)!important;
+
+.core-page-head,
+.gacha-history-panel,
+.shop-page-head,
+.fairy-page-head{
+  background:var(--ui-panel)!important;
+  border:3px solid var(--ui-brown)!important;
+  border-radius:22px!important;
+  color:var(--ui-text)!important;
+  box-shadow:0 5px 0 rgba(90,57,36,.18)!important;
+}
+.core-page-head span,
+.core-modal-kicker{
+  color:var(--ui-brown-2)!important;
+  font-weight:1000!important;
 }
 .core-page-head h2,
-.core-modal-card h2{
-  color:var(--color-text-main)!important;
+.core-page-head h3,
+.core-page-head p,
+.core-modal-card h2,
+.core-modal-card h3,
+.core-modal-card p{
+  color:var(--ui-text)!important;
 }
 .core-page-head p,
-.core-modal-card p{
-  color:var(--color-text-muted)!important;
+.core-modal-card p,
+.core-customer,
+.core-empty,
+small{
+  color:var(--ui-muted)!important;
+  line-height:1.55!important;
 }
 
 .core-item-card,
 .core-result-card,
 .core-quest-card,
 .shop-item-card,
-.fairy-character-card{
-  background:var(--color-card)!important;
-  border:1px solid rgba(212,163,115,.15)!important;
-  border-radius:16px!important;
-  box-shadow:var(--shadow-soft)!important;
-  color:var(--color-text-main)!important;
-}
-.core-item-card,
-.core-result-card{
-  align-items:center!important;
-  padding:16px!important;
-  margin-bottom:12px;
-  transition:transform .1s ease,box-shadow .2s ease;
-}
-.core-item-card:active,
-.core-result-card:active{
-  transform:scale(.98);
-}
-.core-item-card:hover,
-.core-result-card:hover,
-.core-quest-card:hover,
-.shop-item-card:hover{
-  box-shadow:var(--shadow-hover)!important;
-}
-.core-item-icon,
-.shop-item-icon,
-.core-detail-icon{
-  background:var(--color-bg)!important;
-  border-radius:12px!important;
-  box-shadow:none!important;
+.core-recipe,
+.core-reward,
+.core-missing-hint,
+.core-missing-plan,
+.core-empty-state,
+.core-empty,
+.core-search-box,
+.core-sort-box{
+  background:var(--ui-card)!important;
+  border:2px solid var(--ui-brown)!important;
+  border-radius:18px!important;
+  color:var(--ui-text)!important;
+  box-shadow:0 5px 0 rgba(90,57,36,.16),0 10px 18px rgba(42,30,18,.08)!important;
 }
 .core-item-card b,
 .core-result-card b,
+.core-quest-card h3,
 .shop-item-card h3,
-.core-quest-card h3{
-  color:var(--color-text-main)!important;
+.core-item-card strong,
+.core-result-card strong,
+.core-detail-list dt,
+.core-detail-list dd{
+  color:var(--ui-text)!important;
 }
 .core-item-card span,
 .core-result-card span,
 .core-item-card p,
 .core-result-card p,
-.core-item-card small,
-.shop-item-card p{
-  color:var(--color-text-muted)!important;
+.shop-item-card p,
+.core-item-meta small{
+  color:var(--ui-muted)!important;
+}
+.core-item-icon,
+.shop-item-icon,
+.core-detail-icon{
+  background:#f5e6bc!important;
+  border:2px solid var(--ui-brown)!important;
+  color:var(--ui-text)!important;
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.55)!important;
 }
 .core-item-card>strong{
-  display:inline-flex!important;
-  align-items:center!important;
-  justify-content:center!important;
+  background:var(--ui-cream)!important;
+  color:var(--ui-brown)!important;
+  border:2px solid var(--ui-brown)!important;
+  border-radius:999px!important;
+  padding:5px 10px!important;
   min-width:42px!important;
-  border-radius:12px!important;
-  padding:4px 10px!important;
-  background:#f4ebd8!important;
-  color:var(--color-text-muted)!important;
-  font-size:.8rem!important;
-  font-weight:1000!important;
-}
-.core-item-card.rarity-ssr,
-.core-result-card.ssr{
-  background:linear-gradient(135deg,#fff,#f9f2ff 52%,#fff8e8)!important;
-  border-color:rgba(184,126,255,.38)!important;
-}
-.core-item-card.rarity-sr{
-  background:linear-gradient(135deg,#fff,#fff9e6)!important;
-  border-color:rgba(212,163,115,.38)!important;
+  text-align:center!important;
 }
 
 .core-filter-tabs{
@@ -159,191 +172,115 @@ button:active{transform:scale(.98)}
   flex-wrap:nowrap!important;
   overflow-x:auto!important;
   gap:10px!important;
-  padding:4px 16px 16px!important;
-  margin:0 -16px!important;
+  padding:8px 12px 14px!important;
   scrollbar-width:none!important;
   -webkit-overflow-scrolling:touch!important;
 }
 .core-filter-tabs::-webkit-scrollbar{display:none!important}
-.core-filter-tabs button{
-  flex:0 0 auto!important;
-  white-space:nowrap!important;
-  padding:8px 18px!important;
-  background:#fff!important;
-  color:var(--color-text-muted)!important;
-  box-shadow:0 2px 8px rgba(139,115,85,.05)!important;
-  border:1px solid rgba(212,163,115,.12)!important;
+.core-filter-tabs button,
+.core-actions-row button,
+.core-detail-button,
+.shop-item-card button,
+.core-setting-list button,
+.core-modal-card button{
+  background:linear-gradient(180deg,#fff3bf,#e4b760)!important;
+  color:var(--ui-text)!important;
+  border:2px solid var(--ui-brown)!important;
+  border-radius:999px!important;
+  box-shadow:0 4px 0 rgba(90,57,36,.24)!important;
+  padding:9px 14px!important;
+  min-height:38px!important;
 }
-.core-filter-tabs button.active{
-  background:var(--color-accent)!important;
-  color:#fff!important;
-  box-shadow:0 4px 12px rgba(212,163,115,.3)!important;
+.core-filter-tabs button.active,
+button[data-complete],
+.shop-item-card button:not(:disabled){
+  background:linear-gradient(180deg,#9ed96f,#5d9b45)!important;
+  color:#14300f!important;
+}
+button:disabled{
+  opacity:.55!important;
+  filter:grayscale(.55)!important;
+}
+
+.core-quest-card .is-lacking,
+.core-missing-hint .is-lacking{
+  color:#a42a22!important;
+  font-weight:1000!important;
+}
+.core-quest-top span,
+.core-quest-top strong{
+  color:var(--ui-text)!important;
+  background:var(--ui-cream)!important;
+  border:2px solid var(--ui-brown)!important;
 }
 
 .bottom-dock{
   grid-template-columns:repeat(6,minmax(0,1fr))!important;
-  padding:12px 16px calc(12px + env(safe-area-inset-bottom))!important;
-  background:rgba(253,248,238,.85)!important;
-  backdrop-filter:blur(12px)!important;
-  -webkit-backdrop-filter:blur(12px)!important;
-  border-top:1px solid rgba(212,163,115,.2)!important;
-  box-shadow:0 -6px 18px rgba(139,115,85,.08)!important;
+  background:rgba(40,56,84,.92)!important;
+  border-top:3px solid var(--ui-brown)!important;
+  padding:10px 8px calc(10px + env(safe-area-inset-bottom))!important;
+  backdrop-filter:blur(10px)!important;
+  -webkit-backdrop-filter:blur(10px)!important;
 }
 .bottom-dock button{
   background:transparent!important;
-  opacity:.56;
-  display:flex!important;
-  flex-direction:column!important;
-  align-items:center!important;
-  justify-content:center!important;
-  gap:4px!important;
-  color:var(--color-text-main)!important;
+  color:#fff4c9!important;
+  opacity:.72!important;
   box-shadow:none!important;
+  border:0!important;
 }
 .bottom-dock button.active,
 .bottom-dock button:active{
-  opacity:1;
-  color:var(--color-accent)!important;
-  transform:translateY(-2px)!important;
+  opacity:1!important;
+  color:var(--ui-gold)!important;
 }
 .bottom-dock .dock-center{
-  background:linear-gradient(180deg,#fff7dd,#e6c28c)!important;
-  border-color:rgba(212,163,115,.45)!important;
-  box-shadow:0 8px 20px rgba(139,115,85,.14)!important;
-}
-.bottom-dock .dock-center.active,
-.bottom-dock .dock-center:active{
-  transform:translateY(-15px) scale(1.04)!important;
+  background:linear-gradient(180deg,#fff3bf,#e4b760)!important;
+  color:var(--ui-text)!important;
+  border:2px solid var(--ui-brown)!important;
+  box-shadow:0 5px 0 rgba(90,57,36,.22)!important;
 }
 
-.core-actions-row button,
-.core-quest-card button,
-.shop-item-card button,
-.core-setting-list button,
-.core-detail-button{
-  background:var(--color-bg)!important;
-  color:var(--color-text-main)!important;
-  border:1px solid rgba(212,163,115,.2)!important;
-  box-shadow:var(--shadow-soft)!important;
-}
-button[data-complete]{
-  width:100%!important;
-  min-height:44px!important;
-  margin-top:12px!important;
-  padding:12px!important;
-  border-radius:12px!important;
-  background:var(--color-success)!important;
-  color:#fff!important;
-  font-size:1rem!important;
-  box-shadow:0 4px 12px rgba(127,169,119,.3)!important;
-}
-.core-quest-top span,
-.core-quest-top strong{
-  background:#fff!important;
-  color:var(--color-text-muted)!important;
-  border-color:rgba(212,163,115,.16)!important;
-}
-.core-quest-card .is-lacking,
-.core-missing-hint .is-lacking{
-  color:var(--color-danger)!important;
-  font-weight:1000!important;
-}
-.core-recipe,.core-reward,.core-missing-hint,.core-missing-plan{
-  background:#fffaf1!important;
-  border-color:rgba(212,163,115,.14)!important;
-}
-
-.fairy-card-grid{
-  gap:20px 16px!important;
-  padding:16px 8px!important;
-}
 .fairy-character-card{
-  background:transparent!important;
-  border:none!important;
-  box-shadow:none!important;
-  min-height:auto!important;
-  padding:0!important;
-  gap:8px!important;
+  background:var(--ui-card)!important;
+  border:2px solid var(--ui-brown)!important;
+  color:var(--ui-text)!important;
+}
+.fairy-card-name,
+.fairy-card-meta,
+.fairy-card-badge{
+  color:var(--ui-text)!important;
 }
 .fairy-card-portrait{
-  width:72px!important;
-  height:72px!important;
-  border-radius:24px!important;
-  background:#fff!important;
-  border:2px solid var(--color-accent)!important;
-  display:grid!important;
-  place-items:center!important;
-  font-size:2.2rem!important;
-  box-shadow:var(--shadow-soft)!important;
+  background:#f5e6bc!important;
+  border:2px solid var(--ui-brown)!important;
 }
-.fairy-card-badge,
-.fairy-card-meta{
-  display:none!important;
-}
-.fairy-card-name{
-  width:100%!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-  white-space:nowrap!important;
-  color:var(--color-text-main)!important;
-  font-size:.85rem!important;
-  text-align:center!important;
-}
-.fairy-character-card.is-locked .fairy-card-portrait{
-  background:#f0e9dd!important;
-  border-color:#d8cebf!important;
-  filter:grayscale(100%) opacity(.6)!important;
-  box-shadow:none!important;
-}
-.fairy-character-card.is-locked .fairy-card-name{
-  color:var(--color-text-muted)!important;
+.fairy-character-card.is-locked{
+  opacity:.62!important;
+  filter:grayscale(.75)!important;
 }
 
 .core-modal-host{
-  background:rgba(74,54,35,.42)!important;
-  backdrop-filter:blur(5px)!important;
-  -webkit-backdrop-filter:blur(5px)!important;
+  background:rgba(31,24,17,.56)!important;
+  backdrop-filter:blur(4px)!important;
+  -webkit-backdrop-filter:blur(4px)!important;
 }
 .core-modal-card{
-  background:#fffdf8!important;
-  border:1px solid rgba(212,163,115,.2)!important;
-  box-shadow:0 18px 48px rgba(74,54,35,.18)!important;
-  overscroll-behavior:contain!important;
+  background:var(--ui-panel)!important;
+  border:3px solid var(--ui-brown)!important;
+  color:var(--ui-text)!important;
+  box-shadow:0 16px 44px rgba(31,24,17,.28)!important;
 }
 .core-modal-close{
   display:grid!important;
   place-items:center!important;
-  line-height:1!important;
   padding:0!important;
+  color:var(--ui-text)!important;
 }
-.core-setting-list button{
-  width:100%!important;
-  min-height:46px!important;
-  border-radius:16px!important;
-}
-.core-setting-list button[data-reset-save],
-.core-setting-list button[data-confirm-reset-save]{
-  background:var(--color-danger)!important;
-  color:#fff!important;
-}
-
-.gacha-result-modal .core-result-card{
-  display:grid!important;
-  gap:6px!important;
-  text-align:center!important;
-}
-.gacha-result-modal .core-list{
-  max-height:60vh;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  padding-right:4px;
-}
-.core-empty{
-  text-align:center!important;
-  padding:40px 20px!important;
-  color:var(--color-text-muted)!important;
-  background:#fffaf1!important;
-  border-color:rgba(212,163,115,.16)!important;
+textarea,input,select{
+  color:var(--ui-text)!important;
+  background:#fffdf7!important;
+  border:2px solid var(--ui-brown)!important;
 }
 
 #inventory-list[data-current-filter="material"] .core-item-card:not([data-category="material"]),
@@ -361,10 +298,7 @@ button[data-complete]{
 #inventory-list[data-search-mode="filtered"] .core-item-card[data-search-match="false"]{display:none!important}
 
 @media(max-width:520px){
-  .bottom-dock{gap:4px!important;padding-left:8px!important;padding-right:8px!important}
+  .status-pills>span{font-size:12px!important;padding:5px 8px!important}
+  .core-item-card,.core-result-card,.core-quest-card,.shop-item-card{padding:12px!important}
   .bottom-dock button span{font-size:9px!important}
-  .status-pills{justify-content:flex-start!important}
-  .status-pills>span{font-size:11px!important;padding:5px 9px!important}
-  .core-item-card,.core-result-card{padding:12px!important}
-  .fairy-card-portrait{width:64px!important;height:64px!important;border-radius:22px!important;font-size:2rem!important}
 }
