@@ -18,7 +18,7 @@
 4. `ui.js` 負責共用 UI，例如狀態列、彈窗、設定、開場故事顯示流程。
 5. `game-state.js` 是狀態容器與存檔入口，不直接操作 DOM。
 6. Page 模組只負責畫面渲染與事件委派，不直接管理複雜遊戲規則。
-7. Actions 模組負責遊戲行為，例如採集、製作、祈願、委託、簽到。
+7. Actions 模組負責遊戲行為，例如採集、製作、祈願、委託、簽到、玩家 EXP。
 8. `persistState()` 是狀態更新通知核心，修改它時必須確認狀態列會更新。
 9. 絕對禁止 `ui.js` 與 `router.js` 互相 import；跨模組通知一律使用 `event-bus.js`。
 
@@ -59,8 +59,10 @@
 5. 顯示等級進度只能使用 `GameDB.getLevelProgress()`。
 6. 等級解鎖資料使用 `GameDB.levelConfig.unlocks` 與 `GameDB.getLevelUnlocksFor()`。
 7. Lv.2 目前必須解鎖 `alchemy`。
-8. EXP 發放應透過 `addReward()` 或未來的 `player-actions.js`，不可由 UI 直接改 `state.player.exp`。
-9. 第 51 步只做 EXP / Level 基礎對齊；不重複建立資料、不重寫已穩定流程。
+8. EXP 發放應透過 `player-actions.js` 的 `addExp()` 或 `applyReward()`，不可由 UI 直接改 `state.player.exp`。
+9. `game-state.js` 的 `addPlayerExp()` 是底層 mutation，外部功能不要直接當成玩家行為入口。
+10. 升級時由 `player-actions.js` 呼叫 `emitLevelUp()` 發出 `Events.LEVEL_UP`。
+11. 第 51 步只做 EXP / Level 基礎對齊；第 52 步開始所有新 EXP 行為走 `player-actions.js`。
 
 ## 產品與原料分類規則
 
@@ -81,6 +83,7 @@
 6. 只有 `category: 'fairy'` 的精靈專屬委託可以透過 `reward.affection` 發放好感。
 7. 付費刷新成本必須讀 `GameDB.commissionConfig.refreshCost`，不可硬寫在 action。
 8. 每日委託洗牌必須使用 Fisher-Yates，不使用 `sort(() => Math.random() - 0.5)`。
+9. 完成委託套用獎勵時，應使用 `@actions/player` 的 `applyReward()`，不要直接從 `@state` 呼叫 `addReward()`。
 
 ## State 正規化規則
 
