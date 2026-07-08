@@ -107,6 +107,11 @@ function validateItems(errors) {
     } else if (!GameDB.rarities?.includes(item.rarity)) {
       pushIssue(errors, `items.${itemId}`, `未知 rarity：${item.rarity}。請先登錄到 GameDB.rarities。`);
     }
+
+    if (item.tier !== undefined) {
+      const tier = Number(item.tier);
+      if (!Number.isInteger(tier) || tier <= 0) pushIssue(errors, `items.${itemId}`, 'tier 必須是正整數。');
+    }
   });
 }
 
@@ -176,7 +181,12 @@ function validateDrops(errors, drops = [], scope = 'drops') {
     const itemId = drop.itemId || (drop.kind === 'item' ? drop.id : null);
     const fairyId = drop.kind === 'fairy' ? drop.id : null;
 
-    if (itemId && !hasOwn(GameDB.items, itemId)) pushIssue(errors, dropScope, `itemId ${itemId} 不存在。`);
+    if (itemId && !hasOwn(GameDB.items, itemId)) {
+      pushIssue(errors, dropScope, `itemId ${itemId} 不存在。`);
+    } else if (itemId && scope.startsWith('gatherTables.') && Number(GameDB.items[itemId]?.tier || 0) >= 3) {
+      pushIssue(errors, dropScope, `三階素材 ${itemId} 不可放進普通採集掉落。`);
+    }
+
     if (fairyId && !hasOwn(GameDB.fairies, fairyId)) pushIssue(errors, dropScope, `fairyId ${fairyId} 不存在。`);
     if (!itemId && !fairyId) pushIssue(errors, dropScope, '缺少 itemId，或缺少有效 kind/id。');
   });
