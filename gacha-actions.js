@@ -1,5 +1,5 @@
-import { GameDB } from './game-data.js?v=core04';
-import { getState, spendCurrency, addItem, addFairy, persistState } from './game-state.js?v=core04';
+import { GameDB } from './game-data.js?v=core06';
+import { getState, spendCurrency, addItem, addFairy, persistState } from './game-state.js?v=core06';
 
 function pickWeighted(drops) {
   const total = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
