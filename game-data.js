@@ -1,5 +1,8 @@
 export const GameDB = {
-  version: 3,
+  version: 4,
+
+  itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
+  rarities: ['N', 'R', 'SR', 'SSR'],
 
   currencies: {
     starSugar: { name: '星糖', icon: '✦' },
@@ -25,6 +28,25 @@ export const GameDB = {
   stations: {
     kitchen: { id: 'kitchen', label: '廚房', role: '製作甜點、飲品與正式產品' },
     alchemy: { id: 'alchemy', label: '煉金室', role: '煉成二階、三階素材與魔法產品' },
+  },
+
+  getSourceRegistry(sourceType) {
+    return {
+      route: this.routes,
+      scene: this.scenes,
+      station: this.stations,
+    }[sourceType] || {};
+  },
+
+  getSourceLabel(sourceOrItemId) {
+    const source = typeof sourceOrItemId === 'string' ? this.getItemSource(sourceOrItemId) : sourceOrItemId;
+    if (!source) return '未知來源';
+    return source.label || this.getSourceRegistry(source.type)?.[source.id]?.label || source.id || '未知來源';
+  },
+
+  getItemSource(itemId) {
+    const source = this.itemSources?.[itemId] || { type: 'scene', id: 'backyard' };
+    return { ...source, label: this.getSourceLabel(source) };
   },
 
   items: {
