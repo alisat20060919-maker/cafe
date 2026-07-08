@@ -8,6 +8,7 @@
 
 .page{display:none}
 .page.active{display:block}
+.page.core-page-host:not(.active){display:none!important}
 .page-home.active{display:block}
 .page-home.inside-mode .location-tabs,
 .page-home.inside-mode .map-area{display:none!important}
@@ -114,7 +115,7 @@
 .core-filter-tabs button{border:1px solid rgba(126,84,34,.22);border-radius:999px;background:rgba(255,255,255,.68);color:#6a4b21;font-weight:900;padding:8px 10px;font-size:12px;box-shadow:0 4px 10px rgba(45,32,14,.08)}
 .core-filter-tabs button span{margin-right:3px}
 .core-filter-tabs button.active{background:linear-gradient(180deg,#fff2bd,#d9a441);color:#3d2a18;border-color:rgba(217,164,65,.62)}
-#page-inventory.core-page-host{
+#page-inventory.core-page-host.active{
   display:grid;
   grid-template-rows:auto auto auto auto auto minmax(0,1fr);
   height:clamp(430px,58vh,560px);
@@ -178,7 +179,7 @@ body.soft-mode .core-orb{box-shadow:none;filter:saturate(.85)}
 @media(max-width:520px){
   .top-bar{display:grid!important;grid-template-columns:1fr;gap:8px!important}
   .top-actions{justify-content:flex-start}.status-pills span{font-size:11px}.core-page-host{padding:10px;margin:10px;min-height:500px}.core-page-head h2{font-size:22px}.core-item-card{grid-template-columns:42px 1fr;position:relative}.core-item-card strong{position:absolute;right:12px;top:12px}.bottom-dock button{font-size:20px!important}.bottom-dock button::before{display:none!important}.bottom-dock button span{font-size:10px!important}.bottom-dock .dock-center{width:58px!important;height:58px!important;transform:translateY(-11px)!important}.bottom-dock .dock-center.active,.bottom-dock .dock-center:active{transform:translateY(-15px) scale(1.04)!important}
-  #page-inventory.core-page-host{height:clamp(340px,calc(100svh - 250px),500px);min-height:0!important;padding:8px;margin:8px;border-radius:20px}
+  #page-inventory.core-page-host.active{height:clamp(340px,calc(100svh - 250px),500px);min-height:0!important;padding:8px;margin:8px;border-radius:20px}
   #page-inventory .core-page-head{padding:7px 9px;margin-bottom:6px}
   #page-inventory .core-page-head h2{font-size:18px!important}
   #page-inventory .collection-entry-actions{display:none}
