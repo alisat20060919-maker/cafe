@@ -1,3 +1,4 @@
+import { validateGameDB } from '@validator';
 import { initState } from '@state';
 import { initUI } from '@ui';
 import { initHome, renderHome } from '@home';
@@ -7,6 +8,7 @@ import { initInventoryPage, renderInventory } from '@pages/inventory';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 
 function boot() {
+  validateGameDB();
   initState();
   initUI();
   initHome();
