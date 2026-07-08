@@ -1,6 +1,7 @@
 import { GameDB } from '@db';
 import { getState } from '@state';
 import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
+import { canCraft, craftRecipe } from '@actions/craft';
 import { showModal } from '@ui';
 
 let activeIndex = 0;
@@ -98,6 +99,15 @@ function renderRecipeOutput(output = {}) {
   return `${item.icon} ${item.name} ×${output.qty || 1}`;
 }
 
+function renderRecipeButton(recipe) {
+  const craftStatus = canCraft(recipe.id);
+  if (!craftStatus.ok) {
+    return `<button type="button" disabled>${craftStatus.status === 'not_enough_items' ? '素材不足' : '無法製作'}</button>`;
+  }
+
+  return `<button type="button" data-craft-recipe="${recipe.id}">製作</button>`;
+}
+
 function renderRecipeCards(stationId) {
   const recipes = getStationRecipes(stationId);
   if (!recipes.length) {
@@ -116,7 +126,7 @@ function renderRecipeCards(stationId) {
           <p>${recipe.description || '尚未撰寫配方說明。'}</p>
           <div class="core-recipe"><b>需要：</b>${renderRecipeCost(recipe.cost)}</div>
           <div class="core-reward"><b>產出：</b>${renderRecipeOutput(recipe.output)}</div>
-          <button type="button" disabled>製作功能下一步開放</button>
+          ${renderRecipeButton(recipe)}
         </article>
       `).join('')}
     </div>
@@ -235,12 +245,40 @@ function showLocationHintModal(scene) {
   setDialogue(scene.dataset.speaker || '小店長', scene.dataset.title, hint.message);
 }
 
+function showCraftResultModal(result, scene) {
+  const icon = result.ok ? result.output?.icon || '🍳' : '🧺';
+
+  showModal(`
+    <div class="core-modal-card compact location-hint-modal recipe-list-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">CRAFT RESULT</span>
+      <div class="gather-result-icon">${icon}</div>
+      <h2>${result.title}</h2>
+      <p>${result.message}</p>
+      <button type="button" data-open-recipes="${scene.id}">返回配方列表</button>
+    </div>
+  `);
+
+  document.querySelector('[data-open-recipes]')?.addEventListener('click', () => showRecipeListModal(scene));
+  setDialogue(scene.dataset.speaker || '甜點精靈', scene.dataset.title, result.message);
+}
+
+function bindRecipeCraftButtons(scene) {
+  [...document.querySelectorAll('[data-craft-recipe]')].forEach((button) => {
+    button.addEventListener('click', () => {
+      button.disabled = true;
+      const result = craftRecipe(button.dataset.craftRecipe);
+      showCraftResultModal(result, scene);
+    });
+  });
+}
+
 function showRecipeListModal(scene) {
   const station = GameDB.stations?.[scene.id];
   const recipes = getStationRecipes(scene.id);
   const title = station?.label ? `${station.label}配方` : `${scene.dataset.title}配方`;
   const message = recipes.length
-    ? `目前可以查看 ${recipes.length} 份配方；正式製作、扣素材與產出成品會在下一步開放。`
+    ? `目前可以查看 ${recipes.length} 份配方；素材足夠時可以製作成品。`
     : '這裡之後會開放製作配方，目前還沒有可顯示的資料。';
 
   showModal(`
@@ -254,6 +292,7 @@ function showRecipeListModal(scene) {
     </div>
   `);
 
+  bindRecipeCraftButtons(scene);
   setDialogue(scene.dataset.speaker || '甜點精靈', scene.dataset.title, message);
 }
 
