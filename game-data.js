@@ -3,11 +3,12 @@ import { recipes } from '@data/recipes';
 import { openingStory } from '@data/story';
 
 export const GameDB = {
-  version: 20,
+  version: 22,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
   productTypes: ['sweet', 'drink', 'product'],
+  giftableTypes: ['sweet', 'drink', 'product'],
   itemTypeMeta: {
     material: { id: 'material', label: '素材', icon: '🌿' },
     refined_material: { id: 'refined_material', label: '煉成素材', icon: '✨' },
@@ -20,7 +21,7 @@ export const GameDB = {
   },
   itemRoleMeta: {
     material: { id: 'material', label: '原料', description: '採集、祈願或煉金得到，用於製作。' },
-    product: { id: 'product', label: '產品', description: '廚房或煉金室製作出的交付品，可用於委託。' },
+    product: { id: 'product', label: '產品', description: '廚房或煉金室製作出的交付品，可用於委託或送禮。' },
     unknown: { id: 'unknown', label: '未分類', description: '尚未定義用途角色。' },
   },
   rarities: ['N', 'R', 'SR', 'SSR'],
@@ -69,6 +70,11 @@ export const GameDB = {
 
   isProductItem(itemOrId) {
     return this.getItemRole(itemOrId) === 'product';
+  },
+
+  isGiftableItem(itemOrId) {
+    const item = this.getItemRecord(itemOrId);
+    return Boolean(item?.type && this.giftableTypes.includes(item.type));
   },
 
   getItemTypeLabel(typeId) {
@@ -182,7 +188,10 @@ export const GameDB = {
       this.getRarityLabel(fairy.rarity),
       this.getFairySourceText(fairy),
       fairy.quote,
+      fairy.story,
       fairy.description,
+      fairy.favoriteSweets,
+      fairy.passiveBuff?.label,
     ]);
   },
 
@@ -275,6 +284,7 @@ export const GameDB = {
     dailyCount: 3,
     categories: ['daily', 'main', 'fairy', 'story', 'event', 'mvp'],
     refreshCost: { currency: 'tickets', amount: 1 },
+    rerollCost: { currency: 'starSugar', amount: 25 },
     difficultyRules: {
       '★☆☆': {
         rank: 1,
@@ -321,6 +331,7 @@ export const GameDB = {
     fairies: { id: 'fairies', label: '精靈' },
     collection: { id: 'collection', label: '圖鑑' },
     commissions: { id: 'commissions', label: '委託' },
+    shop: { id: 'shop', label: '精靈商鋪' },
   },
 
   scenes: {
@@ -433,6 +444,14 @@ export const GameDB = {
       source: ['祈願'],
       quote: '今晚的月色，由我替你保管。',
       description: '守著滿月花園的小精靈，會把柔和的祝福藏進飲品泡沫裡。',
+      story: '她原本住在滿月才會開花的溫室角落，喜歡把安靜的月光折成小信紙。',
+      favoriteSweets: ['moon_latte', 'dream_cocoa'],
+      passiveBuff: { type: 'gatherQtyBonus', target: 'greenhouse', value: 0.2, label: '溫室採集量 +20%' },
+      dialogues: {
+        low: ['要不要先把花瓣泡得更溫柔一點？', '我會在月光最亮的地方等你。'],
+        mid: ['今天的月光很適合做拿鐵。', '你靠近時，花瓣會自己發光呢。'],
+        high: ['這間咖啡屋的月色，已經有家的味道了。'],
+      },
     },
     night_sky_fairy: {
       id: 'night_sky_fairy',
@@ -442,6 +461,14 @@ export const GameDB = {
       source: ['祈願'],
       quote: '迷路的星星，也會找到回家的路。',
       description: '從夜空裂縫裡醒來的精靈，擅長保存夢境與微弱的光。',
+      story: '她曾是一片落在咖啡杯裡的星空碎片，醒來後就開始替失眠的客人守夢。',
+      favoriteSweets: ['dream_cocoa'],
+      passiveBuff: { type: 'rareDropBonus', target: 'all', value: 0.05, label: '稀有事件機率 +5%' },
+      dialogues: {
+        low: ['噓，夢快醒了。', '夜晚不是黑的，是很多小光躲起來。'],
+        mid: ['我把一小片安靜星空留給你。', '如果睡不著，就喝一口可可吧。'],
+        high: ['迷路的夢，也願意回到這裡。'],
+      },
     },
     honey_lantern_fairy: {
       id: 'honey_lantern_fairy',
@@ -451,6 +478,14 @@ export const GameDB = {
       source: ['祈願'],
       quote: '我會替你照亮這間小店。',
       description: '提著蜂蜜色小燈籠，會在傍晚替咖啡屋點亮暖光。',
+      story: '她會把傍晚最後一點蜂蜜色陽光收進燈籠，讓客人回家時不會迷路。',
+      favoriteSweets: ['forest_cookie', 'star_berry_tart'],
+      passiveBuff: { type: 'leafCoinBonus', target: 'commission', value: 0.1, label: '委託葉幣 +10%' },
+      dialogues: {
+        low: ['燈還亮著，慢慢來就好。', '今天也要把門口擦得亮晶晶。'],
+        mid: ['我替你留了一盞小燈。', '蜂蜜色的光最適合傍晚的咖啡屋。'],
+        high: ['只要燈還亮著，你就不是一個人經營。'],
+      },
     },
     star_berry_fairy: {
       id: 'star_berry_fairy',
@@ -460,7 +495,21 @@ export const GameDB = {
       source: ['祈願'],
       quote: '甜甜的好運，已經送到你手上囉。',
       description: '喜歡偷吃莓果塔的小精靈，走過的地方會留下金色糖屑。',
+      story: '她總是假裝自己沒有偷吃莓果塔，但嘴角的金色糖屑會把她出賣。',
+      favoriteSweets: ['star_berry_tart', 'forest_cookie'],
+      passiveBuff: { type: 'gatherQtyBonus', target: 'backyard', value: 0.2, label: '後山採集量 +20%' },
+      dialogues: {
+        low: ['星星莓今天也很甜喔。', '欸？不是我偷吃的啦。'],
+        mid: ['如果你給我莓果塔，我會把好運分你一半。', '金色糖屑是幸運的證明！'],
+        high: ['跟你一起顧店，比莓果塔還甜。'],
+      },
     },
+  },
+
+  gachaConfig: {
+    hardPityAt: 20,
+    guaranteeRarity: 'SSR',
+    historyLimit: 20,
   },
 
   gachaPools: {
@@ -468,7 +517,7 @@ export const GameDB = {
       id: 'standard',
       name: '星糖祈願',
       cost: { currency: 'starSugar', amount: 10 },
-      description: '消耗星糖，獲得素材、甜點或精靈契約。',
+      description: '消耗星糖，獲得素材、甜點或精靈契約。第 20 抽保底 SSR 精靈。',
       drops: [
         { kind: 'item', id: 'star_berry', qty: 1, weight: 34 },
         { kind: 'item', id: 'stardew_water', qty: 1, weight: 26 },
@@ -479,6 +528,37 @@ export const GameDB = {
         { kind: 'fairy', id: 'night_sky_fairy', qty: 1, weight: 1 },
         { kind: 'fairy', id: 'star_berry_fairy', qty: 1, weight: 1 },
       ],
+    },
+  },
+
+  shopConfig: {
+    dailyLimitDefault: 3,
+  },
+
+  shopItems: {
+    shop_stardew_water: {
+      id: 'shop_stardew_water',
+      itemId: 'stardew_water',
+      qty: 2,
+      price: { currency: 'leafCoin', amount: 80 },
+      dailyLimit: 3,
+      description: '補充飲品與煉金常用的星露水。',
+    },
+    shop_forest_cookie: {
+      id: 'shop_forest_cookie',
+      itemId: 'forest_cookie',
+      qty: 1,
+      price: { currency: 'leafCoin', amount: 120 },
+      dailyLimit: 2,
+      description: '可以直接送給精靈，也能作為甜點配方基底。',
+    },
+    shop_moon_petals: {
+      id: 'shop_moon_petals',
+      itemId: 'moon_petals',
+      qty: 1,
+      price: { currency: 'leafCoin', amount: 180 },
+      dailyLimit: 1,
+      description: '少量販售的月光花瓣，適合卡關時補貨。',
     },
   },
 
