@@ -34,6 +34,28 @@ function validateItemTypeMeta(errors) {
   });
 }
 
+function validateItemRoleTypes(errors) {
+  const checkTypes = (values = [], scope) => {
+    validateEnum(errors, values, scope);
+    values.forEach((typeId) => {
+      if (!GameDB.itemTypes?.includes(typeId)) pushIssue(errors, scope, `${typeId} 必須先登錄在 GameDB.itemTypes。`);
+    });
+  };
+
+  checkTypes(GameDB.materialTypes, 'materialTypes');
+  checkTypes(GameDB.productTypes, 'productTypes');
+
+  const overlap = (GameDB.materialTypes || []).filter((typeId) => (GameDB.productTypes || []).includes(typeId));
+  if (overlap.length) pushIssue(errors, 'itemRoles', `原料分類與產品分類不可重疊：${overlap.join(', ')}。`);
+
+  Object.entries(GameDB.items || {}).forEach(([itemId, item]) => {
+    const role = GameDB.getItemRole?.(item);
+    if (!['material', 'product'].includes(role)) {
+      pushIssue(errors, `items.${itemId}`, `item.type ${item?.type || '空值'} 未被歸類為 material 或 product。`);
+    }
+  });
+}
+
 function validateRarityMeta(errors) {
   (GameDB.rarities || []).forEach((rarityId) => {
     const meta = GameDB.rarityMeta?.[rarityId];
@@ -299,6 +321,7 @@ export function validateGameDB() {
   validateEnum(errors, GameDB.itemTypes, 'itemTypes');
   validateEnum(errors, GameDB.rarities, 'rarities');
   validateItemTypeMeta(errors);
+  validateItemRoleTypes(errors);
   validateRarityMeta(errors);
   validateRegistry(errors, GameDB.routes, 'routes');
   validateRegistry(errors, GameDB.scenes, 'scenes');
