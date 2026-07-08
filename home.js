@@ -1,5 +1,5 @@
-import { gatherAt } from './gather-actions.js?v=core07';
-import { emitNotice } from './event-bus.js?v=core07';
+import { gatherAt } from '@actions/gather';
+import { emitNotice } from '@eventBus';
 
 let activeIndex = 0;
 let homeRoot;
