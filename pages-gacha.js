@@ -1,7 +1,7 @@
-import { GameDB } from './game-data.js?v=core06';
-import { getState } from './game-state.js?v=core06';
-import { drawGacha } from './gacha-actions.js?v=core06';
-import { emitNotice } from './event-bus.js?v=core06';
+import { GameDB } from './game-data.js?v=core07';
+import { getState } from './game-state.js?v=core07';
+import { drawGacha } from './gacha-actions.js?v=core07';
+import { emitNotice } from './event-bus.js?v=core07';
 
 function $all(selector, root = document) {
   return [...root.querySelectorAll(selector)];
