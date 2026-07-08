@@ -44,9 +44,21 @@ function pickWeighted(drops) {
   return drops[drops.length - 1];
 }
 
-function formatGatherDrop(drop) {
+function getDropView(drop) {
   const item = GameDB.items[drop.itemId];
-  return `${item?.icon || ''}${item?.name || drop.itemId} ×${drop.qty || 1}`;
+  return {
+    itemId: drop.itemId,
+    name: item?.name || drop.itemId,
+    icon: item?.icon || '◇',
+    rarity: item?.rarity || 'N',
+    typeLabel: GameDB.getItemTypeLabel(item?.type),
+    qty: drop.qty || 1,
+  };
+}
+
+function formatGatherDrop(drop) {
+  const view = getDropView(drop);
+  return `${view.icon}${view.name} ×${view.qty}`;
 }
 
 export function canGatherAt(locationId = 'backyard') {
@@ -90,10 +102,13 @@ export function gatherAt(locationId = 'backyard') {
       message: `今天這裡的素材已經採完了。明天再來吧。(${limit}/${limit})`,
       remaining: 0,
       limit,
+      used: limit,
+      isDepleted: true,
     };
   }
 
   const drop = pickWeighted(table.drops);
+  const dropView = getDropView(drop);
   addItem(drop.itemId, drop.qty || 1);
   record.count = currentCount + 1;
   persistState(`gather:${locationId}`);
@@ -104,8 +119,11 @@ export function gatherAt(locationId = 'backyard') {
     ok: true,
     title: table.title,
     drop,
+    dropView,
     remaining,
     limit,
+    used: record.count,
+    isDepleted: remaining <= 0,
     message: `你找到了 ${formatGatherDrop(drop)}。今日還能採集 ${remaining} 次。`,
   };
 }
