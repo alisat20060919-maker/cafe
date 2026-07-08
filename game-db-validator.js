@@ -291,13 +291,21 @@ function validateFairyMap(errors, map = {}, scope = 'fairyMap') {
   });
 }
 
+function validateAffectionMap(errors, map = {}, scope = 'affectionMap') {
+  if (!validateObjectMap(errors, map, scope)) return;
+  Object.entries(map || {}).forEach(([fairyId, amount]) => {
+    if (!hasOwn(GameDB.fairies, fairyId)) pushIssue(errors, scope, `fairy ${fairyId} 不存在。`);
+    if (Number(amount || 0) <= 0) pushIssue(errors, scope, `fairy ${fairyId} 的好感度必須大於 0。`);
+  });
+}
+
 function validateRewardObject(errors, reward, scope = 'reward') {
   if (!isRecord(reward)) {
     pushIssue(errors, scope, 'reward 必須是物件。');
     return;
   }
 
-  const allowedKeys = ['exp', 'currencies', 'items', 'fairies'];
+  const allowedKeys = ['exp', 'currencies', 'items', 'fairies', 'affection'];
   Object.keys(reward).forEach((key) => {
     if (!allowedKeys.includes(key)) pushIssue(errors, scope, `未知 reward 欄位：${key}。`);
   });
@@ -306,12 +314,14 @@ function validateRewardObject(errors, reward, scope = 'reward') {
   const hasCurrencies = isRecord(reward.currencies) && Object.keys(reward.currencies).length > 0;
   const hasItems = isRecord(reward.items) && Object.keys(reward.items).length > 0;
   const hasFairies = isRecord(reward.fairies) && Object.keys(reward.fairies).length > 0;
-  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, 'reward 至少需要 exp、currencies、items 或 fairies 其中一種獎勵。');
+  const hasAffection = isRecord(reward.affection) && Object.keys(reward.affection).length > 0;
+  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies && !hasAffection) pushIssue(errors, scope, 'reward 至少需要 exp、currencies、items、fairies 或 affection 其中一種獎勵。');
 
   validateExpReward(errors, reward.exp, `${scope}.exp`);
   validateCurrencyMap(errors, reward.currencies, `${scope}.currencies`);
   validateItemMap(errors, reward.items, `${scope}.items`);
   validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
+  validateAffectionMap(errors, reward.affection, `${scope}.affection`);
 }
 
 function validateRewardFields(errors, reward = {}, scope = 'reward') {
@@ -319,11 +329,13 @@ function validateRewardFields(errors, reward = {}, scope = 'reward') {
   const hasCurrencies = isRecord(reward.currencies) && Object.keys(reward.currencies).length > 0;
   const hasItems = isRecord(reward.items) && Object.keys(reward.items).length > 0;
   const hasFairies = isRecord(reward.fairies) && Object.keys(reward.fairies).length > 0;
-  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies) pushIssue(errors, scope, '至少需要 exp、currencies、items 或 fairies 其中一種獎勵。');
+  const hasAffection = isRecord(reward.affection) && Object.keys(reward.affection).length > 0;
+  if (!hasExp && !hasCurrencies && !hasItems && !hasFairies && !hasAffection) pushIssue(errors, scope, '至少需要 exp、currencies、items、fairies 或 affection 其中一種獎勵。');
   validateExpReward(errors, reward.exp, `${scope}.exp`);
   validateCurrencyMap(errors, reward.currencies, `${scope}.currencies`);
   validateItemMap(errors, reward.items, `${scope}.items`);
   validateFairyMap(errors, reward.fairies, `${scope}.fairies`);
+  validateAffectionMap(errors, reward.affection, `${scope}.affection`);
 }
 
 function validateRangeRule(errors, range, scope) {
