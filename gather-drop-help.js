@@ -1,0 +1,69 @@
+import { GameDB } from '@db';
+import { getGatherDropPreview } from '@actions/gather';
+import { showModal } from '@ui';
+
+function getSceneTitle(locationId = '') {
+  const scene = document.querySelector(`#${locationId}`);
+  return scene?.dataset.title || GameDB.scenes?.[locationId]?.label || locationId || '採集地點';
+}
+
+function renderRateRows(locationId = '') {
+  const preview = getGatherDropPreview(locationId);
+  if (!preview.length) return '<p>目前沒有可顯示的掉落資料。</p>';
+
+  return preview.map((drop) => `
+    <div class="gather-rate-row">
+      <span class="gather-rate-icon">${drop.icon}</span>
+      <div class="gather-rate-main">
+        <b>${drop.name}</b>
+        <small>${drop.rarity}｜${drop.typeLabel}｜每次 ×${drop.qty}</small>
+        <em><strong style="width:${Math.max(4, Math.min(100, Number(drop.chance || 0)))}%"></strong></em>
+      </div>
+      <span class="gather-rate-percent">${drop.chance}%</span>
+    </div>
+  `).join('');
+}
+
+function showDropRateModal(locationId = '') {
+  const title = getSceneTitle(locationId);
+  showModal(`
+    <div class="core-modal-card compact gather-rate-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">DROP RATE</span>
+      <h2>${title}掉落機率</h2>
+      <p>每次採集會依掉落表抽出一種素材；以下是目前機率。</p>
+      <div class="gather-rate-list">${renderRateRows(locationId)}</div>
+    </div>
+  `);
+}
+
+function enhanceDropHint(line) {
+  if (!line || line.dataset.dropHelpReady === 'true') return;
+  const scene = line.closest('.scene-card');
+  if (!scene?.id) return;
+  line.dataset.dropHelpReady = 'true';
+  line.innerHTML = `
+    <span class="drop-help-label">可能掉落</span>
+    <button class="gather-help-button" type="button" data-gather-drop-help="${scene.id}" aria-label="查看${getSceneTitle(scene.id)}掉落機率">?</button>
+  `;
+}
+
+function enhanceDropHints(root = document) {
+  root.querySelectorAll?.('.gather-preview-line').forEach(enhanceDropHint);
+}
+
+function handleDropHelpClick(event) {
+  const button = event.target.closest('[data-gather-drop-help]');
+  if (!button) return;
+  event.preventDefault();
+  event.stopPropagation();
+  showDropRateModal(button.dataset.gatherDropHelp);
+}
+
+export function initGatherDropHelp() {
+  document.addEventListener('click', handleDropHelpClick);
+  enhanceDropHints();
+  const target = document.querySelector('#page-home') || document.body;
+  const observer = new MutationObserver(() => enhanceDropHints(target));
+  observer.observe(target, { childList: true, subtree: true });
+}
