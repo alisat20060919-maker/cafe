@@ -15,11 +15,14 @@ import { Events, on, emitNotice } from '@eventBus';
 
 const COMMISSION_GROUPS = [
   { id: 'daily', label: '每日任務', icon: '📅', hint: '每天會更新的小委託' },
-  { id: 'special', label: '特殊任務', icon: '✨', hint: '劇情、活動與精靈委託' },
-  { id: 'completed', label: '已完成', icon: '🎀', hint: '已交付的委託' },
+  { id: 'special', label: '特殊任務', icon: '✨', hint: '劇情與活動任務' },
+  { id: 'fairy', label: '精靈委託', icon: '🧚', hint: '精靈好感與契約相關委託' },
 ];
 
 let currentCommissionGroup = 'daily';
+const recentlyCompletedGroups = new Map();
+const recentlyCompletedIndexes = new Map();
+const recentlyCompletedStatusRanks = new Map();
 
 function pageHeader(kicker, title, body) {
   return `<div class="core-page-head"><span>${kicker}</span><h2>${title}</h2><p>${body}</p></div>`;
@@ -66,30 +69,43 @@ function statusRank(status) { return { ready: 0, available: 1, locked: 2, comple
 function getCommissionIdsForBoard() {
   const activeIds = getActiveCommissionIds();
   const allIds = Object.keys(GameDB.commissions || {});
-  const merged = [...activeIds, ...allIds.filter((id) => !activeIds.includes(id))];
-  return merged;
+  return [...activeIds, ...allIds.filter((id) => !activeIds.includes(id))];
 }
 
 function getQuestEntries() {
   return getCommissionIdsForBoard()
     .map((commissionId, index) => ({ quest: GameDB.commissions[commissionId], index }))
     .filter((entry) => entry.quest)
-    .map((entry) => ({ ...entry, status: getQuestViewStatus(entry.quest) }));
+    .map((entry) => ({
+      ...entry,
+      index: recentlyCompletedIndexes.has(entry.quest.id) ? recentlyCompletedIndexes.get(entry.quest.id) : entry.index,
+      status: getQuestViewStatus(entry.quest),
+    }));
+}
+
+function getEntryBaseGroup(entry) {
+  if (entry.quest.category === 'daily' || entry.quest.category === 'mvp') return 'daily';
+  if (entry.quest.category === 'fairy' || entry.quest.fairyId || entry.quest.fairy || entry.quest.reward?.affection) return 'fairy';
+  return 'special';
 }
 
 function getEntryGroup(entry) {
-  if (entry.status === 'completed') return 'completed';
-  return entry.quest.category === 'daily' || entry.quest.category === 'mvp' ? 'daily' : 'special';
+  return recentlyCompletedGroups.get(entry.quest.id) || getEntryBaseGroup(entry);
 }
 
 function countByGroup(entries, groupId) {
   return entries.filter((entry) => getEntryGroup(entry) === groupId).length;
 }
 
+function getEntrySortRank(entry) {
+  if (recentlyCompletedStatusRanks.has(entry.quest.id)) return recentlyCompletedStatusRanks.get(entry.quest.id);
+  return statusRank(entry.status);
+}
+
 function filterQuestEntries(entries) {
   return entries
     .filter((entry) => getEntryGroup(entry) === currentCommissionGroup)
-    .sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.index - b.index);
+    .sort((a, b) => getEntrySortRank(a) - getEntrySortRank(b) || a.index - b.index);
 }
 
 function renderTaskTabs(entries) {
@@ -206,13 +222,35 @@ function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   if (sourceType === 'station' || sourceType === 'scene') goToSceneSource(sourceType, sourceId);
 }
 
+function rememberCompletedCommission(commissionId) {
+  const beforeEntry = getQuestEntries().find((entry) => entry.quest.id === commissionId);
+  if (!beforeEntry) return;
+  recentlyCompletedGroups.set(commissionId, getEntryBaseGroup(beforeEntry));
+  recentlyCompletedIndexes.set(commissionId, beforeEntry.index);
+  recentlyCompletedStatusRanks.set(commissionId, statusRank(beforeEntry.status));
+}
+
+function clearRecentlyCompletedCommissions() {
+  recentlyCompletedGroups.clear();
+  recentlyCompletedIndexes.clear();
+  recentlyCompletedStatusRanks.clear();
+}
+
 function handleCommissionClick(event) {
   const button = event.target.closest('button');
   const page = document.querySelector('#page-commissions');
   if (!button || !page?.contains(button)) return;
   if (button.dataset.commissionGroup) { currentCommissionGroup = button.dataset.commissionGroup || 'daily'; renderCommissions(); return; }
   if (button.dataset.commissionDetail) { openCommissionDetail(button.dataset.commissionDetail); return; }
-  if (button.dataset.complete) { const result = completeCommission(button.dataset.complete); emitNotice(result.ok ? '委託完成' : '還不能完成', result.message); renderCommissions(); return; }
+  if (button.dataset.complete) {
+    const commissionId = button.dataset.complete;
+    rememberCompletedCommission(commissionId);
+    const result = completeCommission(commissionId);
+    if (!result.ok) clearRecentlyCompletedCommissions();
+    emitNotice(result.ok ? '委託完成' : '還不能完成', result.message);
+    renderCommissions();
+    return;
+  }
   if (button.dataset.sourceType) goToSource(button.dataset.sourceType, button.dataset.sourceId);
 }
 
@@ -237,5 +275,8 @@ export function initCommissionsPage() {
   on(Events.STATE_CHANGED, () => {
     const page = document.querySelector('#page-commissions');
     if (page?.classList.contains('active')) renderCommissions();
+  });
+  on(Events.ROUTE_CHANGED, (event) => {
+    if (event.detail?.route !== 'commissions') clearRecentlyCompletedCommissions();
   });
 }
