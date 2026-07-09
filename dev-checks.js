@@ -4,7 +4,7 @@ import { canCraft } from '@actions/craft';
 import { isCommissionUnlocked, getCommissionUnlockText, getRerollCostText } from '@actions/commission';
 import { getGachaPityStatus } from '@actions/gacha';
 import { getTotalFairyBuffValue } from '@actions/fairy';
-import { getShopItemView } from '@actions/shop';
+import { getAllShopItems, getShopItemView } from '@actions/shop';
 import { validateGameDB } from '@validator';
 
 function shouldRunDevChecks() {
@@ -147,14 +147,76 @@ function validateFairyGachaCheck() {
 
 function validateShopCheck() {
   const issues = [];
-  if (!Object.keys(GameDB.shopItems || {}).length) addIssue(issues, 'shopItems', '商店至少需要一個商品。');
-  Object.keys(GameDB.shopItems || {}).forEach((shopItemId) => {
+  const allShopItems = getAllShopItems();
+  if (!Object.keys(allShopItems || {}).length) addIssue(issues, 'shopItems', '商店至少需要一個商品。');
+  Object.keys(allShopItems || {}).forEach((shopItemId) => {
     const view = getShopItemView(shopItemId);
     if (!view?.item) addIssue(issues, `shopItems.${shopItemId}.item`, '商店商品指向不存在 item。');
     if (!view?.price?.currency || !GameDB.currencies?.[view.price.currency]) addIssue(issues, `shopItems.${shopItemId}.price`, '商店價格貨幣不存在。');
     if (Number(view?.dailyLimit || 0) <= 0) addIssue(issues, `shopItems.${shopItemId}.dailyLimit`, '每日限購必須大於 0。');
   });
   return finishCheck('Shop Check', issues);
+}
+
+function buildLeafCoinUnitPriceMap() {
+  const priceMap = {};
+  Object.values(getAllShopItems() || {}).forEach((shopItem) => {
+    if (!shopItem?.itemId || shopItem.price?.currency !== 'leafCoin') return;
+    const qty = Math.max(1, Number(shopItem.qty || 1));
+    const unitPrice = Number(shopItem.price.amount || 0) / qty;
+    if (!Number.isFinite(unitPrice) || unitPrice <= 0) return;
+    priceMap[shopItem.itemId] = Math.min(priceMap[shopItem.itemId] ?? Number.POSITIVE_INFINITY, unitPrice);
+  });
+  return priceMap;
+}
+
+function getRecipeLeafCoinCost(recipe, priceMap, visiting = new Set()) {
+  if (!recipe || !recipe.cost) return null;
+  if (visiting.has(recipe.id)) return null;
+  visiting.add(recipe.id);
+
+  let total = 0;
+  for (const [itemId, qty] of Object.entries(recipe.cost || {})) {
+    const amount = Math.max(1, Number(qty || 1));
+    let unitPrice = priceMap[itemId];
+    if (unitPrice === undefined) {
+      const nestedRecipe = getRecipeForOutput(itemId);
+      const nestedCost = getRecipeLeafCoinCost(nestedRecipe, priceMap, visiting);
+      if (nestedCost === null) return null;
+      const outputQty = Math.max(1, Number(nestedRecipe.output?.qty || 1));
+      unitPrice = nestedCost / outputQty;
+    }
+    total += unitPrice * amount;
+  }
+
+  return total;
+}
+
+function validateEconomyBalanceCheck() {
+  const issues = [];
+  const priceMap = buildLeafCoinUnitPriceMap();
+
+  getMvpCommissions().forEach((commission) => {
+    const rewardLeafCoin = Number(commission.reward?.currencies?.leafCoin || 0);
+    Object.entries(GameDB.getCommissionRequiredItems?.(commission) || {}).forEach(([itemId, qty]) => {
+      const recipe = getRecipeForOutput(itemId);
+      if (!recipe) return;
+      const recipeCost = getRecipeLeafCoinCost(recipe, priceMap);
+      if (recipeCost === null) return;
+      const outputQty = Math.max(1, Number(recipe.output?.qty || 1));
+      const requiredQty = Math.max(1, Number(qty || 1));
+      const totalCost = (recipeCost / outputQty) * requiredQty;
+      if (rewardLeafCoin > totalCost) {
+        addIssue(
+          issues,
+          `economy.${commission.id}`,
+          `可用商店素材製作 ${itemId} 後交委託套利：成本約 ${Math.ceil(totalCost)} 葉幣，獎勵 ${rewardLeafCoin} 葉幣。`,
+        );
+      }
+    });
+  });
+
+  return finishCheck('Economy Balance Check', issues);
 }
 
 export function runDevChecks() {
@@ -169,5 +231,6 @@ export function runDevChecks() {
   const stageSix = validateStageSixCheck();
   const fairyGacha = validateFairyGachaCheck();
   const shop = validateShopCheck();
-  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement, stationLock, recipeCommissionLock, stageSix, fairyGacha, shop };
+  const economy = validateEconomyBalanceCheck();
+  return { skipped: false, db, mvp, playerProgress, commissionExp, unlockRequirement, stationLock, recipeCommissionLock, stageSix, fairyGacha, shop, economy };
 }
