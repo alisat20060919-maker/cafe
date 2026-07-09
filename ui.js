@@ -70,13 +70,12 @@ export function updateStatus() {
   const percent = getProgressPercent(progress);
   const degrees = Math.round(ratio * 360);
   const expText = getExpText(progress);
-  const levelText = progress.isMax ? `MAX Lv.${state.player.level}` : `LV ${state.player.level}`;
   if (saveLabel) saveLabel.textContent = `精靈咖啡屋｜Save v${state.saveVersion}`;
   if (ring) { ring.style.setProperty('--exp-deg', `${degrees}deg`); ring.setAttribute('aria-label', `等級 ${state.player.level}，${expText}，${percent}%`); }
   if (ringValue) ringValue.textContent = String(state.player.level).padStart(2, '0');
   if (ringSub) ringSub.textContent = progress.isMax ? 'MAX' : 'LV';
   if (status) {
-    status.innerHTML = `<span class="player-level-chip">⭐ ${levelText}</span><span class="exp-progress-chip" aria-label="等級進度 ${percent}%"><b>${expText}</b><i>${percent}%</i><em><strong style="width:${percent}%"></strong></em></span><span>☀️ 森林午後</span><span>✦ 星糖 ${state.player.starSugar}</span><span>🪙 葉幣 ${state.player.leafCoin}</span><span>🎟️ 靈感券 ${state.player.tickets}</span>`;
+    status.innerHTML = `<span>☀️ 森林午後</span><span>✦ 星糖 ${state.player.starSugar}</span><span>🪙 葉幣 ${state.player.leafCoin}</span>`;
   }
   document.body.classList.toggle('soft-mode', Boolean(state.settings.softMode));
 }
