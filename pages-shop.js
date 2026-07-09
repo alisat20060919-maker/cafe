@@ -3,6 +3,7 @@ import { getState } from '@state';
 import {
   buyShopItem,
   buyStarSugarPack,
+  getAllShopItems,
   getShopItemView,
   getStarSugarPackView,
 } from '@actions/shop';
@@ -24,7 +25,7 @@ function getStarSugarPackIds() {
 }
 
 function getShopItemIds() {
-  return Object.keys(GameDB.shopItems || {});
+  return Object.keys(getAllShopItems());
 }
 
 function getShopItemType(shopItemId) {
