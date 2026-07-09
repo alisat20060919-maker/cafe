@@ -2,26 +2,14 @@ import { GameDB } from '@db';
 import { getState, isItemDiscovered, isFairyDiscovered } from '@state';
 import { showModal } from '@ui';
 
-function $all(selector, root = document) {
-  return [...root.querySelectorAll(selector)];
-}
+function $all(selector, root = document) { return [...root.querySelectorAll(selector)]; }
 
 function pageHeader(kicker, title, body) {
-  return `
-    <div class="core-page-head">
-      <span>${kicker}</span>
-      <h2>${title}</h2>
-      <p>${body}</p>
-    </div>
-  `;
+  return `<div class="core-page-head"><span>${kicker}</span><h2>${title}</h2><p>${body}</p></div>`;
 }
 
 function escapeAttr(value = '') {
-  return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function hiddenSearchText(kind, rarity, typeId = '') {
@@ -33,6 +21,34 @@ function hiddenSearchText(kind, rarity, typeId = '') {
     '未發現',
     '???',
   ]);
+}
+
+function getCollectionStats() {
+  const items = Object.values(GameDB.items || {});
+  const fairies = Object.values(GameDB.fairies || {});
+  const itemFound = items.filter((item) => isItemDiscovered(item.id)).length;
+  const fairyFound = fairies.filter((fairy) => isFairyDiscovered(fairy.id)).length;
+  return {
+    itemFound,
+    itemTotal: items.length,
+    fairyFound,
+    fairyTotal: fairies.length,
+    totalFound: itemFound + fairyFound,
+    total: items.length + fairies.length,
+  };
+}
+
+function renderCollectionStats() {
+  const stats = getCollectionStats();
+  return `
+    <section class="inventory-hero-card collection-summary-card">
+      <div class="inventory-hero-copy">
+        <span>DISCOVERY</span>
+        <h3>探索進度 ${stats.totalFound}/${stats.total}</h3>
+        <p>物品 ${stats.itemFound}/${stats.itemTotal}，精靈 ${stats.fairyFound}/${stats.fairyTotal}。列表改成短卡片，詳細資料點開看。</p>
+      </div>
+      <div class="inventory-hero-stats"><b>素材 ${stats.itemTotal}</b><b>精靈 ${stats.fairyTotal}</b><b>已發現 ${stats.totalFound}</b></div>
+    </section>`;
 }
 
 function renderCollectionCategories() {
@@ -76,7 +92,6 @@ function updateCollectionSearch(page) {
     const categoryMatch = currentFilter === 'all' || card.dataset.category === currentFilter;
     const rarityMatch = currentRarity === 'all' || card.dataset.rarity === currentRarity;
     const isVisible = searchMatch && categoryMatch && rarityMatch;
-
     card.dataset.searchMatch = searchMatch ? 'true' : 'false';
     card.hidden = !isVisible;
     if (isVisible) visibleCount += 1;
@@ -90,80 +105,39 @@ function renderLockedDetail(kind, rarity, typeLabel) {
     <div class="core-modal-card core-detail-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">LOCKED COLLECTION</span>
-      <div class="core-detail-head">
-        <div class="core-detail-icon">❔</div>
-        <div>
-          <h2>???</h2>
-          <p>${GameDB.getRarityLabel(rarity)} / ${typeLabel}</p>
-        </div>
-      </div>
+      <div class="core-detail-head"><div class="core-detail-icon">❔</div><div><h2>???</h2><p>${GameDB.getRarityLabel(rarity)} / ${typeLabel}</p></div></div>
       <p class="core-detail-quote">尚未發現。取得一次後會解鎖完整圖鑑資料。</p>
-      <dl class="core-detail-list">
-        <div><dt>狀態</dt><dd>未發現</dd></div>
-        <div><dt>類型</dt><dd>${kind === 'fairy' ? '精靈' : '素材 / 商品'}</dd></div>
-      </dl>
-    </div>
-  `);
+      <dl class="core-detail-list"><div><dt>狀態</dt><dd>未發現</dd></div><div><dt>類型</dt><dd>${kind === 'fairy' ? '精靈' : '素材 / 商品'}</dd></div></dl>
+    </div>`);
 }
 
 function openCollectionItemDetail(itemId) {
   const item = GameDB.items[itemId];
   if (!item) return;
-
-  if (!isItemDiscovered(item.id)) {
-    renderLockedDetail('item', item.rarity, GameDB.getItemTypeLabel(item.type));
-    return;
-  }
+  if (!isItemDiscovered(item.id)) return renderLockedDetail('item', item.rarity, GameDB.getItemTypeLabel(item.type));
 
   showModal(`
     <div class="core-modal-card core-detail-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">COLLECTION ITEM</span>
-      <div class="core-detail-head">
-        <div class="core-detail-icon">${item.icon}</div>
-        <div>
-          <h2>${item.name}</h2>
-          <p>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</p>
-        </div>
-      </div>
-      <dl class="core-detail-list">
-        <div><dt>來源</dt><dd>${GameDB.getItemSourceText(item)}</dd></div>
-        <div><dt>用途</dt><dd>${item.use}</dd></div>
-        <div><dt>說明</dt><dd>${item.description}</dd></div>
-        <div><dt>ID</dt><dd>${item.id}</dd></div>
-      </dl>
-    </div>
-  `);
+      <div class="core-detail-head"><div class="core-detail-icon">${item.icon}</div><div><h2>${item.name}</h2><p>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</p></div></div>
+      <dl class="core-detail-list"><div><dt>來源</dt><dd>${GameDB.getItemSourceText(item)}</dd></div><div><dt>用途</dt><dd>${item.use}</dd></div><div><dt>說明</dt><dd>${item.description}</dd></div><div><dt>ID</dt><dd>${item.id}</dd></div></dl>
+    </div>`);
 }
 
 function openCollectionFairyDetail(fairyId) {
   const fairy = GameDB.fairies[fairyId];
   if (!fairy) return;
-
-  if (!isFairyDiscovered(fairy.id)) {
-    renderLockedDetail('fairy', fairy.rarity, GameDB.getItemTypeLabel('fairy'));
-    return;
-  }
+  if (!isFairyDiscovered(fairy.id)) return renderLockedDetail('fairy', fairy.rarity, GameDB.getItemTypeLabel('fairy'));
 
   showModal(`
     <div class="core-modal-card core-detail-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">COLLECTION FAIRY</span>
-      <div class="core-detail-head">
-        <div class="core-detail-icon">${fairy.icon}</div>
-        <div>
-          <h2>${fairy.name}</h2>
-          <p>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</p>
-        </div>
-      </div>
+      <div class="core-detail-head"><div class="core-detail-icon">${fairy.icon}</div><div><h2>${fairy.name}</h2><p>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</p></div></div>
       <p class="core-detail-quote">「${fairy.quote}」</p>
-      <dl class="core-detail-list">
-        <div><dt>來源</dt><dd>${GameDB.getFairySourceText(fairy)}</dd></div>
-        <div><dt>說明</dt><dd>${fairy.description}</dd></div>
-        <div><dt>ID</dt><dd>${fairy.id}</dd></div>
-      </dl>
-    </div>
-  `);
+      <dl class="core-detail-list"><div><dt>來源</dt><dd>${GameDB.getFairySourceText(fairy)}</dd></div><div><dt>喜歡</dt><dd>${(fairy.favoriteSweets || []).map((id) => GameDB.items?.[id]?.name || id).join('、') || '未知'}</dd></div><div><dt>被動</dt><dd>${fairy.passiveBuff?.label || '無'}</dd></div><div><dt>說明</dt><dd>${fairy.description}</dd></div><div><dt>ID</dt><dd>${fairy.id}</dd></div></dl>
+    </div>`);
 }
 
 function bindCollectionPage(page) {
@@ -188,16 +162,32 @@ function bindCollectionPage(page) {
   });
 
   page.querySelector('#collection-search')?.addEventListener('input', () => updateCollectionSearch(page));
-
   $all('[data-collection-kind]', page).forEach((button) => {
     button.addEventListener('click', () => {
-      if (button.dataset.collectionKind === 'fairy') {
-        openCollectionFairyDetail(button.dataset.collectionId);
-        return;
-      }
+      if (button.dataset.collectionKind === 'fairy') return openCollectionFairyDetail(button.dataset.collectionId);
       openCollectionItemDetail(button.dataset.collectionId);
     });
   });
+}
+
+function renderItemCard(item) {
+  const discovered = isItemDiscovered(item.id);
+  return `
+    <button type="button" class="core-item-card inventory-slot-card collection-card rarity-${item.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(discovered ? GameDB.getItemSearchText(item) : hiddenSearchText('item', item.rarity, item.type))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="item" data-collection-id="${item.id}" title="${escapeAttr(discovered ? item.name : '???')}">
+      <span class="inventory-slot-rarity">${item.rarity}</span>
+      <span class="inventory-slot-icon" aria-hidden="true">${discovered ? item.icon : '❔'}</span>
+      <strong aria-hidden="true">${discovered ? item.name : '???'}</strong>
+    </button>`;
+}
+
+function renderFairyCard(fairy) {
+  const discovered = isFairyDiscovered(fairy.id);
+  return `
+    <button type="button" class="core-item-card inventory-slot-card inventory-fairy-slot collection-card rarity-${fairy.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(discovered ? GameDB.getFairySearchText(fairy) : hiddenSearchText('fairy', fairy.rarity))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="fairy" data-collection-id="${fairy.id}" title="${escapeAttr(discovered ? fairy.name : '???')}">
+      <span class="inventory-slot-rarity">${fairy.rarity}</span>
+      <span class="inventory-slot-icon" aria-hidden="true">${discovered ? fairy.icon : '❔'}</span>
+      <strong aria-hidden="true">${discovered ? fairy.name : '???'}</strong>
+    </button>`;
 }
 
 export function renderCollection() {
@@ -205,79 +195,20 @@ export function renderCollection() {
   if (!page) return;
 
   getState();
-
-  const itemCards = Object.values(GameDB.items)
-    .map((item) => {
-      const discovered = isItemDiscovered(item.id);
-      return `
-        <article class="core-item-card rarity-${item.rarity.toLowerCase()} collection-card ${discovered ? '' : 'is-undiscovered'}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(discovered ? GameDB.getItemSearchText(item) : hiddenSearchText('item', item.rarity, item.type))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}">
-          <div class="core-item-icon">${discovered ? item.icon : '❔'}</div>
-          <div>
-            <b>${discovered ? item.name : '???'}</b>
-            <span>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)}${discovered ? ` / ${'★'.repeat(item.stars)}` : ''}</span>
-            <p>${discovered ? item.description : '尚未發現。取得一次後會解鎖完整資料。'}</p>
-            <div class="core-item-meta">
-              <small>狀態：${discovered ? '已發現' : '未發現'}</small>
-              <small>${discovered ? `來源：${GameDB.getItemSourceText(item)}` : '來源：???'}</small>
-            </div>
-            <button type="button" class="core-detail-button" data-collection-kind="item" data-collection-id="${item.id}">查看資料</button>
-          </div>
-          <strong>${discovered ? '已發現' : '???'}</strong>
-        </article>
-      `;
-    })
-    .join('');
-
-  const fairyCards = Object.values(GameDB.fairies)
-    .map((fairy) => {
-      const discovered = isFairyDiscovered(fairy.id);
-      return `
-        <article class="core-item-card ssr collection-card ${discovered ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(discovered ? GameDB.getFairySearchText(fairy) : hiddenSearchText('fairy', fairy.rarity))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}">
-          <div class="core-item-icon">${discovered ? fairy.icon : '❔'}</div>
-          <div>
-            <b>${discovered ? fairy.name : '???'}</b>
-            <span>${GameDB.getRarityLabel(fairy.rarity)} / ${GameDB.getItemTypeLabel('fairy')}</span>
-            <p>${discovered ? `「${fairy.quote}」` : '尚未契約。取得一次後會解鎖完整資料。'}</p>
-            <div class="core-item-meta">
-              <small>狀態：${discovered ? '已發現' : '未發現'}</small>
-              <small>${discovered ? `來源：${GameDB.getFairySourceText(fairy)}` : '來源：???'}</small>
-            </div>
-            <button type="button" class="core-detail-button" data-collection-kind="fairy" data-collection-id="${fairy.id}">查看資料</button>
-          </div>
-          <strong>${discovered ? '已發現' : '???'}</strong>
-        </article>
-      `;
-    })
-    .join('');
+  const itemCards = Object.values(GameDB.items || {}).map(renderItemCard).join('');
+  const fairyCards = Object.values(GameDB.fairies || {}).map(renderFairyCard).join('');
 
   page.innerHTML = `
-    ${pageHeader('COLLECTION / DISCOVERY STATE', '圖鑑', '這裡是獨立圖鑑頁。已發現資料會顯示完整內容；未發現項目只顯示 ???，不塞進背包。')}
-    <div class="core-actions-row collection-actions">
-      <button type="button" data-route="inventory">返回背包</button>
-      <button type="button" data-route="home">回到店鋪</button>
-    </div>
-    <div class="core-search-box">
-      <label for="collection-search">搜尋圖鑑</label>
-      <input id="collection-search" type="search" placeholder="輸入素材、精靈、稀有度、來源或用途" autocomplete="off" />
-    </div>
-    <div class="core-filter-group">
-      <p>分類</p>
-      <div class="core-filter-tabs" aria-label="圖鑑分類篩選">
-        ${renderCollectionCategories()}
-      </div>
-    </div>
-    <div class="core-filter-group">
-      <p>稀有度</p>
-      <div class="core-filter-tabs" aria-label="圖鑑稀有度篩選">
-        ${renderCollectionRarities()}
-      </div>
-    </div>
-    <div class="core-list collection-list" id="collection-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
-      ${itemCards}
-      ${fairyCards}
+    ${pageHeader('COLLECTION', '圖鑑', '大量素材與精靈改成短格子顯示；完整說明點格子開啟。')}
+    ${renderCollectionStats()}
+    <div class="core-actions-row collection-actions"><button type="button" data-route="inventory">返回背包</button><button type="button" data-route="home">回到店鋪</button></div>
+    <div class="core-search-box"><label for="collection-search">搜尋圖鑑</label><input id="collection-search" type="search" placeholder="輸入素材、精靈、稀有度、來源或用途" autocomplete="off" /></div>
+    <div class="core-filter-group"><p>分類</p><div class="core-filter-tabs" aria-label="圖鑑分類篩選">${renderCollectionCategories()}</div></div>
+    <div class="core-filter-group"><p>稀有度</p><div class="core-filter-tabs" aria-label="圖鑑稀有度篩選">${renderCollectionRarities()}</div></div>
+    <div class="core-list inventory-slot-grid collection-list" id="collection-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
+      ${itemCards}${fairyCards}
       <p class="core-empty core-search-empty" id="collection-search-empty" hidden>沒有符合目前條件的圖鑑資料。</p>
-    </div>
-  `;
+    </div>`;
 
   bindCollectionPage(page);
   updateCollectionSearch(page);
