@@ -147,6 +147,20 @@ export const items = {
     use: '高階月光、祝福與夢境商品的核心材料。',
     description: '將月光露珠與夜空碎片再次穩定化後形成的精華，像把一整晚的月色濃縮成一滴光。',
   },
+  magic_fertilizer: {
+    id: 'magic_fertilizer',
+    name: '魔法肥料',
+    icon: '🌱',
+    type: 'event_material',
+    typeName: '消耗道具',
+    rarity: 'R',
+    stars: 3,
+    source: ['精靈商鋪'],
+    use: '使用後恢復今日採集次數。',
+    useButtonText: '使用肥料',
+    useEffect: { type: 'resetGathering' },
+    description: '混入星露水與森林糖粉的魔法肥料。撒在採集地點後，植物會重新打起精神，讓今天的採集次數恢復。',
+  },
 };
 
 export const itemSources = {
@@ -162,4 +176,5 @@ export const itemSources = {
   star_berry_syrup: { type: 'station', id: 'alchemy' },
   dream_essence: { type: 'station', id: 'alchemy' },
   pure_moon_essence: { type: 'station', id: 'alchemy' },
+  magic_fertilizer: { type: 'route', id: 'shop' },
 };
