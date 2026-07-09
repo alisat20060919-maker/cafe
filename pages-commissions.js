@@ -5,7 +5,12 @@ import {
   completeCommission,
   getCommissionDisplayReward,
   getCommissionUnlockText,
+  getPaidRefreshCostText,
+  getRerollCostText,
   isCommissionUnlocked,
+  refreshDailyCommissionFree,
+  refreshDailyCommissionPaid,
+  rerollDifficultCommissions,
 } from '@actions/commission';
 import { formatReward } from '@utils';
 import { navigate } from '@router';
@@ -121,6 +126,18 @@ function renderTaskTabs(entries) {
     </div>`;
 }
 
+function renderCommissionRefreshBar() {
+  const state = getState();
+  const daily = state.dailyCommissions || {};
+  return `
+    <section class="commission-refresh-bar" aria-label="委託刷新">
+      <div><b>今日委託</b><span>${daily.date || '今天'}｜${daily.ids?.length || 0} 件</span></div>
+      <button type="button" data-commission-refresh="free" ${daily.freeRefreshUsed ? 'disabled' : ''}>${daily.freeRefreshUsed ? '免費已用' : '免費刷新'}</button>
+      <button type="button" data-commission-refresh="paid">刷新 ${getPaidRefreshCostText()}</button>
+      <button type="button" data-commission-refresh="reroll">重抽 ${getRerollCostText()}</button>
+    </section>`;
+}
+
 function renderGroupHint(entries) {
   const group = COMMISSION_GROUPS.find((item) => item.id === currentCommissionGroup) || COMMISSION_GROUPS[0];
   return `<div class="commission-group-hint"><b>${group.label}</b><span>${group.hint}</span><small>${countByGroup(entries, group.id)} 件</small></div>`;
@@ -168,6 +185,11 @@ function renderQuestButton(quest, status) {
   return `<button class="commission-primary-action" type="button" data-source-type="${source.type}" data-source-id="${source.id}">${sourceButtonText(source)}</button>`;
 }
 
+function renderLockLine(quest, status) {
+  if (status !== 'locked') return '';
+  return `<p class="commission-lock-line">🔒 ${getCommissionUnlockText(quest.id)}</p>`;
+}
+
 function renderQuestCard(entry) {
   const { quest, status } = entry;
   const primaryItem = getFirstRequiredItem(quest);
@@ -183,6 +205,7 @@ function renderQuestCard(entry) {
           <h3>${quest.title}</h3>
           <p class="commission-client">${quest.customer}</p>
           <p class="commission-request-line">${renderRequestLine(quest)}</p>
+          ${renderLockLine(quest, status)}
           <div class="commission-need-row">${renderRequirements(quest)}</div>
         </div>
       </button>
@@ -236,10 +259,24 @@ function clearRecentlyCompletedCommissions() {
   recentlyCompletedStatusRanks.clear();
 }
 
+function refreshCommissions(kind) {
+  const action = {
+    free: refreshDailyCommissionFree,
+    paid: refreshDailyCommissionPaid,
+    reroll: rerollDifficultCommissions,
+  }[kind];
+  if (!action) return;
+  clearRecentlyCompletedCommissions();
+  const result = action();
+  emitNotice(result.ok ? '委託已更新' : '刷新失敗', result.message);
+  renderCommissions();
+}
+
 function handleCommissionClick(event) {
   const button = event.target.closest('button');
   const page = document.querySelector('#page-commissions');
   if (!button || !page?.contains(button)) return;
+  if (button.dataset.commissionRefresh) { refreshCommissions(button.dataset.commissionRefresh); return; }
   if (button.dataset.commissionGroup) { currentCommissionGroup = button.dataset.commissionGroup || 'daily'; renderCommissions(); return; }
   if (button.dataset.commissionDetail) { openCommissionDetail(button.dataset.commissionDetail); return; }
   if (button.dataset.complete) {
@@ -267,7 +304,7 @@ export function renderCommissions() {
   const allEntries = getQuestEntries();
   const visibleEntries = filterQuestEntries(allEntries);
   const cards = visibleEntries.length ? visibleEntries.map(renderQuestCard).join('') : '<div class="core-empty">這個分類目前沒有委託。</div>';
-  page.innerHTML = `${pageHeader('QUEST BOARD', '委託', '依任務種類瀏覽；點詳情再看描述、缺材料與製作提示。')}${renderTaskTabs(allEntries)}${renderGroupHint(allEntries)}<div class="core-quest-list commission-board-list">${cards}</div>`;
+  page.innerHTML = `${pageHeader('QUEST BOARD', '委託', '依任務種類瀏覽；點詳情再看描述、缺材料與製作提示。')}${renderTaskTabs(allEntries)}${renderCommissionRefreshBar()}${renderGroupHint(allEntries)}<div class="core-quest-list commission-board-list">${cards}</div>`;
 }
 
 export function initCommissionsPage() {
