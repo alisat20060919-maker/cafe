@@ -1,0 +1,277 @@
+/* core100：Lucky v20 抽卡動畫，CSS 版重建舊流程 */
+.lucky-v20-modal{
+  display:grid!important;
+  justify-items:center!important;
+  gap:10px!important;
+  width:min(92vw,430px)!important;
+  max-height:min(86svh,720px)!important;
+  overflow:hidden!important;
+  text-align:center!important;
+  border-color:#5a3924!important;
+  background:
+    radial-gradient(circle at 50% 14%,rgba(255,236,160,.26),transparent 36%),
+    radial-gradient(circle at 50% 92%,rgba(111,223,180,.2),transparent 38%),
+    linear-gradient(180deg,#20385f 0%,#244e47 54%,#2c4f31 100%)!important;
+  color:#fff6d6!important;
+}
+
+.lucky-v20-modal h2{
+  margin:0!important;
+  color:#fff8dc!important;
+  font-size:21px!important;
+  text-shadow:0 0 14px rgba(255,229,128,.38),0 2px 0 rgba(90,57,36,.25)!important;
+}
+
+.lucky-v20-modal p{
+  margin:0!important;
+  color:#fff0bd!important;
+  font-size:12px!important;
+  font-weight:900!important;
+}
+
+.lucky-v20-stage{
+  position:relative;
+  width:min(78vw,320px);
+  height:320px;
+  margin:2px auto 0;
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  border:3px solid rgba(255,238,174,.4);
+  border-radius:34px;
+  background:
+    radial-gradient(circle at 50% 42%,rgba(255,254,229,.28),transparent 34%),
+    radial-gradient(circle at 50% 72%,rgba(89,185,139,.22),transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.1));
+  box-shadow:inset 0 0 0 2px rgba(255,248,214,.12),0 12px 24px rgba(20,14,9,.2);
+}
+
+.lucky-v20-bg{
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 28% 24%,rgba(255,255,255,.22),transparent 14%),
+    radial-gradient(circle at 78% 18%,rgba(255,236,145,.26),transparent 18%),
+    radial-gradient(circle at 50% 96%,rgba(255,215,105,.2),transparent 32%);
+  animation:luckyBgFloat 2.8s ease-in-out infinite alternate;
+}
+
+.lucky-v20-mist{
+  position:absolute;
+  width:210px;
+  height:78px;
+  border-radius:999px;
+  background:radial-gradient(ellipse,rgba(255,238,166,.5),rgba(255,238,166,.1) 58%,transparent 72%);
+  filter:blur(7px);
+  opacity:.72;
+  animation:luckyMist 2.4s ease-in-out infinite alternate;
+}
+
+.lucky-v20-mist.mist-a{left:-44px;top:76px;transform:rotate(-9deg)}
+.lucky-v20-mist.mist-b{right:-48px;bottom:78px;transform:rotate(12deg);animation-delay:.35s}
+
+.lucky-v20-machine{
+  position:absolute;
+  z-index:5;
+  top:82px;
+  left:50%;
+  transform:translateX(-50%);
+  width:128px;
+  height:148px;
+  border:4px solid #5a3924;
+  border-radius:48px 48px 34px 34px;
+  background:
+    radial-gradient(circle at 50% 24%,rgba(255,255,255,.9),transparent 18%),
+    linear-gradient(180deg,#fff1bd 0%,#d7a55a 48%,#70442a 100%);
+  box-shadow:inset 0 5px 0 rgba(255,255,255,.42),0 12px 0 rgba(66,39,21,.2),0 0 28px rgba(255,222,107,.34);
+  animation:luckyMachineDrop .72s cubic-bezier(.18,.9,.2,1.22) both;
+}
+
+.lucky-v20-orb{
+  position:absolute;
+  left:50%;
+  top:18px;
+  transform:translateX(-50%);
+  display:grid;
+  place-items:center;
+  width:58px;
+  height:58px;
+  border:3px solid #5a3924;
+  border-radius:999px;
+  background:radial-gradient(circle,#fffdf3 0 24%,#ffe27c 42%,#c98b3c 100%);
+  color:#7b4c16;
+  font-size:32px;
+  text-shadow:0 0 12px rgba(255,255,255,.85);
+  box-shadow:0 0 22px rgba(255,226,117,.62),inset 0 3px 0 rgba(255,255,255,.55);
+  animation:luckyOrbPulse .75s ease-in-out infinite alternate;
+}
+
+.lucky-v20-slot{
+  position:absolute;
+  left:50%;
+  bottom:38px;
+  transform:translateX(-50%);
+  width:78px;
+  height:16px;
+  border:3px solid #5a3924;
+  border-radius:999px;
+  background:#2f2418;
+  box-shadow:inset 0 0 14px rgba(255,230,125,.32);
+}
+
+.lucky-v20-base{
+  position:absolute;
+  left:50%;
+  bottom:-16px;
+  transform:translateX(-50%);
+  width:112px;
+  height:34px;
+  border:4px solid #5a3924;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff0b6,#9c6333);
+  box-shadow:0 7px 0 rgba(66,39,21,.2);
+}
+
+.lucky-v20-ring{
+  position:absolute;
+  z-index:3;
+  left:50%;
+  top:150px;
+  transform:translate(-50%,-50%);
+  width:190px;
+  height:190px;
+  border-radius:999px;
+  opacity:0;
+}
+
+.lucky-v20-ring.ring-a{
+  border:3px solid rgba(255,239,169,.78);
+  box-shadow:0 0 22px rgba(255,222,107,.48),inset 0 0 22px rgba(255,255,255,.24);
+  animation:luckyRingOpen 1.3s ease-out .38s both,luckySpin 3s linear .45s infinite;
+}
+
+.lucky-v20-ring.ring-b{
+  width:132px;
+  height:132px;
+  border:2px dashed rgba(255,252,213,.84);
+  animation:luckyRingOpen 1.2s ease-out .55s both,luckySpinReverse 2.2s linear .55s infinite;
+}
+
+.lucky-v20-rays{
+  position:absolute;
+  z-index:2;
+  inset:0;
+  opacity:0;
+  animation:luckyRayShow 1.2s ease-out .75s both;
+}
+
+.lucky-v20-rays i{
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:8px;
+  height:168px;
+  border-radius:999px;
+  transform-origin:50% 0;
+  background:linear-gradient(180deg,rgba(255,248,200,.72),transparent);
+  filter:blur(1px);
+}
+.lucky-v20-rays i:nth-child(1){transform:rotate(0deg)}
+.lucky-v20-rays i:nth-child(2){transform:rotate(60deg)}
+.lucky-v20-rays i:nth-child(3){transform:rotate(120deg)}
+.lucky-v20-rays i:nth-child(4){transform:rotate(180deg)}
+.lucky-v20-rays i:nth-child(5){transform:rotate(240deg)}
+.lucky-v20-rays i:nth-child(6){transform:rotate(300deg)}
+
+.lucky-v20-cards{
+  position:absolute;
+  z-index:8;
+  left:50%;
+  bottom:22px;
+  width:250px;
+  height:96px;
+  transform:translateX(-50%);
+  pointer-events:none;
+}
+
+.lucky-v20-card{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  display:grid;
+  place-items:center;
+  width:42px;
+  height:58px;
+  margin-left:-21px;
+  border:3px solid #5a3924;
+  border-radius:12px;
+  background:linear-gradient(180deg,#fffdf5,#dcae4c);
+  box-shadow:0 5px 0 rgba(90,57,36,.18),0 0 14px rgba(255,227,124,.2);
+  opacity:0;
+  transform:
+    translateX(calc((var(--card-index) - 4.5) * 24px))
+    translateY(30px)
+    rotate(calc((var(--card-index) - 4.5) * 3deg))
+    scale(.72)
+    rotateY(80deg);
+  animation:luckyCardFan .7s cubic-bezier(.14,.92,.25,1.16) calc(.92s + var(--card-index) * .055s) both,
+    luckyCardFlip .42s ease-out calc(1.28s + var(--card-index) * .04s) both;
+}
+
+.lucky-v20-card i{
+  font-style:normal;
+  font-size:24px;
+  filter:drop-shadow(0 2px 0 rgba(90,57,36,.18));
+}
+
+.lucky-v20-card.rarity-sr{
+  background:linear-gradient(180deg,#fff6d1,#e5b95d 70%,#b8732f);
+  box-shadow:0 5px 0 rgba(90,57,36,.18),0 0 18px rgba(255,230,125,.34);
+}
+
+.lucky-v20-card.rarity-ssr,
+.lucky-v20-card.pity-hit{
+  background:
+    radial-gradient(circle at 50% 25%,rgba(255,255,255,.9),transparent 26%),
+    linear-gradient(180deg,#fff8d7,#ffdf77 56%,#c98b3c);
+  box-shadow:0 5px 0 rgba(90,57,36,.18),0 0 24px rgba(255,232,126,.68),0 0 48px rgba(255,255,255,.25);
+}
+
+.lucky-v20-modal.is-ssr .lucky-v20-stage{
+  box-shadow:inset 0 0 0 2px rgba(255,248,214,.2),0 0 36px rgba(255,223,113,.44),0 14px 28px rgba(20,14,9,.22);
+}
+
+.lucky-v20-modal.is-ssr .lucky-v20-ring.ring-a{
+  border-color:rgba(255,243,178,.96);
+  box-shadow:0 0 36px rgba(255,224,107,.76),0 0 70px rgba(255,255,255,.26),inset 0 0 28px rgba(255,255,255,.28);
+}
+
+.lucky-result-modal.rarity-ssr{
+  background:
+    radial-gradient(circle at 50% 12%,rgba(255,239,164,.34),transparent 36%),
+    linear-gradient(180deg,#fff8df,#efd393)!important;
+}
+
+@keyframes luckyBgFloat{from{transform:translateY(0);opacity:.8}to{transform:translateY(-8px);opacity:1}}
+@keyframes luckyMist{from{transform:translateY(0) rotate(-9deg);opacity:.48}to{transform:translateY(-12px) rotate(5deg);opacity:.82}}
+@keyframes luckyMachineDrop{from{opacity:0;transform:translateX(-50%) translateY(-28px) scale(.86)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes luckyOrbPulse{from{transform:translateX(-50%) scale(.96);filter:saturate(.9)}to{transform:translateX(-50%) scale(1.06);filter:saturate(1.24)}}
+@keyframes luckyRingOpen{from{opacity:0;transform:translate(-50%,-50%) scale(.2)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+@keyframes luckySpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes luckySpinReverse{to{transform:translate(-50%,-50%) rotate(-360deg)}}
+@keyframes luckyRayShow{from{opacity:0;transform:scale(.4)}to{opacity:.68;transform:scale(1)}}
+@keyframes luckyCardFan{to{opacity:1;transform:translateX(calc((var(--card-index) - 4.5) * 24px)) translateY(0) rotate(calc((var(--card-index) - 4.5) * 3deg)) scale(1) rotateY(80deg)}}
+@keyframes luckyCardFlip{to{transform:translateX(calc((var(--card-index) - 4.5) * 24px)) translateY(0) rotate(calc((var(--card-index) - 4.5) * 3deg)) scale(1) rotateY(0deg)}}
+
+@media(max-width:560px){
+  .lucky-v20-modal{width:min(94vw,390px)!important;padding:14px!important}
+  .lucky-v20-stage{width:min(82vw,292px);height:292px;border-radius:28px}
+  .lucky-v20-machine{top:72px;width:116px;height:136px}
+  .lucky-v20-ring.ring-a{width:166px;height:166px}
+  .lucky-v20-ring.ring-b{width:116px;height:116px}
+  .lucky-v20-cards{width:222px;bottom:18px}
+  .lucky-v20-card{width:36px;height:52px;margin-left:-18px;transform:translateX(calc((var(--card-index) - 4.5) * 21px)) translateY(30px) rotate(calc((var(--card-index) - 4.5) * 3deg)) scale(.72) rotateY(80deg)}
+  .lucky-v20-card i{font-size:21px}
+  @keyframes luckyCardFan{to{opacity:1;transform:translateX(calc((var(--card-index) - 4.5) * 21px)) translateY(0) rotate(calc((var(--card-index) - 4.5) * 3deg)) scale(1) rotateY(80deg)}}
+  @keyframes luckyCardFlip{to{transform:translateX(calc((var(--card-index) - 4.5) * 21px)) translateY(0) rotate(calc((var(--card-index) - 4.5) * 3deg)) scale(1) rotateY(0deg)}}
+}
