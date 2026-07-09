@@ -63,8 +63,8 @@ function enhanceDropHint(line) {
   const scene = line.closest('.scene-card');
   if (!scene?.id) return;
   line.dataset.dropHelpReady = 'true';
-  line.innerHTML = '<span class="drop-help-label">可能掉落</span>';
   ensureCornerDropButton(scene);
+  line.remove();
 }
 
 function enhanceDropHints(root = document) {
