@@ -80,7 +80,8 @@ export function getGachaPityStatus() {
   };
 }
 
-export function drawGacha(poolId = 'standard') {
+export function drawGacha(poolId = 'standard', options = {}) {
+  const shouldPersist = options.persist !== false;
   const pool = GameDB.gachaPools[poolId];
   if (!pool) return { ok: false, message: '找不到祈願池。' };
 
@@ -105,7 +106,26 @@ export function drawGacha(poolId = 'standard') {
     totalPullsAfter: gacha.totalPulls,
   });
   addGachaRecord(record);
-  persistState('gacha');
+  if (shouldPersist) persistState('gacha');
 
   return { ok: true, drop: record, pity: getGachaPityStatus() };
+}
+
+export function drawGachaMany(poolId = 'standard', times = 1) {
+  const count = Math.max(1, Math.floor(Number(times || 1)));
+  const drops = [];
+  let lastError = null;
+
+  for (let i = 0; i < count; i += 1) {
+    const result = drawGacha(poolId, { persist: false });
+    if (!result.ok) {
+      lastError = result;
+      break;
+    }
+    drops.push(result.drop);
+  }
+
+  if (drops.length) persistState('gacha:batch');
+  if (!drops.length && lastError) return lastError;
+  return { ok: true, drops, partial: Boolean(lastError), message: lastError?.message || '' };
 }
