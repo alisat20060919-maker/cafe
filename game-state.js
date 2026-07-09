@@ -147,10 +147,35 @@ function normalizeGachaState(nextState) {
   nextState.gachaHistory = nextState.gachaHistory.slice(0, 30);
 }
 
+function normalizeInventoryState(nextState) {
+  const normalized = {};
+  Object.entries(nextState.inventory || {}).forEach(([itemId, qty]) => {
+    if (!GameDB.items?.[itemId]) return;
+    const amount = Math.max(0, Number(qty || 0));
+    if (amount > 0 || Object.prototype.hasOwnProperty.call(createDefaultState().inventory, itemId)) normalized[itemId] = amount;
+  });
+  nextState.inventory = normalized;
+}
+
+function normalizeCollectionState(nextState) {
+  if (!isPlainObject(nextState.collection)) nextState.collection = {};
+  if (!isPlainObject(nextState.collection.discoveredItems)) nextState.collection.discoveredItems = {};
+  if (!isPlainObject(nextState.collection.discoveredFairies)) nextState.collection.discoveredFairies = {};
+}
+
+function normalizeGatheringState(nextState) {
+  if (!isPlainObject(nextState.gathering)) nextState.gathering = {};
+  Object.keys(GameDB.gatherTables || {}).forEach((locationId) => {
+    const record = isPlainObject(nextState.gathering[locationId]) ? nextState.gathering[locationId] : {};
+    nextState.gathering[locationId] = {
+      lastDate: record.lastDate || null,
+      count: Math.max(0, Number(record.count || 0)),
+    };
+  });
+}
+
 function syncCollectionFromOwned(nextState) {
-  if (!nextState.collection) nextState.collection = {};
-  if (!nextState.collection.discoveredItems) nextState.collection.discoveredItems = {};
-  if (!nextState.collection.discoveredFairies) nextState.collection.discoveredFairies = {};
+  normalizeCollectionState(nextState);
 
   Object.entries(nextState.inventory || {}).forEach(([itemId, qty]) => {
     if (GameDB.items[itemId] && Number(qty || 0) > 0) {
@@ -281,13 +306,7 @@ function ensureDailyCommissions(nextState, { force = false, markFreeUsed = false
   const rerollCount = sameDay ? Number(current.rerollCount || 0) : 0;
 
   if (!shouldRefresh) {
-    nextState.dailyCommissions = {
-      date: today,
-      ids: currentIds,
-      freeRefreshUsed,
-      paidRefreshCount,
-      rerollCount,
-    };
+    nextState.dailyCommissions = { date: today, ids: currentIds, freeRefreshUsed, paidRefreshCount, rerollCount };
     return { changed: false, date: today, ids: currentIds, freeRefreshUsed, paidRefreshCount, rerollCount };
   }
 
@@ -320,9 +339,12 @@ function migrateSave(saved) {
   const fresh = createDefaultState();
   if (!saved) {
     normalizePlayerProgress(fresh, null);
+    normalizeInventoryState(fresh);
     normalizeFairyState(fresh);
     normalizeGachaState(fresh);
     normalizeDailyState(fresh);
+    normalizeGatheringState(fresh);
+    normalizeCollectionState(fresh);
     syncCollectionFromOwned(fresh);
     syncUnlockedScenes(fresh);
     applyLevelUnlocksToState(fresh);
@@ -334,9 +356,12 @@ function migrateSave(saved) {
 
   const migrated = mergeDeep(fresh, saved);
   normalizePlayerProgress(migrated, saved);
+  normalizeInventoryState(migrated);
   normalizeFairyState(migrated);
   normalizeGachaState(migrated);
   normalizeDailyState(migrated);
+  normalizeGatheringState(migrated);
+  normalizeCollectionState(migrated);
   syncCollectionFromOwned(migrated);
   syncUnlockedScenes(migrated);
   applyLevelUnlocksToState(migrated);
@@ -399,18 +424,9 @@ export function initState() {
   return state;
 }
 
-export function getState() {
-  return state;
-}
-
-export function getTodayKey() {
-  return getLocalDateKey();
-}
-
-export function persistState(reason = 'manual') {
-  saveSave(state);
-  emitStateChanged(reason);
-}
+export function getState() { return state; }
+export function getTodayKey() { return getLocalDateKey(); }
+export function persistState(reason = 'manual') { saveSave(state); emitStateChanged(reason); }
 
 export function refreshDailyCommissions(options = {}) {
   const result = ensureDailyCommissions(state, options);
@@ -420,10 +436,7 @@ export function refreshDailyCommissions(options = {}) {
 
 export function useFreeDailyCommissionRefresh() {
   ensureDailyCommissions(state);
-  if (state.dailyCommissions?.freeRefreshUsed) {
-    return { ok: false, changed: false, reason: 'free-used', message: '今天的免費刷新已經用過了。' };
-  }
-
+  if (state.dailyCommissions?.freeRefreshUsed) return { ok: false, changed: false, reason: 'free-used', message: '今天的免費刷新已經用過了。' };
   const result = ensureDailyCommissions(state, { force: true, markFreeUsed: true });
   if (result.changed) persistState('daily-commissions:free');
   return { ok: true, ...result };
@@ -449,29 +462,20 @@ export function getActiveCommissionIds() {
   return result.ids;
 }
 
-export function ensureDailyShopPurchases() {
-  normalizeDailyState(state);
-  return state.daily.shopPurchases;
-}
-
-export function getShopPurchaseCount(shopItemId) {
-  ensureDailyShopPurchases();
-  return Number(state.daily.shopPurchases?.[shopItemId] || 0);
-}
-
-export function addShopPurchaseCount(shopItemId, qty = 1) {
-  ensureDailyShopPurchases();
-  state.daily.shopPurchases[shopItemId] = getShopPurchaseCount(shopItemId) + Math.max(1, Number(qty || 1));
-  return state.daily.shopPurchases[shopItemId];
-}
+export function ensureDailyShopPurchases() { normalizeDailyState(state); return state.daily.shopPurchases; }
+export function getShopPurchaseCount(shopItemId) { ensureDailyShopPurchases(); return Number(state.daily.shopPurchases?.[shopItemId] || 0); }
+export function addShopPurchaseCount(shopItemId, qty = 1) { ensureDailyShopPurchases(); state.daily.shopPurchases[shopItemId] = getShopPurchaseCount(shopItemId) + Math.max(1, Number(qty || 1)); return state.daily.shopPurchases[shopItemId]; }
 
 export function resetState() {
   clearSave();
   state = createDefaultState();
   normalizePlayerProgress(state, null);
+  normalizeInventoryState(state);
   normalizeFairyState(state);
   normalizeGachaState(state);
   normalizeDailyState(state);
+  normalizeGatheringState(state);
+  normalizeCollectionState(state);
   syncCollectionFromOwned(state);
   syncUnlockedScenes(state);
   applyLevelUnlocksToState(state);
@@ -482,35 +486,19 @@ export function resetState() {
   return state;
 }
 
-export function replaceState(nextState) {
-  state = migrateSave(nextState);
-  persistState();
-  return state;
-}
-
-export function addCurrency(currencyId, amount) {
-  state.player[currencyId] = Math.max(0, Number(state.player[currencyId] || 0) + amount);
-}
-
-export function spendCurrency(currencyId, amount) {
-  const current = Number(state.player[currencyId] || 0);
-  if (current < amount) return false;
-  state.player[currencyId] = current - amount;
-  return true;
-}
+export function replaceState(nextState) { state = migrateSave(nextState); persistState(); return state; }
+export function addCurrency(currencyId, amount) { state.player[currencyId] = Math.max(0, Number(state.player[currencyId] || 0) + amount); }
+export function spendCurrency(currencyId, amount) { const current = Number(state.player[currencyId] || 0); if (current < amount) return false; state.player[currencyId] = current - amount; return true; }
 
 export function addPlayerExp(amount = 0) {
   const expGained = Math.max(0, Number(amount || 0));
   const oldLevel = GameDB.getLevelByExp?.(state.player.exp || 0) || Number(state.player.level || 1);
   if (expGained <= 0) return { expGained: 0, oldLevel, newLevel: oldLevel, levelUps: [], unlocked: [] };
-
   state.player.exp = Math.max(0, Number(state.player.exp || 0) + expGained);
   const newLevel = GameDB.getLevelByExp?.(state.player.exp) || oldLevel;
   state.player.level = newLevel;
-
   const levelUps = [];
   for (let level = oldLevel + 1; level <= newLevel; level += 1) levelUps.push(level);
-
   const unlocked = applyLevelUnlocksToState(state);
   return { expGained, oldLevel, newLevel, levelUps, unlocked };
 }
@@ -519,10 +507,8 @@ export function isUnlocked(req = {}, currentState = state) {
   if (!req) return true;
   if (Array.isArray(req)) return req.every((entry) => isUnlocked(entry, currentState));
   if (!isPlainObject(req)) return true;
-
   if (Array.isArray(req.all)) return req.all.every((entry) => isUnlocked(entry, currentState));
   if (Array.isArray(req.any)) return req.any.some((entry) => isUnlocked(entry, currentState));
-
   const entries = getRequirementEntries(req);
   if (!entries.length) return true;
   return entries.every((entry) => isRequirementEntryUnlocked(entry, currentState));
@@ -532,76 +518,29 @@ export function getUnlockRequirementText(req = {}) {
   if (!req) return '';
   if (Array.isArray(req)) return req.map(getUnlockRequirementText).filter(Boolean).join('、');
   if (!isPlainObject(req)) return '';
-
   if (Array.isArray(req.all)) return req.all.map(getUnlockRequirementText).filter(Boolean).join('、');
   if (Array.isArray(req.any)) return req.any.map(getUnlockRequirementText).filter(Boolean).join(' 或 ');
-
   return getRequirementEntries(req).map(getRequirementEntryText).join('、');
 }
 
-export function isSceneUnlocked(sceneId) {
-  return isUnlocked({ scene: sceneId });
-}
+export function isSceneUnlocked(sceneId) { return isUnlocked({ scene: sceneId }); }
+export function unlockScene(sceneId) { if (!GameDB.scenes?.[sceneId]) return false; state.unlockedScenes[sceneId] = true; return true; }
+export function applyCommissionUnlocks(commissionId) { return applyCommissionUnlocksToState(state, commissionId); }
+export function markOpeningStorySeen() { if (!state.story) state.story = {}; state.story.seenOpening = true; persistState('story:opening'); }
 
-export function unlockScene(sceneId) {
-  if (!GameDB.scenes?.[sceneId]) return false;
-  state.unlockedScenes[sceneId] = true;
-  return true;
-}
+export function markItemDiscovered(itemId) { if (!GameDB.items[itemId]) return; state.collection.discoveredItems[itemId] = true; }
+export function markFairyDiscovered(fairyId) { if (!GameDB.fairies[fairyId]) return; state.collection.discoveredFairies[fairyId] = true; }
+export function isItemDiscovered(itemId) { return Boolean(state.collection?.discoveredItems?.[itemId]); }
+export function isFairyDiscovered(fairyId) { return Boolean(state.collection?.discoveredFairies?.[fairyId]); }
 
-export function applyCommissionUnlocks(commissionId) {
-  return applyCommissionUnlocksToState(state, commissionId);
-}
-
-export function markOpeningStorySeen() {
-  if (!state.story) state.story = {};
-  state.story.seenOpening = true;
-  persistState('story:opening');
-}
-
-export function markItemDiscovered(itemId) {
-  if (!GameDB.items[itemId]) return;
-  state.collection.discoveredItems[itemId] = true;
-}
-
-export function markFairyDiscovered(fairyId) {
-  if (!GameDB.fairies[fairyId]) return;
-  state.collection.discoveredFairies[fairyId] = true;
-}
-
-export function isItemDiscovered(itemId) {
-  return Boolean(state.collection?.discoveredItems?.[itemId]);
-}
-
-export function isFairyDiscovered(fairyId) {
-  return Boolean(state.collection?.discoveredFairies?.[fairyId]);
-}
-
-export function addItem(itemId, qty = 1) {
-  if (!GameDB.items[itemId]) return;
-  state.inventory[itemId] = Number(state.inventory[itemId] || 0) + qty;
-  if (qty > 0) markItemDiscovered(itemId);
-}
-
-export function spendItems(cost = {}) {
-  if (!canAffordItems(cost)) return false;
-  Object.entries(cost).forEach(([itemId, qty]) => {
-    state.inventory[itemId] = Math.max(0, Number(state.inventory[itemId] || 0) - qty);
-  });
-  return true;
-}
-
-export function canAffordItems(cost = {}) {
-  return Object.entries(cost).every(([itemId, qty]) => Number(state.inventory[itemId] || 0) >= qty);
-}
+export function addItem(itemId, qty = 1) { if (!GameDB.items[itemId]) return; state.inventory[itemId] = Number(state.inventory[itemId] || 0) + qty; if (qty > 0) markItemDiscovered(itemId); }
+export function removeItem(itemId, qty = 1) { if (!GameDB.items[itemId]) return false; const amount = Math.max(1, Number(qty || 1)); const owned = Number(state.inventory[itemId] || 0); if (owned < amount) return false; state.inventory[itemId] = Math.max(0, owned - amount); return true; }
+export function spendItems(cost = {}) { if (!canAffordItems(cost)) return false; Object.entries(cost).forEach(([itemId, qty]) => removeItem(itemId, qty)); return true; }
+export function canAffordItems(cost = {}) { return Object.entries(cost).every(([itemId, qty]) => Number(state.inventory[itemId] || 0) >= qty); }
 
 export function addFairy(fairyId) {
   if (!GameDB.fairies[fairyId]) return;
-  state.fairies[fairyId] = {
-    owned: true,
-    affection: state.fairies[fairyId]?.affection || 0,
-    obtainedAt: state.fairies[fairyId]?.obtainedAt || new Date().toISOString(),
-  };
+  state.fairies[fairyId] = { owned: true, affection: state.fairies[fairyId]?.affection || 0, obtainedAt: state.fairies[fairyId]?.obtainedAt || new Date().toISOString() };
   markFairyDiscovered(fairyId);
 }
 
@@ -609,21 +548,24 @@ export function addFairyAffection(fairyId, amount = 0) {
   if (!GameDB.fairies[fairyId]) return null;
   const gained = Math.max(0, Number(amount || 0));
   if (gained <= 0) return null;
-
   const current = state.fairies[fairyId];
   if (!current?.owned) return null;
+  state.fairies[fairyId] = { ...current, owned: true, affection: Math.max(0, Number(current.affection || 0) + gained) };
+  return { fairyId, amount: gained, total: state.fairies[fairyId].affection };
+}
 
-  state.fairies[fairyId] = {
-    ...current,
-    owned: true,
-    affection: Math.max(0, Number(current.affection || 0) + gained),
-  };
-
-  return {
-    fairyId,
-    amount: gained,
-    total: state.fairies[fairyId].affection,
-  };
+export function resetGatheringCounts(locationIds = [], today = getLocalDateKey()) {
+  const validLocations = (Array.isArray(locationIds) ? locationIds : [])
+    .filter((locationId) => GameDB.gatherTables?.[locationId]);
+  if (!validLocations.length) return [];
+  normalizeGatheringState(state);
+  const resetLocations = [];
+  validLocations.forEach((locationId) => {
+    const record = state.gathering[locationId] || { lastDate: today, count: 0 };
+    if (record.lastDate === today && Number(record.count || 0) > 0) resetLocations.push(locationId);
+    state.gathering[locationId] = { lastDate: today, count: 0 };
+  });
+  return resetLocations;
 }
 
 export function addReward(reward = {}) {
@@ -632,9 +574,6 @@ export function addReward(reward = {}) {
   Object.entries(reward.currencies || {}).forEach(([currencyId, amount]) => addCurrency(currencyId, amount));
   Object.entries(reward.items || {}).forEach(([itemId, qty]) => addItem(itemId, qty));
   Object.keys(reward.fairies || {}).forEach((fairyId) => addFairy(fairyId));
-  Object.entries(reward.affection || {}).forEach(([fairyId, amount]) => {
-    const result = addFairyAffection(fairyId, amount);
-    if (result) affection.push(result);
-  });
+  Object.entries(reward.affection || {}).forEach(([fairyId, amount]) => { const result = addFairyAffection(fairyId, amount); if (result) affection.push(result); });
   return { ...growth, affection };
 }
