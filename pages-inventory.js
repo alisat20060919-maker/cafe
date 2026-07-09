@@ -2,6 +2,7 @@ import { GameDB } from '@db';
 import { getState } from '@state';
 import { showModal } from '@ui';
 import { Events, on } from '@eventBus';
+import { canUseItem, getUseItemText, useItem } from './item-effects.js';
 
 let currentInventoryFilter = 'all';
 let currentInventoryRarity = 'all';
@@ -109,6 +110,11 @@ function setActiveFilter(page, selector, activeButton) {
   $all(selector, page).forEach((button) => button.classList.toggle('active', button === activeButton));
 }
 
+function renderUseItemButton(itemId) {
+  if (!canUseItem(itemId)) return '';
+  return `<div class="core-actions-row"><button type="button" data-use-item="${escapeAttr(itemId)}">${escapeAttr(getUseItemText(itemId))}</button></div>`;
+}
+
 function openItemDetail(itemId) {
   const item = GameDB.items[itemId];
   if (!item) return;
@@ -120,6 +126,7 @@ function openItemDetail(itemId) {
       <span class="core-modal-kicker">ITEM DETAIL</span>
       <div class="core-detail-head"><div class="core-detail-icon">${item.icon}</div><div><h2>${item.name}</h2><p>${GameDB.getRarityLabel(item.rarity)} / ${GameDB.getItemTypeLabel(item.type)} / ${'★'.repeat(item.stars)}</p></div></div>
       <dl class="core-detail-list"><div><dt>持有數量</dt><dd>×${owned}</dd></div><div><dt>來源</dt><dd>${GameDB.getItemSourceText(item)}</dd></div><div><dt>用途</dt><dd>${item.use}</dd></div><div><dt>說明</dt><dd>${item.description}</dd></div><div><dt>ID</dt><dd>${item.id}</dd></div></dl>
+      ${renderUseItemButton(item.id)}
     </div>`);
 }
 
@@ -134,6 +141,20 @@ function openFairyDetail(fairyId) {
       <p class="core-detail-quote">「${fairy.quote}」</p>
       <dl class="core-detail-list"><div><dt>契約狀態</dt><dd>已契約</dd></div><div><dt>來源</dt><dd>${GameDB.getFairySourceText(fairy)}</dd></div><div><dt>說明</dt><dd>${fairy.description}</dd></div><div><dt>ID</dt><dd>${fairy.id}</dd></div></dl>
     </div>`);
+}
+
+function handleUseItemClick(itemId) {
+  const item = GameDB.items?.[itemId];
+  const result = useItem(itemId);
+  const icon = result.ok ? '✨' : '⚠️';
+  showModal(`
+    <div class="core-modal-card core-detail-modal inventory-detail-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">USE ITEM</span>
+      <div class="core-detail-head"><div class="core-detail-icon">${item?.icon || icon}</div><div><h2>${result.ok ? '道具使用完成' : '無法使用道具'}</h2><p>${item?.name || itemId}</p></div></div>
+      <p>${result.message}</p>
+    </div>`);
+  renderInventory();
 }
 
 function handleInventoryClick(event) {
@@ -158,11 +179,21 @@ function handleInventoryClick(event) {
   }
 }
 
+function handleInventoryModalClick(event) {
+  const button = event.target.closest('button[data-use-item]');
+  if (!button) return;
+  handleUseItemClick(button.dataset.useItem);
+}
+
 function bindInventoryEvents() {
   const page = document.querySelector('#page-inventory');
   if (!page || page.dataset.eventsBound === 'true') return;
   page.dataset.eventsBound = 'true';
   page.addEventListener('click', handleInventoryClick);
+  if (document.body.dataset.inventoryUseEventsBound !== 'true') {
+    document.body.dataset.inventoryUseEventsBound = 'true';
+    document.addEventListener('click', handleInventoryModalClick);
+  }
 }
 
 function renderItemCard(item, count, index) {
