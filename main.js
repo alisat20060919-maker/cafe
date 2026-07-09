@@ -17,20 +17,51 @@ function getSceneTitle(locationId = '') {
   return scene?.dataset.title || GameDB.scenes?.[locationId]?.label || locationId || '採集地點';
 }
 
-function renderRateRows(locationId = '') {
+function escapeHtml(value = '') {
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function joinNames(items = []) {
+  const names = [...new Set(items.map((item) => item.name).filter(Boolean))];
+  if (!names.length) return '暫無';
+  if (names.length <= 4) return names.join('、');
+  return `${names.slice(0, 4).join('、')}等 ${names.length} 種`;
+}
+
+function getChanceGroup(drop) {
+  const chance = Number(drop.chance || 0);
+  if (chance >= 35) return 'common';
+  if (chance >= 15) return 'normal';
+  return 'rare';
+}
+
+function renderDropTextSummary(locationId = '') {
   const preview = getGatherDropPreview(locationId);
+  const table = GameDB.gatherTables?.[locationId];
   if (!preview.length) return '<p>目前沒有可顯示的掉落資料。</p>';
-  return preview.map((drop) => `
-    <div class="gather-rate-row">
-      <span class="gather-rate-icon">${drop.icon}</span>
-      <div class="gather-rate-main">
-        <b>${drop.name}</b>
-        <small>${drop.rarity}｜${drop.typeLabel}｜每次 ×${drop.qty}</small>
-        <em><strong style="width:${Math.max(4, Math.min(100, Number(drop.chance || 0)))}%"></strong></em>
-      </div>
-      <span class="gather-rate-percent">${drop.chance}%</span>
+
+  const groups = preview.reduce((acc, drop) => {
+    const key = getChanceGroup(drop);
+    acc[key] ||= [];
+    acc[key].push(drop);
+    return acc;
+  }, {});
+
+  const rareNames = joinNames(groups.rare || []);
+  const eventCount = Array.isArray(table?.specialEvents) ? table.specialEvents.length : 0;
+  const eventText = eventCount > 0
+    ? `採集時還可能觸發 ${eventCount} 種小事件，獲得額外素材或劇情文字。`
+    : '這個地點目前沒有特殊事件。';
+
+  return `
+    <div class="gather-rate-text-summary">
+      <p><b>主要會獲得：</b>${escapeHtml(joinNames(groups.common || []))}。</p>
+      <p><b>也有機會獲得：</b>${escapeHtml(joinNames(groups.normal || []))}。</p>
+      <p><b>較少見素材：</b>${escapeHtml(rareNames)}。</p>
+      <p><b>特殊事件：</b>${escapeHtml(eventText)}</p>
+      <p class="core-muted">實際結果仍依採集表隨機抽取；這裡只用文字概述，不再顯示完整百分比清單。</p>
     </div>
-  `).join('');
+  `;
 }
 
 function showDropRateModal(locationId = '') {
@@ -38,10 +69,10 @@ function showDropRateModal(locationId = '') {
   showModal(`
     <div class="core-modal-card compact gather-rate-modal">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
-      <span class="core-modal-kicker">DROP RATE</span>
-      <h2>${title}掉落機率</h2>
-      <p>每次採集會依掉落表抽出一種素材；以下是目前機率。</p>
-      <div class="gather-rate-list">${renderRateRows(locationId)}</div>
+      <span class="core-modal-kicker">GATHER HINT</span>
+      <h2>${title}採集提示</h2>
+      <p>素材數量變多後，這裡改成簡短文字說明，不再列出全部掉落率。</p>
+      ${renderDropTextSummary(locationId)}
     </div>
   `);
 }
@@ -53,7 +84,7 @@ function ensureCornerDropButton(scene) {
   button.className = 'gather-help-button';
   button.type = 'button';
   button.dataset.gatherDropHelp = scene.id;
-  button.setAttribute('aria-label', `查看${getSceneTitle(scene.id)}掉落機率`);
+  button.setAttribute('aria-label', `查看${getSceneTitle(scene.id)}採集提示`);
   button.textContent = '?';
   info.appendChild(button);
 }
