@@ -14,6 +14,16 @@ function getRecordMeta(record) {
   return null;
 }
 
+function getRecordRarity(record) {
+  const meta = getRecordMeta(record);
+  return meta?.rarity || 'R';
+}
+
+function getHighestRarity(records = []) {
+  const order = { N: 0, R: 1, SR: 2, SSR: 3 };
+  return records.reduce((best, record) => (order[getRecordRarity(record)] > order[best] ? getRecordRarity(record) : best), 'R');
+}
+
 function renderDrop(record) {
   if (!record) return '';
   if (record.kind === 'fairy') {
@@ -23,7 +33,7 @@ function renderDrop(record) {
   }
   const item = GameDB.items[record.id];
   if (!item) return '';
-  return `<article class="core-result-card ${record.pityHit ? 'pity-hit' : ''}"><div style="font-size:34px">${item.icon}</div><b>${item.name} ×${record.qty}</b><span>${item.rarity} / ${GameDB.getItemTypeLabel(item.type)}</span><p>${item.description}</p></article>`;
+  return `<article class="core-result-card rarity-${item.rarity.toLowerCase()} ${record.pityHit ? 'pity-hit' : ''}"><div style="font-size:34px">${item.icon}</div><b>${item.name} ×${record.qty}</b><span>${item.rarity} / ${GameDB.getItemTypeLabel(item.type)}</span><p>${item.description}</p></article>`;
 }
 
 function renderPityStatus() {
@@ -66,28 +76,54 @@ function showGachaHistoryModal() {
 
 function showGachaResultModal(records = []) {
   if (!records.length) return;
+  const highest = getHighestRarity(records);
   showModal(`
-    <div class="core-modal-card gacha-result-modal">
+    <div class="core-modal-card gacha-result-modal lucky-result-modal rarity-${highest.toLowerCase()}">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">WISH RESULT</span>
-      <h2>祈願結果</h2>
+      <h2>${highest === 'SSR' ? '契約成立' : '祈願結果'}</h2>
       <div class="core-list">${records.map(renderDrop).join('')}</div>
     </div>
   `);
 }
 
+function renderLuckyCard(record, index) {
+  const meta = getRecordMeta(record);
+  const rarity = getRecordRarity(record);
+  return `
+    <span class="lucky-v20-card rarity-${rarity.toLowerCase()} ${record.pityHit ? 'pity-hit' : ''}" style="--card-index:${index}" aria-hidden="true">
+      <i>${meta?.icon || '◇'}</i>
+    </span>`;
+}
+
 function showGachaRitualModal(records = []) {
   if (!records.length) return;
-  const hasPity = records.some((record) => record.pityHit);
+  const highest = getHighestRarity(records);
+  const hasSSR = highest === 'SSR' || records.some((record) => record.pityHit);
+  const title = hasSSR ? '契約魔法陣展開' : highest === 'SR' ? '星糖泛起柔光' : '星糖投入祈願機';
+  const subtitle = records.length >= 10 ? '十連祈願中，卡片正在依序翻開。' : '祈願機啟動，星光正在凝聚。';
   showModal(`
-    <div class="core-modal-card compact gacha-ritual-modal ${hasPity ? 'is-pity' : ''}">
-      <span class="core-modal-kicker">WISHING</span>
-      <div class="gacha-ritual-circle"><span>✦</span><i></i><i></i><i></i></div>
-      <h2>${hasPity ? 'SSR 魔法陣展開' : '星糖正在發光'}</h2>
-      <p>${records.length >= 10 ? '十連祈願中，星糖化成一圈光。' : '祈願中，請稍等一瞬間。'}</p>
+    <div class="core-modal-card compact lucky-v20-modal rarity-${highest.toLowerCase()} ${hasSSR ? 'is-ssr' : ''}">
+      <span class="core-modal-kicker">LUCKY V20</span>
+      <div class="lucky-v20-stage" aria-hidden="true">
+        <div class="lucky-v20-bg"></div>
+        <div class="lucky-v20-mist mist-a"></div>
+        <div class="lucky-v20-mist mist-b"></div>
+        <div class="lucky-v20-machine">
+          <span class="lucky-v20-orb">✦</span>
+          <span class="lucky-v20-slot"></span>
+          <span class="lucky-v20-base"></span>
+        </div>
+        <div class="lucky-v20-ring ring-a"></div>
+        <div class="lucky-v20-ring ring-b"></div>
+        <div class="lucky-v20-rays"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="lucky-v20-cards">${records.slice(0, 10).map(renderLuckyCard).join('')}</div>
+      </div>
+      <h2>${title}</h2>
+      <p>${subtitle}</p>
     </div>
   `);
-  window.setTimeout(() => showGachaResultModal(records), hasPity ? 900 : 680);
+  window.setTimeout(() => showGachaResultModal(records), hasSSR ? 1900 : 1580);
 }
 
 function getFeaturedFairy(pool) {
@@ -152,7 +188,7 @@ function handleGachaClick(event) {
   }
 
   renderGacha();
-  if (drawn.some((record) => record.pityHit)) emitNotice('SSR 保底觸發', '魔法陣亮起，保底 SSR 已經降臨。');
+  if (drawn.some((record) => record.pityHit)) emitNotice('SSR 保底觸發', '柔和金霧亮起，契約魔法陣已經展開。');
   if (drawn.length) window.setTimeout(() => showGachaRitualModal(drawn), 120);
 }
 
