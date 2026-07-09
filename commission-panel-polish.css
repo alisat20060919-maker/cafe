@@ -1,11 +1,19 @@
-/* core87：委託頁改成三欄任務分類 + 大縮圖清單 */
+/* core88：委託頁固定高度 + 三欄任務分類 + 完成暫留 */
 #page-commissions.core-page-host.active{
+  display:flex!important;
+  flex-direction:column!important;
+  min-height:clamp(520px,calc(100svh - 300px),720px)!important;
   background:
     radial-gradient(circle at 50% -10%,rgba(255,240,177,.18),transparent 30%),
     linear-gradient(180deg,#4f7c45 0%,#365f36 58%,#27452b 100%)!important;
 }
 
+.game-window[data-current-page="commissions"]{
+  min-height:min(900px,calc(100svh - 28px))!important;
+}
+
 #page-commissions .core-page-head{
+  flex:0 0 auto!important;
   margin-bottom:10px!important;
   padding:12px 15px!important;
 }
@@ -20,6 +28,7 @@
 }
 
 .commission-task-tabs{
+  flex:0 0 auto!important;
   display:grid!important;
   grid-template-columns:repeat(3,minmax(0,1fr))!important;
   gap:8px!important;
@@ -82,6 +91,7 @@
 }
 
 .commission-group-hint{
+  flex:0 0 auto!important;
   display:grid!important;
   grid-template-columns:auto 1fr auto!important;
   align-items:center!important;
@@ -118,9 +128,22 @@
 }
 
 .commission-board-list{
+  flex:1 1 auto!important;
   display:grid!important;
+  align-content:start!important;
   gap:9px!important;
   padding-bottom:10px!important;
+}
+
+#page-commissions .core-empty{
+  display:grid!important;
+  place-items:center!important;
+  min-height:160px!important;
+  border:2px solid #5a3924!important;
+  border-radius:18px!important;
+  background:#fff8e7!important;
+  color:#6d5236!important;
+  font-weight:900!important;
 }
 
 .core-quest-card.commission-card{
@@ -324,7 +347,7 @@
 }
 
 @media(max-width:560px){
-  #page-commissions.core-page-host.active{padding:9px!important}
+  #page-commissions.core-page-host.active{min-height:calc(100svh - 315px)!important;padding:9px!important}
   #page-commissions .core-page-head{padding:11px 13px!important}
   #page-commissions .core-page-head h2{font-size:22px!important}
   .commission-task-tabs{gap:6px!important;padding:7px!important}
