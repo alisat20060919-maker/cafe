@@ -24,17 +24,18 @@
   <link rel="stylesheet" href="game-panel-polish.css?v=ui01" />
   <link rel="stylesheet" href="commission-panel-polish.css?v=ui04" />
   <link rel="stylesheet" href="inventory-panel-polish.css?v=ui04" />
+  <link rel="stylesheet" href="phase75-fixes.css?v=ui01" />
   <script type="importmap">
     {"imports":{
-      "@main":"./main.js?v=core98","@dev/checks":"./dev-checks.js?v=core98","@db":"./game-data.js?v=core98",
-      "@data/items":"./data-items.js?v=core98","@data/recipes":"./data-recipes.js?v=core98","@data/story":"./data-story.js?v=core98",
-      "@validator":"./game-db-validator.js?v=core98","@state":"./game-state.js?v=core98","@save":"./save.js?v=core98","@ui":"./ui.js?v=core98",
-      "@home":"./home.js?v=core98","@router":"./router.js?v=core98","@eventBus":"./event-bus.js?v=core98","@utils":"./utils.js?v=core98",
-      "@actions/daily":"./daily-actions.js?v=core98","@actions/gacha":"./gacha-actions.js?v=core98","@actions/commission":"./commission-actions.js?v=core98",
-      "@actions/gather":"./gather-actions.js?v=core98","@actions/craft":"./craft-actions.js?v=core98","@actions/player":"./player-actions.js?v=core98",
-      "@actions/fairy":"./fairy-actions.js?v=core98","@actions/shop":"./shop-actions.js?v=core98",
-      "@pages/gacha":"./pages-gacha.js?v=core98","@pages/inventory":"./pages-inventory.js?v=core98","@pages/fairies":"./pages-fairies.js?v=core98",
-      "@pages/collection":"./pages-collection.js?v=core98","@pages/commissions":"./pages-commissions.js?v=core98","@pages/shop":"./pages-shop.js?v=core98"
+      "@main":"./main.js?v=core99","@dev/checks":"./dev-checks.js?v=core99","@db":"./game-data.js?v=core99",
+      "@data/items":"./data-items.js?v=core99","@data/recipes":"./data-recipes.js?v=core99","@data/story":"./data-story.js?v=core99",
+      "@validator":"./game-db-validator.js?v=core99","@state":"./game-state.js?v=core99","@save":"./save.js?v=core99","@ui":"./ui.js?v=core99",
+      "@home":"./home.js?v=core99","@router":"./router.js?v=core99","@eventBus":"./event-bus.js?v=core99","@utils":"./utils.js?v=core99",
+      "@actions/daily":"./daily-actions.js?v=core99","@actions/gacha":"./gacha-actions.js?v=core99","@actions/commission":"./commission-actions.js?v=core99",
+      "@actions/gather":"./gather-actions.js?v=core99","@actions/craft":"./craft-actions.js?v=core99","@actions/player":"./player-actions.js?v=core99",
+      "@actions/fairy":"./fairy-actions.js?v=core99","@actions/shop":"./shop-actions.js?v=core99",
+      "@pages/gacha":"./pages-gacha.js?v=core99","@pages/inventory":"./pages-inventory.js?v=core99","@pages/fairies":"./pages-fairies.js?v=core99",
+      "@pages/collection":"./pages-collection.js?v=core99","@pages/commissions":"./pages-commissions.js?v=core99","@pages/shop":"./pages-shop.js?v=core99"
     }}
   </script>
 </head>
@@ -75,7 +76,7 @@
               <article class="scene-card cafe active" id="cafe" data-speaker="小店長" data-title="咖啡廳" data-dialogue="歡迎回來！今天先看看委託，還是整理商品櫃呢？">
                 <div class="scene-sky"></div><div class="forest-layer back"></div><div class="forest-layer front"></div>
                 <div class="cottage"><span class="roof"></span><span class="sign">CAFE</span><span class="door"></span><span class="window w1"></span><span class="window w2"></span></div>
-                <button class="object-tag tag-menu" type="button">菜單</button><button class="object-tag tag-order" type="button">委託</button><button class="object-tag tag-daily" type="button">今日推薦</button>
+                <button class="object-tag tag-menu" type="button">菜單</button><button class="object-tag tag-order" type="button">委託</button><button class="object-tag tag-daily" type="button">今日推薦</button><button class="object-tag tag-shop" type="button" data-route="shop">商鋪</button>
                 <div class="npc npc-main">🧚</div><div class="npc npc-cat">🐾</div><div class="speech-bubble">新甜點完成！</div>
                 <div class="scene-info"><span class="chapter">AREA 01</span><h2>咖啡廳</h2><p>主店面。查看菜單、商品櫃與委託。</p></div>
                 <button class="enter-button" type="button">進入店內</button>
