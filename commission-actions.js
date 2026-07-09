@@ -1,11 +1,11 @@
 import { GameDB } from '@db';
 import {
   getState,
+  replaceState,
   canAffordItems,
   spendItems,
   spendCurrency,
   applyCommissionUnlocks,
-  persistState,
   refreshDailyCommissions,
   useFreeDailyCommissionRefresh,
   usePaidDailyCommissionRefresh,
@@ -102,6 +102,10 @@ function mergeUnlocks(...groups) {
   });
 }
 
+function cloneStateForWrite() {
+  return JSON.parse(JSON.stringify(getState()));
+}
+
 export function getPaidRefreshCostText() {
   return formatCost(getPaidRefreshCost());
 }
@@ -177,9 +181,11 @@ export function completeCommission(commissionId) {
 
   const reward = getEffectiveReward(commission);
   const growth = applyReward(reward);
-  state.commissions[commissionId] = { status: 'completed', completedAt: new Date().toISOString() };
   const directUnlocks = applyCommissionUnlocks(commissionId);
+  const nextState = cloneStateForWrite();
+  nextState.commissions ||= {};
+  nextState.commissions[commissionId] = { status: 'completed', completedAt: new Date().toISOString() };
+  replaceState(nextState);
   const unlocked = mergeUnlocks(growth.unlocked || [], directUnlocks);
-  persistState('commission');
   return { ok: true, message: `委託完成：${formatReward(reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}` };
 }
