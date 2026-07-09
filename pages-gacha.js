@@ -1,6 +1,6 @@
 import { GameDB } from '@db';
 import { getState } from '@state';
-import { drawGacha, getGachaPityStatus } from '@actions/gacha';
+import { drawGachaMany, getGachaPityStatus } from '@actions/gacha';
 import { emitNotice } from '@eventBus';
 import { showModal } from '@ui';
 
@@ -177,16 +177,15 @@ function handleGachaClick(event) {
 
   button.disabled = true;
   const times = Number(button.dataset.draw || 1);
-  const drawn = [];
-  for (let i = 0; i < times; i += 1) {
-    const result = drawGacha('standard');
-    if (!result.ok) {
-      emitNotice('祈願失敗', result.message);
-      break;
-    }
-    drawn.push(result.drop);
+  const result = drawGachaMany('standard', times);
+  if (!result.ok) {
+    emitNotice('祈願失敗', result.message);
+    renderGacha();
+    return;
   }
 
+  const drawn = result.drops || [];
+  if (result.partial) emitNotice('祈願中止', result.message || '星糖不足，已保留成功抽到的結果。');
   renderGacha();
   if (drawn.some((record) => record.pityHit)) emitNotice('SSR 保底觸發', '柔和金霧亮起，契約魔法陣已經展開。');
   if (drawn.length) window.setTimeout(() => showGachaRitualModal(drawn), 120);
