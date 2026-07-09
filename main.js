@@ -1,5 +1,6 @@
 import { runDevChecks } from '@dev/checks';
 import { GameDB } from '@db';
+import { applyFairyExpansion } from './fairy-expansion.js';
 import { initState } from '@state';
 import { getGatherDropPreview } from '@actions/gather';
 import { initUI, showModal, showOpeningStoryIfNeeded } from '@ui';
@@ -117,6 +118,7 @@ function initGatherDropHelp() {
 }
 
 function boot() {
+  applyFairyExpansion();
   initState();
   runDevChecks();
   initUI();
