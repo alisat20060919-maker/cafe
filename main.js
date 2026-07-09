@@ -2,6 +2,7 @@ import { runDevChecks } from '@dev/checks';
 import { initState } from '@state';
 import { initUI, showOpeningStoryIfNeeded } from '@ui';
 import { initHome, renderHome } from '@home';
+import { initGatherDropHelp } from '@gather/drop-help';
 import { initRouter } from '@router';
 import { initGachaPage, renderGacha } from '@pages/gacha';
 import { initInventoryPage, renderInventory } from '@pages/inventory';
@@ -15,6 +16,7 @@ function boot() {
   runDevChecks();
   initUI();
   initHome();
+  initGatherDropHelp();
   initGachaPage();
   initInventoryPage();
   initFairiesPage();
