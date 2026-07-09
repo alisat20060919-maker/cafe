@@ -24,17 +24,18 @@
   <link rel="stylesheet" href="game-panel-polish.css?v=ui01" />
   <link rel="stylesheet" href="commission-panel-polish.css?v=ui04" />
   <link rel="stylesheet" href="inventory-panel-polish.css?v=ui04" />
+  <link rel="stylesheet" href="home-dashboard.css?v=ui01" />
   <script type="importmap">
     {"imports":{
-      "@main":"./main.js?v=core95","@dev/checks":"./dev-checks.js?v=core95","@db":"./game-data.js?v=core95",
-      "@data/items":"./data-items.js?v=core95","@data/recipes":"./data-recipes.js?v=core95","@data/story":"./data-story.js?v=core95",
-      "@validator":"./game-db-validator.js?v=core95","@state":"./game-state.js?v=core95","@save":"./save.js?v=core95","@ui":"./ui.js?v=core95",
-      "@home":"./home.js?v=core95","@router":"./router.js?v=core95","@eventBus":"./event-bus.js?v=core95","@utils":"./utils.js?v=core95",
-      "@actions/daily":"./daily-actions.js?v=core95","@actions/gacha":"./gacha-actions.js?v=core95","@actions/commission":"./commission-actions.js?v=core95",
-      "@actions/gather":"./gather-actions.js?v=core95","@actions/craft":"./craft-actions.js?v=core95","@actions/player":"./player-actions.js?v=core95",
-      "@actions/fairy":"./fairy-actions.js?v=core95","@actions/shop":"./shop-actions.js?v=core95",
-      "@pages/gacha":"./pages-gacha.js?v=core95","@pages/inventory":"./pages-inventory.js?v=core95","@pages/fairies":"./pages-fairies.js?v=core95",
-      "@pages/collection":"./pages-collection.js?v=core95","@pages/commissions":"./pages-commissions.js?v=core95","@pages/shop":"./pages-shop.js?v=core95"
+      "@main":"./main.js?v=core96","@dev/checks":"./dev-checks.js?v=core96","@db":"./game-data.js?v=core96",
+      "@data/items":"./data-items.js?v=core96","@data/recipes":"./data-recipes.js?v=core96","@data/story":"./data-story.js?v=core96",
+      "@validator":"./game-db-validator.js?v=core96","@state":"./game-state.js?v=core96","@save":"./save.js?v=core96","@ui":"./ui.js?v=core96",
+      "@home":"./home.js?v=core96","@router":"./router.js?v=core96","@eventBus":"./event-bus.js?v=core96","@utils":"./utils.js?v=core96",
+      "@actions/daily":"./daily-actions.js?v=core96","@actions/gacha":"./gacha-actions.js?v=core96","@actions/commission":"./commission-actions.js?v=core96",
+      "@actions/gather":"./gather-actions.js?v=core96","@actions/craft":"./craft-actions.js?v=core96","@actions/player":"./player-actions.js?v=core96",
+      "@actions/fairy":"./fairy-actions.js?v=core96","@actions/shop":"./shop-actions.js?v=core96",
+      "@pages/gacha":"./pages-gacha.js?v=core96","@pages/inventory":"./pages-inventory.js?v=core96","@pages/fairies":"./pages-fairies.js?v=core96",
+      "@pages/collection":"./pages-collection.js?v=core96","@pages/commissions":"./pages-commissions.js?v=core96","@pages/shop":"./pages-shop.js?v=core96"
     }}
   </script>
 </head>
@@ -67,6 +68,40 @@
           <button class="tab" data-target="alchemy">煉金室</button>
           <button class="tab" data-target="greenhouse">溫室</button>
         </nav>
+
+        <section class="home-dashboard" aria-label="咖啡屋主畫面">
+          <section class="home-hero-card">
+            <div class="home-hero-copy">
+              <span>ELF CAFE</span>
+              <h2>今日也要開店</h2>
+              <p>先接委託、收集素材，再回廚房製作商品。</p>
+              <div class="home-hero-actions">
+                <button type="button" data-route="commissions">查看委託</button>
+                <button type="button" onclick="document.querySelector('#cafe .enter-button')?.click()">進入咖啡屋</button>
+              </div>
+            </div>
+            <div class="home-cafe-stage" aria-hidden="true">
+              <div class="home-cafe-sky"></div>
+              <div class="home-cafe-house"><span>CAFE</span></div>
+              <div class="home-cafe-fairy">🧚</div>
+            </div>
+          </section>
+
+          <section class="home-today-board" aria-label="今日狀態">
+            <article><span>今日時間</span><b>森林午後</b></article>
+            <article><span>推薦流程</span><b>採集 → 製作 → 交付</b></article>
+            <article><span>店長提醒</span><b>缺商品就先去廚房</b></article>
+          </section>
+
+          <section class="home-action-grid" aria-label="主要入口">
+            <button type="button" data-route="commissions"><span>📋</span><b>委託</b><small>查看客人任務</small></button>
+            <button type="button" onclick="document.querySelector('#backyard .enter-button')?.click()"><span>🧺</span><b>後山採集</b><small>取得莓果素材</small></button>
+            <button type="button" onclick="document.querySelector('#kitchen .enter-button')?.click()"><span>🍳</span><b>廚房製作</b><small>製作甜點飲品</small></button>
+            <button type="button" onclick="document.querySelector('#greenhouse .enter-button')?.click()"><span>🌙</span><b>溫室收成</b><small>培育魔法植物</small></button>
+            <button type="button" onclick="document.querySelector('#alchemy .enter-button')?.click()"><span>🧪</span><b>煉金研究</b><small>調配特殊素材</small></button>
+            <button type="button" data-route="gacha"><span>✦</span><b>祈願</b><small>召喚精靈夥伴</small></button>
+          </section>
+        </section>
 
         <section class="map-area">
           <button class="arrow left" id="prevScene" type="button" aria-label="上一個場景">‹</button>
@@ -114,7 +149,7 @@
         </section>
 
         <section class="cafe-inside" id="cafeInside" aria-label="咖啡廳店內介面">
-          <div class="inside-head"><div><p class="inside-label">INTERIOR</p><h2 class="inside-title">咖啡廳內部</h2><p class="inside-subtitle">選一個區域查看，不把所有資訊塞在同一頁。</p></div><button class="inside-back" id="backToMap" type="button">返回地圖</button></div>
+          <div class="inside-head"><div><p class="inside-label">INTERIOR</p><h2 class="inside-title">咖啡廳內部</h2><p class="inside-subtitle">選一個區域查看，不把所有資訊塞在同一頁。</p></div><button class="inside-back" id="backToMap" type="button">返回店鋪</button></div>
           <div class="cafe-room-scene" aria-label="咖啡廳店內場景">
             <button class="room-hotspot hotspot-menu" type="button" data-panel="menu"><span>今日菜單</span></button>
             <button class="room-hotspot hotspot-quest" type="button" data-panel="quest"><span>接委託</span></button>
