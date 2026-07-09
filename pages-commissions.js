@@ -5,13 +5,7 @@ import {
   completeCommission,
   getCommissionDisplayReward,
   getCommissionUnlockText,
-  getPaidRefreshCostText,
-  getRerollCostText,
   isCommissionUnlocked,
-  refreshDailyCommissionList,
-  refreshDailyCommissionFree,
-  refreshDailyCommissionPaid,
-  rerollDifficultCommissions,
 } from '@actions/commission';
 import { formatReward } from '@utils';
 import { navigate } from '@router';
@@ -19,22 +13,13 @@ import { goToScene } from '@home';
 import { showModal } from '@ui';
 import { Events, on, emitNotice } from '@eventBus';
 
-const COMMISSION_FILTERS = [
-  { id: 'all', label: '全部', icon: '📋' },
-  { id: 'ready', label: '可交付', icon: '✅' },
-  { id: 'available', label: '商品不足', icon: '🧺' },
-  { id: 'locked', label: '未解鎖', icon: '🔒' },
-  { id: 'completed', label: '已完成', icon: '🎀' },
+const COMMISSION_GROUPS = [
+  { id: 'daily', label: '每日任務', icon: '📅', hint: '每天會更新的小委託' },
+  { id: 'special', label: '特殊任務', icon: '✨', hint: '劇情、活動與精靈委託' },
+  { id: 'completed', label: '已完成', icon: '🎀', hint: '已交付的委託' },
 ];
 
-const COMMISSION_SORTS = [
-  { id: 'default', label: '預設順序' },
-  { id: 'status', label: '狀態排序' },
-  { id: 'difficulty_desc', label: '難度高到低' },
-];
-
-let currentCommissionFilter = 'all';
-let currentCommissionSort = 'default';
+let currentCommissionGroup = 'daily';
 
 function pageHeader(kicker, title, body) {
   return `<div class="core-page-head"><span>${kicker}</span><h2>${title}</h2><p>${body}</p></div>`;
@@ -77,45 +62,52 @@ function getQuestViewStatus(quest) {
 function statusLabel(status) { return { locked: '未解鎖', available: '商品不足', ready: '可交付', completed: '已完成' }[status] || status; }
 function statusIcon(status) { return { locked: '🔒', available: '🧺', ready: '✅', completed: '🎀' }[status] || '📋'; }
 function statusRank(status) { return { ready: 0, available: 1, locked: 2, completed: 3 }[status] ?? 99; }
-function difficultyRank(quest) { return GameDB.getCommissionDifficultyRank?.(quest) || [...String(quest.difficulty || '')].filter((char) => char === '★').length; }
+
+function getCommissionIdsForBoard() {
+  const activeIds = getActiveCommissionIds();
+  const allIds = Object.keys(GameDB.commissions || {});
+  const merged = [...activeIds, ...allIds.filter((id) => !activeIds.includes(id))];
+  return merged;
+}
 
 function getQuestEntries() {
-  return getActiveCommissionIds()
+  return getCommissionIdsForBoard()
     .map((commissionId, index) => ({ quest: GameDB.commissions[commissionId], index }))
     .filter((entry) => entry.quest)
     .map((entry) => ({ ...entry, status: getQuestViewStatus(entry.quest) }));
 }
 
-function filterQuestEntries(entries) { return currentCommissionFilter === 'all' ? entries : entries.filter((entry) => entry.status === currentCommissionFilter); }
-function sortQuestEntries(entries) {
-  return [...entries].sort((a, b) => {
-    if (currentCommissionSort === 'status') return statusRank(a.status) - statusRank(b.status) || a.index - b.index;
-    if (currentCommissionSort === 'difficulty_desc') return difficultyRank(b.quest) - difficultyRank(a.quest) || a.index - b.index;
-    return a.index - b.index;
-  });
+function getEntryGroup(entry) {
+  if (entry.status === 'completed') return 'completed';
+  return entry.quest.category === 'daily' || entry.quest.category === 'mvp' ? 'daily' : 'special';
 }
-function countByStatus(entries, filterId) { return filterId === 'all' ? entries.length : entries.filter((entry) => entry.status === filterId).length; }
 
-function renderDailyRefreshBar() {
-  const state = getState();
-  const count = Array.isArray(state.dailyCommissions?.ids) ? state.dailyCommissions.ids.length : 0;
-  const freeRefreshUsed = Boolean(state.dailyCommissions?.freeRefreshUsed);
+function countByGroup(entries, groupId) {
+  return entries.filter((entry) => getEntryGroup(entry) === groupId).length;
+}
+
+function filterQuestEntries(entries) {
+  return entries
+    .filter((entry) => getEntryGroup(entry) === currentCommissionGroup)
+    .sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.index - b.index);
+}
+
+function renderTaskTabs(entries) {
   return `
-    <div class="core-actions-row commission-refresh-bar" aria-label="每日委託刷新">
-      <span>📅 今日 ${count} 件</span>
-      <button type="button" data-refresh-daily-commissions>檢查</button>
-      <button type="button" data-refresh-free-commissions ${freeRefreshUsed ? 'disabled' : ''}>${freeRefreshUsed ? '已用' : '免費刷新'}</button>
-      <button type="button" data-refresh-paid-commissions>${getPaidRefreshCostText()}</button>
-      <button type="button" data-reroll-commissions>${getRerollCostText()}重抽</button>
+    <div class="commission-task-tabs" aria-label="任務分類">
+      ${COMMISSION_GROUPS.map((group) => `
+        <button type="button" class="${currentCommissionGroup === group.id ? 'active' : ''}" data-commission-group="${group.id}">
+          <span>${group.icon}</span>
+          <b>${group.label}</b>
+          <small>${countByGroup(entries, group.id)}</small>
+        </button>
+      `).join('')}
     </div>`;
 }
 
-function renderFilterTabs(entries) {
-  return `<div class="core-filter-group commission-filter-panel" aria-label="委託分類"><div class="core-filter-tabs">${COMMISSION_FILTERS.map((filter) => `<button type="button" class="${currentCommissionFilter === filter.id ? 'active' : ''}" data-commission-filter="${filter.id}"><span>${filter.icon}</span>${filter.label} ${countByStatus(entries, filter.id)}</button>`).join('')}</div></div>`;
-}
-
-function renderSortBox() {
-  return `<div class="core-sort-box commission-sort-box"><label for="commissionSort">排序</label><select id="commissionSort" data-commission-sort>${COMMISSION_SORTS.map((sort) => `<option value="${sort.id}" ${currentCommissionSort === sort.id ? 'selected' : ''}>${sort.label}</option>`).join('')}</select></div>`;
+function renderGroupHint(entries) {
+  const group = COMMISSION_GROUPS.find((item) => item.id === currentCommissionGroup) || COMMISSION_GROUPS[0];
+  return `<div class="commission-group-hint"><b>${group.label}</b><span>${group.hint}</span><small>${countByGroup(entries, group.id)} 件</small></div>`;
 }
 
 function getMissingItems(quest) {
@@ -214,29 +206,14 @@ function goToSource(sourceType = 'scene', sourceId = 'backyard') {
   if (sourceType === 'station' || sourceType === 'scene') goToSceneSource(sourceType, sourceId);
 }
 
-function handleRefreshResult(result, okTitle, failTitle) {
-  emitNotice(result.refreshed ? okTitle : failTitle, result.message);
-  renderCommissions();
-}
-
 function handleCommissionClick(event) {
   const button = event.target.closest('button');
   const page = document.querySelector('#page-commissions');
   if (!button || !page?.contains(button)) return;
-  if (button.matches('[data-refresh-daily-commissions]')) return handleRefreshResult(refreshDailyCommissionList(), '委託已刷新', '委託已是最新');
-  if (button.matches('[data-refresh-free-commissions]')) return handleRefreshResult(refreshDailyCommissionFree(), '免費刷新完成', '不能免費刷新');
-  if (button.matches('[data-refresh-paid-commissions]')) return handleRefreshResult(refreshDailyCommissionPaid(), '付費刷新完成', '不能付費刷新');
-  if (button.matches('[data-reroll-commissions]')) return handleRefreshResult(rerollDifficultCommissions(), '重抽完成', '不能重抽');
-  if (button.dataset.commissionFilter) { currentCommissionFilter = button.dataset.commissionFilter || 'all'; renderCommissions(); return; }
+  if (button.dataset.commissionGroup) { currentCommissionGroup = button.dataset.commissionGroup || 'daily'; renderCommissions(); return; }
   if (button.dataset.commissionDetail) { openCommissionDetail(button.dataset.commissionDetail); return; }
   if (button.dataset.complete) { const result = completeCommission(button.dataset.complete); emitNotice(result.ok ? '委託完成' : '還不能完成', result.message); renderCommissions(); return; }
   if (button.dataset.sourceType) goToSource(button.dataset.sourceType, button.dataset.sourceId);
-}
-
-function handleCommissionChange(event) {
-  const page = document.querySelector('#page-commissions');
-  if (!page?.contains(event.target)) return;
-  if (event.target.matches('[data-commission-sort]')) { currentCommissionSort = event.target.value || 'default'; renderCommissions(); }
 }
 
 function bindCommissionEvents() {
@@ -244,16 +221,15 @@ function bindCommissionEvents() {
   if (!page || page.dataset.eventsBound === 'true') return;
   page.dataset.eventsBound = 'true';
   page.addEventListener('click', handleCommissionClick);
-  page.addEventListener('change', handleCommissionChange);
 }
 
 export function renderCommissions() {
   const page = document.querySelector('#page-commissions');
   if (!page) return;
   const allEntries = getQuestEntries();
-  const visibleEntries = sortQuestEntries(filterQuestEntries(allEntries));
-  const cards = visibleEntries.length ? visibleEntries.map(renderQuestCard).join('') : '<div class="core-empty">目前沒有符合分類的委託。</div>';
-  page.innerHTML = `${pageHeader('QUEST BOARD', '委託', '像任務清單一樣瀏覽，點詳情再看描述、缺材料與製作提示。')}${renderDailyRefreshBar()}${renderFilterTabs(allEntries)}${renderSortBox()}<div class="core-quest-list commission-board-list">${cards}</div>`;
+  const visibleEntries = filterQuestEntries(allEntries);
+  const cards = visibleEntries.length ? visibleEntries.map(renderQuestCard).join('') : '<div class="core-empty">這個分類目前沒有委託。</div>';
+  page.innerHTML = `${pageHeader('QUEST BOARD', '委託', '依任務種類瀏覽；點詳情再看描述、缺材料與製作提示。')}${renderTaskTabs(allEntries)}${renderGroupHint(allEntries)}<div class="core-quest-list commission-board-list">${cards}</div>`;
 }
 
 export function initCommissionsPage() {
