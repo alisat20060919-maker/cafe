@@ -2,6 +2,7 @@ import { GameDB } from '@db';
 import {
   getState,
   spendCurrency,
+  addCurrency,
   addItem,
   getShopPurchaseCount,
   addShopPurchaseCount,
@@ -13,9 +14,39 @@ function getShopItem(shopItemId) {
   return GameDB.shopItems?.[shopItemId] || null;
 }
 
+function getStarSugarPack(packId) {
+  return GameDB.starSugarPacks?.[packId] || null;
+}
+
 function getCurrencyText(price = {}) {
   const meta = GameDB.currencies?.[price.currency];
   return `${meta?.icon || ''}${meta?.name || price.currency} ×${price.amount}`;
+}
+
+export function getStarSugarPackView(packId) {
+  const pack = getStarSugarPack(packId);
+  if (!pack) return null;
+  return {
+    ...pack,
+    currency: GameDB.currencies?.starSugar || { name: '星糖', icon: '✦' },
+    priceText: pack.priceText || '免費測試',
+  };
+}
+
+export function buyStarSugarPack(packId) {
+  const pack = getStarSugarPackView(packId);
+  if (!pack) return { ok: false, message: '找不到這個星糖包。' };
+
+  const amount = Math.max(0, Number(pack.amount || 0));
+  if (amount <= 0) return { ok: false, message: '這個星糖包目前沒有設定數量。' };
+
+  addCurrency('starSugar', amount);
+  persistState('shop:star-sugar-pack');
+
+  return {
+    ok: true,
+    message: `免費測試領取完成：${pack.currency.icon} 星糖 +${amount}。`,
+  };
 }
 
 export function getShopItemView(shopItemId) {
