@@ -1,0 +1,266 @@
+/* core85：委託頁任務板整理，不把資訊塞滿主卡片 */
+#page-commissions.core-page-host.active{
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,240,177,.22),transparent 30%),
+    linear-gradient(180deg,#5f874a 0%,#3f6b3b 55%,#2e4f31 100%)!important;
+}
+
+#page-commissions .commission-refresh-bar{
+  display:flex!important;
+  gap:8px!important;
+  overflow-x:auto!important;
+  flex-wrap:nowrap!important;
+  padding:10px!important;
+  border:3px solid #5a3924!important;
+  border-radius:20px!important;
+  background:linear-gradient(180deg,#6b4428,#432615)!important;
+  box-shadow:0 5px 0 rgba(42,24,12,.24)!important;
+  scrollbar-width:none!important;
+}
+
+#page-commissions .commission-refresh-bar::-webkit-scrollbar{display:none!important}
+#page-commissions .commission-refresh-bar>span{
+  flex:0 0 auto!important;
+  background:#fff0bd!important;
+  color:#302012!important;
+}
+#page-commissions .commission-refresh-bar button{
+  flex:0 0 auto!important;
+  background:linear-gradient(180deg,#fff3bd,#e2b45a)!important;
+  color:#302012!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  box-shadow:0 3px 0 rgba(42,24,12,.24)!important;
+}
+
+#page-commissions .commission-filter-panel,
+#page-commissions .commission-sort-box{
+  border:3px solid #5a3924!important;
+  border-radius:20px!important;
+  background:rgba(255,247,223,.9)!important;
+  box-shadow:0 5px 0 rgba(90,57,36,.16)!important;
+}
+
+#page-commissions .commission-sort-box{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding:10px 12px!important;
+  margin:10px 0 14px!important;
+}
+
+#page-commissions .commission-sort-box label{
+  color:#5a3924!important;
+  font-weight:1000!important;
+}
+
+#page-commissions .commission-sort-box select{
+  min-height:36px!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  background:#fffdf5!important;
+  color:#302012!important;
+  font-weight:900!important;
+  padding:0 10px!important;
+}
+
+.commission-board-list{
+  display:grid!important;
+  gap:13px!important;
+}
+
+.core-quest-card.commission-card{
+  position:relative!important;
+  display:grid!important;
+  gap:10px!important;
+  padding:14px!important;
+  border:3px solid #5a3924!important;
+  border-radius:24px!important;
+  background:
+    linear-gradient(180deg,#fffdf5 0%,#fff3d0 100%)!important;
+  color:#302012!important;
+  box-shadow:0 6px 0 rgba(90,57,36,.18),0 14px 22px rgba(28,16,8,.12)!important;
+  overflow:hidden!important;
+}
+
+.core-quest-card.commission-card::before{
+  content:"";
+  position:absolute;
+  left:-14px;
+  top:20px;
+  width:34px;
+  height:64px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#6a4328,#3a2114);
+  box-shadow:inset -4px 0 0 rgba(255,232,176,.16);
+}
+
+.commission-card-header{
+  position:relative!important;
+  z-index:1!important;
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:center!important;
+  gap:8px!important;
+}
+
+.commission-rank,
+.commission-status{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:30px!important;
+  padding:5px 10px!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  background:#fff0bd!important;
+  color:#302012!important;
+  font-weight:1000!important;
+  font-size:13px!important;
+  box-shadow:0 3px 0 rgba(90,57,36,.18)!important;
+}
+
+.commission-status.status-ready{
+  background:linear-gradient(180deg,#b8ef82,#6daf4d)!important;
+  color:#12300d!important;
+}
+.commission-status.status-available{
+  background:linear-gradient(180deg,#ffe9a5,#e7b95f)!important;
+}
+.commission-status.status-locked{
+  background:linear-gradient(180deg,#e9e1d0,#b8aa8e)!important;
+}
+.commission-status.status-completed{
+  background:linear-gradient(180deg,#ffd5ec,#e58dbb)!important;
+}
+
+.core-quest-card.commission-card h3{
+  position:relative!important;
+  z-index:1!important;
+  margin:0!important;
+  color:#302012!important;
+  font-size:22px!important;
+  line-height:1.15!important;
+}
+
+.commission-client{
+  width:max-content!important;
+  max-width:100%!important;
+  margin:0!important;
+  padding:5px 10px!important;
+  border-radius:999px!important;
+  background:#6b4428!important;
+  color:#fff4c8!important;
+  font-size:13px!important;
+  font-weight:900!important;
+}
+
+.commission-need-row,
+.commission-reward-row{
+  display:grid!important;
+  gap:6px!important;
+  padding:10px!important;
+  border:2px solid rgba(90,57,36,.32)!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.58)!important;
+}
+
+.commission-need-row small,
+.commission-reward-row small{
+  color:#7a4e2b!important;
+  font-size:11px!important;
+  font-weight:1000!important;
+  letter-spacing:.12em!important;
+}
+
+.commission-need-row>div{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+}
+
+.commission-need-chip{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:4px!important;
+  padding:6px 9px!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  background:#fff7df!important;
+  color:#302012!important;
+  font-weight:900!important;
+  font-size:13px!important;
+}
+
+.commission-need-chip b{color:inherit!important}
+.commission-need-chip.is-lacking{
+  background:#fff1e9!important;
+  color:#a42a22!important;
+  border-color:#9a372c!important;
+}
+
+.commission-reward-row b{
+  color:#302012!important;
+  font-size:14px!important;
+  line-height:1.45!important;
+}
+
+.commission-card-actions{
+  display:grid!important;
+  grid-template-columns:.82fr 1.18fr!important;
+  gap:9px!important;
+}
+
+.commission-card-actions button{
+  min-height:44px!important;
+  border:3px solid #5a3924!important;
+  border-radius:999px!important;
+  font-weight:1000!important;
+  box-shadow:0 4px 0 rgba(90,57,36,.24)!important;
+}
+
+.commission-detail-action{
+  background:linear-gradient(180deg,#fff6cf,#e8c56d)!important;
+  color:#302012!important;
+}
+
+.commission-primary-action{
+  background:linear-gradient(180deg,#a9e86d,#5f9d3d)!important;
+  color:#17350e!important;
+}
+
+.status-available .commission-primary-action{
+  background:linear-gradient(180deg,#fff3bd,#e2b45a)!important;
+  color:#302012!important;
+}
+
+.status-locked .commission-primary-action,
+.status-completed .commission-primary-action{
+  background:linear-gradient(180deg,#e9e1d0,#b8aa8e)!important;
+  color:#4a3a29!important;
+}
+
+.commission-detail-modal .commission-detail-needs{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:6px!important;
+  margin-top:8px!important;
+}
+
+.commission-detail-modal .core-missing-hint,
+.commission-detail-modal .core-missing-plan,
+.commission-detail-modal .core-recipe,
+.commission-detail-modal .core-reward{
+  border:2px solid #5a3924!important;
+  border-radius:18px!important;
+  background:#fffdf5!important;
+}
+
+@media(max-width:560px){
+  #page-commissions .commission-refresh-bar{padding:8px!important}
+  .core-quest-card.commission-card{padding:12px!important;border-radius:22px!important}
+  .core-quest-card.commission-card h3{font-size:20px!important}
+  .commission-card-actions{grid-template-columns:1fr!important}
+  .commission-rank,.commission-status{font-size:12px!important;padding:5px 8px!important}
+}
