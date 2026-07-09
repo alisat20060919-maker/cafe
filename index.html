@@ -26,6 +26,32 @@
   <link rel="stylesheet" href="inventory-panel-polish.css?v=ui04" />
   <link rel="stylesheet" href="phase75-fixes.css?v=ui01" />
   <link rel="stylesheet" href="gacha-lucky-v20.css?v=ui01" />
+  <style>
+    .floating-collection-button {
+      position: absolute;
+      right: 18px;
+      bottom: 104px;
+      z-index: 35;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 42px;
+      padding: 10px 13px;
+      border: 1px solid rgba(116, 82, 46, .18);
+      border-radius: 999px;
+      background: rgba(255, 252, 245, .92);
+      box-shadow: 0 10px 24px rgba(84, 52, 28, .16);
+      color: #6b4424;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+    }
+    .floating-collection-button span { font-size: .82rem; }
+    .game-window[data-current-page="home"] .floating-collection-button { display: inline-flex; }
+    .game-window:not([data-current-page="home"]) .floating-collection-button { display: none; }
+    @media (max-width: 520px) {
+      .floating-collection-button { right: 12px; bottom: 96px; padding: 9px 11px; }
+    }
+  </style>
   <script type="importmap">
     {"imports":{
       "@main":"./main.js?v=core102","@dev/checks":"./dev-checks.js?v=core101","@db":"./game-data.js?v=core100",
@@ -140,6 +166,8 @@
         <section class="dialogue-box" aria-live="polite"><div class="npc-portrait">👩‍🍳</div><div class="dialogue-content"><div class="dialogue-meta"><span class="speaker" id="speakerName">小店長</span><span class="place" id="placeName">咖啡廳</span></div><p id="dialogueText">歡迎回來！今天先看看委託，還是整理商品櫃呢？</p></div></section>
       </section>
 
+      <button class="floating-collection-button" type="button" data-route="collection" aria-label="打開圖鑑">📖<span>圖鑑</span></button>
+
       <section class="page core-page-host" id="page-gacha" aria-label="祈願頁"></section>
       <section class="page core-page-host" id="page-commissions" aria-label="委託頁"></section>
       <section class="page core-page-host" id="page-inventory" aria-label="背包頁"></section>
@@ -153,7 +181,6 @@
         <button type="button" class="dock-center" data-route="home">🏠<span>店鋪</span></button>
         <button type="button" data-route="inventory">🧺<span>背包</span></button>
         <button type="button" data-route="fairies">🧚<span>精靈</span></button>
-        <button type="button" data-route="collection">📖<span>圖鑑</span></button>
       </footer>
     </section>
   </main>
