@@ -76,6 +76,20 @@ function showGachaResultModal(records = []) {
   `);
 }
 
+function showGachaRitualModal(records = []) {
+  if (!records.length) return;
+  const hasPity = records.some((record) => record.pityHit);
+  showModal(`
+    <div class="core-modal-card compact gacha-ritual-modal ${hasPity ? 'is-pity' : ''}">
+      <span class="core-modal-kicker">WISHING</span>
+      <div class="gacha-ritual-circle"><span>✦</span><i></i><i></i><i></i></div>
+      <h2>${hasPity ? 'SSR 魔法陣展開' : '星糖正在發光'}</h2>
+      <p>${records.length >= 10 ? '十連祈願中，星糖化成一圈光。' : '祈願中，請稍等一瞬間。'}</p>
+    </div>
+  `);
+  window.setTimeout(() => showGachaResultModal(records), hasPity ? 900 : 680);
+}
+
 function getFeaturedFairy(pool) {
   const fairyDrop = (pool.drops || []).find((drop) => drop.kind === 'fairy');
   return GameDB.fairies?.[fairyDrop?.id] || Object.values(GameDB.fairies || {})[0] || null;
@@ -139,7 +153,7 @@ function handleGachaClick(event) {
 
   renderGacha();
   if (drawn.some((record) => record.pityHit)) emitNotice('SSR 保底觸發', '魔法陣亮起，保底 SSR 已經降臨。');
-  if (drawn.length) window.setTimeout(() => showGachaResultModal(drawn), 180);
+  if (drawn.length) window.setTimeout(() => showGachaRitualModal(drawn), 120);
 }
 
 function bindGachaEvents() {
