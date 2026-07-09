@@ -63,7 +63,7 @@ function renderInventoryHero(summary) {
       <div class="inventory-hero-copy">
         <span>WAREHOUSE</span>
         <h3>魔法倉庫</h3>
-        <p>主畫面只顯示道具格子；點擊道具可以查看來源、用途與完整說明。</p>
+        <p>背包格子只顯示圖示、稀有度與數量；點擊道具才看完整資訊。</p>
       </div>
       <div class="inventory-hero-stats">
         <b>道具 ${summary.itemCount}</b>
@@ -214,23 +214,19 @@ function bindInventoryEvents() {
 
 function renderItemCard(item, count, index) {
   return `
-    <button type="button" class="core-item-card inventory-slot-card rarity-${item.rarity.toLowerCase()}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true" data-sort-default="${index}" data-sort-rarity="${GameDB.getRarityRank(item.rarity)}" data-sort-type="${GameDB.getItemTypeRank(item.type)}" data-sort-count="${count}" data-sort-name="${escapeAttr(item.name)}" data-detail-kind="item" data-detail-id="${item.id}">
+    <button type="button" class="core-item-card inventory-slot-card rarity-${item.rarity.toLowerCase()}" aria-label="${escapeAttr(item.name)}，持有 ${count}" title="${escapeAttr(item.name)}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(GameDB.getItemSearchText(item))}" data-search-match="true" data-sort-default="${index}" data-sort-rarity="${GameDB.getRarityRank(item.rarity)}" data-sort-type="${GameDB.getItemTypeRank(item.type)}" data-sort-count="${count}" data-sort-name="${escapeAttr(item.name)}" data-detail-kind="item" data-detail-id="${item.id}">
       <span class="inventory-slot-rarity">${item.rarity}</span>
-      <span class="inventory-slot-icon">${item.icon}</span>
-      <b>${item.name}</b>
-      <small>${GameDB.getItemTypeLabel(item.type)}</small>
-      <strong>×${count}</strong>
+      <span class="inventory-slot-icon" aria-hidden="true">${item.icon}</span>
+      <strong aria-hidden="true">×${count}</strong>
     </button>`;
 }
 
 function renderFairyCard(fairy, index, offset) {
   return `
-    <button type="button" class="core-item-card inventory-slot-card inventory-fairy-slot ssr" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true" data-sort-default="${offset + index}" data-sort-rarity="${GameDB.getRarityRank(fairy.rarity)}" data-sort-type="${GameDB.getItemTypeRank('fairy')}" data-sort-count="1" data-sort-name="${escapeAttr(fairy.name)}" data-detail-kind="fairy" data-detail-id="${fairy.id}">
+    <button type="button" class="core-item-card inventory-slot-card inventory-fairy-slot ssr" aria-label="${escapeAttr(fairy.name)}，已契約" title="${escapeAttr(fairy.name)}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(GameDB.getFairySearchText(fairy))}" data-search-match="true" data-sort-default="${offset + index}" data-sort-rarity="${GameDB.getRarityRank(fairy.rarity)}" data-sort-type="${GameDB.getItemTypeRank('fairy')}" data-sort-count="1" data-sort-name="${escapeAttr(fairy.name)}" data-detail-kind="fairy" data-detail-id="${fairy.id}">
       <span class="inventory-slot-rarity">${fairy.rarity}</span>
-      <span class="inventory-slot-icon">${fairy.icon}</span>
-      <b>${fairy.name}</b>
-      <small>${GameDB.getItemTypeLabel('fairy')}</small>
-      <strong>契約</strong>
+      <span class="inventory-slot-icon" aria-hidden="true">${fairy.icon}</span>
+      <strong aria-hidden="true">契約</strong>
     </button>`;
 }
 
