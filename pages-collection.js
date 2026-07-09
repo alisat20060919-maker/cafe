@@ -45,9 +45,9 @@ function renderCollectionStats() {
       <div class="inventory-hero-copy">
         <span>DISCOVERY</span>
         <h3>探索進度 ${stats.totalFound}/${stats.total}</h3>
-        <p>物品 ${stats.itemFound}/${stats.itemTotal}，精靈 ${stats.fairyFound}/${stats.fairyTotal}。列表改成短卡片，詳細資料點開看。</p>
+        <p>目前圖鑑採用文字清單模式，避免素材與精靈變多後畫面太擠。</p>
       </div>
-      <div class="inventory-hero-stats"><b>素材 ${stats.itemTotal}</b><b>精靈 ${stats.fairyTotal}</b><b>已發現 ${stats.totalFound}</b></div>
+      <div class="inventory-hero-stats"><b>物品 ${stats.itemTotal}</b><b>精靈 ${stats.fairyTotal}</b><b>已發現 ${stats.totalFound}</b></div>
     </section>`;
 }
 
@@ -172,22 +172,43 @@ function bindCollectionPage(page) {
 
 function renderItemCard(item) {
   const discovered = isItemDiscovered(item.id);
+  const typeLabel = GameDB.getItemTypeLabel(item.type);
+  const name = discovered ? item.name : '???';
+  const note = discovered ? `${GameDB.getItemSourceText(item)}｜${item.use || '用途未設定'}` : `未發現｜${typeLabel}`;
   return `
-    <button type="button" class="core-item-card inventory-slot-card collection-card rarity-${item.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(discovered ? GameDB.getItemSearchText(item) : hiddenSearchText('item', item.rarity, item.type))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="item" data-collection-id="${item.id}" title="${escapeAttr(discovered ? item.name : '???')}">
-      <span class="inventory-slot-rarity">${item.rarity}</span>
-      <span class="inventory-slot-icon" aria-hidden="true">${discovered ? item.icon : '❔'}</span>
-      <strong aria-hidden="true">${discovered ? item.name : '???'}</strong>
+    <button type="button" class="collection-card collection-text-row rarity-${item.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="${item.type}" data-rarity="${item.rarity}" data-search="${escapeAttr(discovered ? GameDB.getItemSearchText(item) : hiddenSearchText('item', item.rarity, item.type))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="item" data-collection-id="${item.id}" title="${escapeAttr(name)}">
+      <span class="collection-row-rarity">${item.rarity}</span>
+      <span class="collection-row-type">${typeLabel}</span>
+      <strong>${discovered ? `${item.icon} ${item.name}` : '❔ ???'}</strong>
+      <small>${escapeAttr(note)}</small>
     </button>`;
 }
 
 function renderFairyCard(fairy) {
   const discovered = isFairyDiscovered(fairy.id);
+  const name = discovered ? fairy.name : '???';
+  const note = discovered ? `${GameDB.getFairySourceText(fairy)}｜${fairy.passiveBuff?.label || '無被動'}` : '未發現｜精靈';
   return `
-    <button type="button" class="core-item-card inventory-slot-card inventory-fairy-slot collection-card rarity-${fairy.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(discovered ? GameDB.getFairySearchText(fairy) : hiddenSearchText('fairy', fairy.rarity))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="fairy" data-collection-id="${fairy.id}" title="${escapeAttr(discovered ? fairy.name : '???')}">
-      <span class="inventory-slot-rarity">${fairy.rarity}</span>
-      <span class="inventory-slot-icon" aria-hidden="true">${discovered ? fairy.icon : '❔'}</span>
-      <strong aria-hidden="true">${discovered ? fairy.name : '???'}</strong>
+    <button type="button" class="collection-card collection-text-row collection-fairy-row rarity-${fairy.rarity.toLowerCase()} ${discovered ? '' : 'is-undiscovered'}" data-category="fairy" data-rarity="${fairy.rarity}" data-search="${escapeAttr(discovered ? GameDB.getFairySearchText(fairy) : hiddenSearchText('fairy', fairy.rarity))}" data-search-match="true" data-discovered="${discovered ? 'true' : 'false'}" data-collection-kind="fairy" data-collection-id="${fairy.id}" title="${escapeAttr(name)}">
+      <span class="collection-row-rarity">${fairy.rarity}</span>
+      <span class="collection-row-type">精靈</span>
+      <strong>${discovered ? `${fairy.icon} ${fairy.name}` : '❔ ???'}</strong>
+      <small>${escapeAttr(note)}</small>
     </button>`;
+}
+
+function renderCollectionStyle() {
+  return `
+    <style>
+      #page-collection .collection-list.collection-text-list { display: flex; flex-direction: column; gap: 8px; }
+      #page-collection .collection-text-row { width: 100%; display: grid; grid-template-columns: 54px 78px minmax(120px, 1fr); gap: 8px 10px; align-items: center; text-align: left; padding: 12px 14px; border: 1px solid rgba(116, 82, 46, .14); border-radius: 16px; background: rgba(255, 252, 245, .76); color: inherit; }
+      #page-collection .collection-text-row strong { font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #page-collection .collection-text-row small { grid-column: 3 / 4; opacity: .68; line-height: 1.45; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #page-collection .collection-row-rarity, #page-collection .collection-row-type { font-size: .72rem; font-weight: 800; opacity: .78; }
+      #page-collection .collection-row-type { opacity: .62; }
+      #page-collection .collection-text-row.is-undiscovered { filter: grayscale(.2); opacity: .72; }
+      @media (max-width: 520px) { #page-collection .collection-text-row { grid-template-columns: 46px 64px minmax(0, 1fr); padding: 11px 12px; } }
+    </style>`;
 }
 
 export function renderCollection() {
@@ -199,13 +220,14 @@ export function renderCollection() {
   const fairyCards = Object.values(GameDB.fairies || {}).map(renderFairyCard).join('');
 
   page.innerHTML = `
-    ${pageHeader('COLLECTION', '圖鑑', '大量素材與精靈改成短格子顯示；完整說明點格子開啟。')}
+    ${renderCollectionStyle()}
+    ${pageHeader('COLLECTION', '圖鑑', '素材與精靈改成文字清單。想看完整說明再點開，不把全部內容塞在主畫面。')}
     ${renderCollectionStats()}
     <div class="core-actions-row collection-actions"><button type="button" data-route="inventory">返回背包</button><button type="button" data-route="home">回到店鋪</button></div>
     <div class="core-search-box"><label for="collection-search">搜尋圖鑑</label><input id="collection-search" type="search" placeholder="輸入素材、精靈、稀有度、來源或用途" autocomplete="off" /></div>
     <div class="core-filter-group"><p>分類</p><div class="core-filter-tabs" aria-label="圖鑑分類篩選">${renderCollectionCategories()}</div></div>
     <div class="core-filter-group"><p>稀有度</p><div class="core-filter-tabs" aria-label="圖鑑稀有度篩選">${renderCollectionRarities()}</div></div>
-    <div class="core-list inventory-slot-grid collection-list" id="collection-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
+    <div class="core-list collection-list collection-text-list" id="collection-list" data-current-filter="all" data-current-rarity="all" data-search-mode="all">
       ${itemCards}${fairyCards}
       <p class="core-empty core-search-empty" id="collection-search-empty" hidden>沒有符合目前條件的圖鑑資料。</p>
     </div>`;
