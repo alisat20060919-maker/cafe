@@ -9,7 +9,7 @@ import { initRouter } from '@router';
 import { initGachaPage, renderGacha } from '@pages/gacha';
 import { initInventoryPage, renderInventory } from '@pages/inventory';
 import { initFairiesPage, renderFairies } from '@pages/fairies';
-import { renderCollection } from '@pages/collection';
+import { initCollectionPage, renderCollection } from '@pages/collection';
 import { initCommissionsPage, renderCommissions } from '@pages/commissions';
 import { initShopPage, renderShop } from '@pages/shop';
 
@@ -127,6 +127,7 @@ function boot() {
   initGachaPage();
   initInventoryPage();
   initFairiesPage();
+  initCollectionPage();
   initCommissionsPage();
   initShopPage();
 
