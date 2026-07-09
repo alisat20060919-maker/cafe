@@ -38,14 +38,31 @@ function renderPityStatus() {
     </div>`;
 }
 
-function renderHistory() {
-  const history = (getState().gachaHistory || []).slice(0, Number(GameDB.gachaConfig?.historyLimit || 20));
+function getHistoryRecords() {
+  return (getState().gachaHistory || []).slice(0, Number(GameDB.gachaConfig?.historyLimit || 20));
+}
+
+function renderHistoryList() {
+  const history = getHistoryRecords();
   if (!history.length) return '<p class="core-empty">還沒有祈願歷史。</p>';
-  return `<div class="gacha-history-list">${history.map((record) => {
+  return `<div class="gacha-history-list">${history.map((record, index) => {
     const meta = getRecordMeta(record);
     if (!meta) return '';
-    return `<span class="${record.pityHit ? 'pity-hit' : ''}">${meta.icon || '◇'} ${meta.name || record.id}${record.pityHit ? '｜保底' : ''}</span>`;
+    const typeLabel = record.kind === 'fairy' ? '精靈契約' : '素材商品';
+    return `<article class="gacha-history-row ${record.pityHit ? 'pity-hit' : ''}"><span>${String(index + 1).padStart(2, '0')}</span><b>${meta.icon || '◇'} ${meta.name || record.id}</b><small>${typeLabel}${record.qty ? ` ×${record.qty}` : ''}${record.pityHit ? '｜保底' : ''}</small></article>`;
   }).join('')}</div>`;
+}
+
+function showGachaHistoryModal() {
+  showModal(`
+    <div class="core-modal-card gacha-history-modal">
+      <button type="button" class="core-modal-close" data-close-modal>×</button>
+      <span class="core-modal-kicker">WISH HISTORY</span>
+      <h2>祈願紀錄</h2>
+      <p>最近 ${Number(GameDB.gachaConfig?.historyLimit || 20)} 筆祈願會保留在這裡。</p>
+      ${renderHistoryList()}
+    </div>
+  `);
 }
 
 function showGachaResultModal(records = []) {
@@ -61,9 +78,17 @@ function showGachaResultModal(records = []) {
 }
 
 function handleGachaClick(event) {
-  const button = event.target.closest('[data-draw]');
   const page = document.querySelector('#page-gacha');
-  if (!button || !page?.contains(button)) return;
+  if (!page?.contains(event.target)) return;
+
+  const historyButton = event.target.closest('[data-gacha-history]');
+  if (historyButton) {
+    showGachaHistoryModal();
+    return;
+  }
+
+  const button = event.target.closest('[data-draw]');
+  if (!button) return;
 
   button.disabled = true;
   const times = Number(button.dataset.draw || 1);
@@ -96,8 +121,11 @@ export function renderGacha() {
   const pool = GameDB.gachaPools.standard;
   const costMeta = GameDB.currencies[pool.cost.currency];
   page.innerHTML = `
-    ${pageHeader('WISH / ACTION MODULE', '星糖祈願', '祈願結果會以彈窗展示；最近 20 筆紀錄保留在下方。')}
+    ${pageHeader('WISH', '星糖祈願', '祈願結果用彈窗展示；紀錄收在右側按鈕，不塞在主畫面。')}
     <section class="core-gacha-layout gacha-stage">
+      <div class="gacha-stage-actions">
+        <button type="button" data-gacha-history>祈願紀錄</button>
+      </div>
       <div class="core-gacha-machine">
         <div class="gacha-magic-circle"><div class="core-orb">✦</div></div>
         <h3>${pool.name}</h3>
@@ -106,8 +134,7 @@ export function renderGacha() {
         <div class="core-pills"><span>持有：${costMeta.icon} ${state.player[pool.cost.currency]}</span><span>單抽 ${pool.cost.amount}</span></div>
         <div class="core-actions-row"><button type="button" data-draw="1">抽 1 次</button><button type="button" data-draw="10">抽 10 次</button></div>
       </div>
-    </section>
-    <section class="core-page-head gacha-history-panel"><span>WISH HISTORY</span><h2>最近 20 筆祈願</h2>${renderHistory()}</section>`;
+    </section>`;
 }
 
 export function initGachaPage() { bindGachaEvents(); }
