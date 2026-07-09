@@ -37,12 +37,6 @@ function renderRarityTabs() {
     .join('');
 }
 
-function renderSortOptions() {
-  return GameDB.getInventorySortOptions()
-    .map((sort) => `<option value="${sort.id}" ${currentInventorySort === sort.id ? 'selected' : ''}>${sort.icon} ${sort.label}</option>`)
-    .join('');
-}
-
 function renderEmptyInventoryState() {
   return `
     <section class="core-empty-state inventory-empty-state" aria-label="背包空狀態">
@@ -61,23 +55,11 @@ function renderInventoryHero(summary) {
   return `
     <section class="inventory-hero-card">
       <div class="inventory-hero-copy">
-        <span>WAREHOUSE</span>
-        <h3>魔法倉庫</h3>
-        <p>背包格子只顯示圖示、稀有度與數量；點擊道具才看完整資訊。</p>
+        <span>BAG</span>
+        <h3>物品欄</h3>
+        <p>點圖示查看道具詳情。</p>
       </div>
-      <div class="inventory-hero-stats">
-        <b>道具 ${summary.itemCount}</b>
-        <b>種類 ${summary.ownedKinds}</b>
-        <b>精靈 ${summary.fairyCount}</b>
-      </div>
-    </section>`;
-}
-
-function renderInventoryToolbar() {
-  return `
-    <section class="inventory-toolbar">
-      <div class="inventory-search-box"><label for="inventory-search">搜尋</label><input id="inventory-search" type="search" value="${escapeAttr(currentInventoryQuery)}" placeholder="素材、甜點、來源或用途" autocomplete="off" /></div>
-      <div class="inventory-sort-box"><label for="inventory-sort">排序</label><select id="inventory-sort">${renderSortOptions()}</select></div>
+      <div class="inventory-hero-stats"><b>${summary.ownedKinds} 種</b><b>${summary.itemCount} 個</b><b>${summary.fairyCount} 精靈</b></div>
     </section>`;
 }
 
@@ -90,7 +72,6 @@ function renderInventoryFilters() {
 }
 
 function getCardNumber(card, key) { return Number(card.dataset[key] || 0); }
-function getCardText(card, key) { return String(card.dataset[key] || ''); }
 function compareDefault(a, b) { return getCardNumber(a, 'sortDefault') - getCardNumber(b, 'sortDefault'); }
 
 function sortInventoryCards(page) {
@@ -98,24 +79,14 @@ function sortInventoryCards(page) {
   if (!list) return;
   const empty = page.querySelector('#inventory-search-empty');
   const cards = $all('.core-item-card', list);
-  const sorted = cards.sort((a, b) => {
-    if (currentInventorySort === 'rarity_desc') return getCardNumber(b, 'sortRarity') - getCardNumber(a, 'sortRarity') || compareDefault(a, b);
-    if (currentInventorySort === 'rarity_asc') return getCardNumber(a, 'sortRarity') - getCardNumber(b, 'sortRarity') || compareDefault(a, b);
-    if (currentInventorySort === 'count_desc') return getCardNumber(b, 'sortCount') - getCardNumber(a, 'sortCount') || compareDefault(a, b);
-    if (currentInventorySort === 'type_asc') return getCardNumber(a, 'sortType') - getCardNumber(b, 'sortType') || compareDefault(a, b);
-    if (currentInventorySort === 'name_asc') return getCardText(a, 'sortName').localeCompare(getCardText(b, 'sortName'), 'zh-Hant') || compareDefault(a, b);
-    return compareDefault(a, b);
-  });
-  sorted.forEach((card) => list.insertBefore(card, empty || null));
+  cards.sort((a, b) => compareDefault(a, b)).forEach((card) => list.insertBefore(card, empty || null));
   updateInventorySearch(page);
 }
 
 function updateInventorySearch(page) {
   const list = page.querySelector('#inventory-list');
-  const input = page.querySelector('#inventory-search');
   const empty = page.querySelector('#inventory-search-empty');
   if (!list) return;
-  if (input && input.value !== currentInventoryQuery) input.value = currentInventoryQuery;
   const query = GameDB.normalizeSearchText(currentInventoryQuery || '');
   let visibleCount = 0;
   let cardCount = 0;
@@ -187,29 +158,11 @@ function handleInventoryClick(event) {
   }
 }
 
-function handleInventoryInput(event) {
-  const page = document.querySelector('#page-inventory');
-  if (page?.contains(event.target) && event.target.matches('#inventory-search')) {
-    currentInventoryQuery = event.target.value || '';
-    updateInventorySearch(page);
-  }
-}
-
-function handleInventoryChange(event) {
-  const page = document.querySelector('#page-inventory');
-  if (page?.contains(event.target) && event.target.matches('#inventory-sort')) {
-    currentInventorySort = event.target.value || 'default';
-    sortInventoryCards(page);
-  }
-}
-
 function bindInventoryEvents() {
   const page = document.querySelector('#page-inventory');
   if (!page || page.dataset.eventsBound === 'true') return;
   page.dataset.eventsBound = 'true';
   page.addEventListener('click', handleInventoryClick);
-  page.addEventListener('input', handleInventoryInput);
-  page.addEventListener('change', handleInventoryChange);
 }
 
 function renderItemCard(item, count, index) {
@@ -251,11 +204,9 @@ export function renderInventory() {
     .join('');
   const hasInventoryContent = Boolean(itemCards || fairyCards);
   page.innerHTML = `
-    ${pageHeader('BAG', '背包', '整理成道具倉庫；點擊格子查看來源、用途與完整說明。')}
-    <div class="core-actions-row collection-entry-actions"><button type="button" data-route="collection">打開圖鑑</button></div>
+    ${pageHeader('BAG', '背包', '圖示物品欄。點擊格子查看來源、用途與完整說明。')}
     ${hasInventoryContent ? `
       ${renderInventoryHero(summary)}
-      ${renderInventoryToolbar()}
       ${renderInventoryFilters()}
       <div class="core-list inventory-slot-grid" id="inventory-list" data-current-filter="${currentInventoryFilter}" data-current-rarity="${currentInventoryRarity}" data-search-mode="all">${itemCards}${fairyCards}<p class="core-empty core-search-empty" id="inventory-search-empty" hidden>沒有符合目前條件的物品。</p></div>
     ` : renderEmptyInventoryState()}
