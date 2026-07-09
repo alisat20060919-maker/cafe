@@ -88,22 +88,6 @@ function renderGiftButtons(fairyId, mode = 'page') {
   `;
 }
 
-function bindFairyModalActions(fairyId) {
-  [...document.querySelectorAll('.fairy-profile-modal [data-feed-fairy]')].forEach((button) => {
-    button.addEventListener('click', () => {
-      const result = feedFairy(button.dataset.feedFairy, button.dataset.giftItem);
-      selectedDialogue = result.dialogue || selectedDialogue;
-      emitNotice(result.ok ? '送禮完成' : '送禮失敗', result.message);
-      openFairyDetail(fairyId, result.dialogue || null);
-      renderFairies();
-    });
-  });
-
-  document.querySelector('.fairy-profile-modal [data-fairy-talk]')?.addEventListener('click', () => {
-    openFairyDetail(fairyId, getFairyDialogue(fairyId));
-  });
-}
-
 function openFairyDetail(fairyId, dialogueOverride = null) {
   const fairy = GameDB.fairies[fairyId];
   if (!fairy) return;
@@ -111,7 +95,7 @@ function openFairyDetail(fairyId, dialogueOverride = null) {
   const dialogue = dialogueOverride || selectedDialogue || (owned ? getFairyDialogue(fairyId) : fairy.quote);
 
   showModal(`
-    <div class="core-modal-card core-detail-modal fairy-profile-modal">
+    <div class="core-modal-card core-detail-modal fairy-profile-modal" data-fairy-modal="${fairyId}">
       <button type="button" class="core-modal-close" data-close-modal>×</button>
       <span class="core-modal-kicker">FAIRY PROFILE</span>
       <div class="core-detail-head">
@@ -138,8 +122,6 @@ function openFairyDetail(fairyId, dialogueOverride = null) {
       ${renderGiftButtons(fairyId, 'modal')}
     </div>
   `);
-
-  bindFairyModalActions(fairyId);
 }
 
 function renderAffectionBar(fairyId) {
@@ -197,23 +179,37 @@ function renderFairySelectorCard(fairy) {
     </button>`;
 }
 
+function handleFairyFeed(feedButton) {
+  const fairyId = feedButton.dataset.feedFairy;
+  const result = feedFairy(fairyId, feedButton.dataset.giftItem);
+  selectedFairyId = fairyId;
+  selectedDialogue = result.dialogue || selectedDialogue;
+  emitNotice(result.ok ? '送禮完成' : '送禮失敗', result.message);
+  if (feedButton.closest('.fairy-profile-modal')) openFairyDetail(fairyId, result.dialogue || null);
+  renderFairies();
+}
+
+function handleFairyTalk(talkButton) {
+  selectedFairyId = talkButton.dataset.fairyTalk;
+  selectedDialogue = getFairyDialogue(selectedFairyId);
+  if (talkButton.closest('.fairy-profile-modal')) openFairyDetail(selectedFairyId, selectedDialogue);
+  else renderFairies();
+}
+
 function handleFairyClick(event) {
   const page = document.querySelector('#page-fairies');
-  if (!page?.contains(event.target)) return;
+  const inPage = page?.contains(event.target);
+  const inModal = Boolean(event.target.closest('.fairy-profile-modal'));
+  if (!inPage && !inModal) return;
+
   const feedButton = event.target.closest('[data-feed-fairy]');
   if (feedButton) {
-    const result = feedFairy(feedButton.dataset.feedFairy, feedButton.dataset.giftItem);
-    selectedFairyId = feedButton.dataset.feedFairy;
-    selectedDialogue = result.dialogue || selectedDialogue;
-    emitNotice(result.ok ? '送禮完成' : '送禮失敗', result.message);
-    renderFairies();
+    handleFairyFeed(feedButton);
     return;
   }
   const talkButton = event.target.closest('[data-fairy-talk]');
   if (talkButton) {
-    selectedFairyId = talkButton.dataset.fairyTalk;
-    selectedDialogue = getFairyDialogue(selectedFairyId);
-    renderFairies();
+    handleFairyTalk(talkButton);
     return;
   }
   const detailButton = event.target.closest('[data-fairy-detail]');
@@ -231,10 +227,9 @@ function handleFairyClick(event) {
 }
 
 function bindFairyEvents() {
-  const page = document.querySelector('#page-fairies');
-  if (!page || page.dataset.eventsBound === 'true') return;
-  page.dataset.eventsBound = 'true';
-  page.addEventListener('click', handleFairyClick);
+  if (document.body.dataset.fairyEventsBound === 'true') return;
+  document.body.dataset.fairyEventsBound = 'true';
+  document.addEventListener('click', handleFairyClick);
 }
 
 export function renderFairies() {
