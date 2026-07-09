@@ -1,3 +1,7 @@
+.gacha-stage{
+  position:relative;
+}
+
 .gacha-stage .core-gacha-machine{
   position:relative;
   overflow:hidden;
@@ -10,6 +14,23 @@
   background:conic-gradient(from 0deg,transparent,rgba(255,230,151,.34),transparent,rgba(145,240,208,.22),transparent);
   animation:gachaMist 7s linear infinite;
   pointer-events:none;
+}
+
+.gacha-stage-actions{
+  display:flex;
+  justify-content:flex-end;
+  margin:0 0 10px;
+}
+
+.gacha-stage-actions button{
+  background:linear-gradient(180deg,#fff3bf,#e4b760)!important;
+  color:#3a2718!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  padding:9px 14px!important;
+  min-height:38px!important;
+  box-shadow:0 4px 0 rgba(90,57,36,.25),0 10px 18px rgba(43,27,14,.14)!important;
+  font-weight:1000!important;
 }
 
 .gacha-magic-circle{
@@ -83,10 +104,55 @@
   animation:pityGlow 1.4s ease-in-out infinite alternate;
 }
 
-.gacha-history-panel{margin-top:14px}
-.gacha-history-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.gacha-history-list span{border:1px solid rgba(255,226,145,.22);border-radius:999px;padding:6px 9px;background:rgba(255,244,214,.1);color:#ead0a0;font-size:12px;font-weight:800}
-.gacha-history-list span.pity-hit{background:rgba(255,225,150,.2);color:#fff1cc;box-shadow:0 0 14px rgba(247,216,123,.22)}
+.gacha-history-modal{
+  max-height:82vh;
+  overflow-y:auto;
+}
+
+.gacha-history-list{
+  display:grid;
+  gap:9px;
+  margin-top:12px;
+}
+
+.gacha-history-row{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:4px 10px;
+  align-items:center;
+  padding:10px 12px;
+  border:2px solid #5a3924;
+  border-radius:16px;
+  background:#fffdf5;
+  box-shadow:0 4px 0 rgba(90,57,36,.14);
+}
+
+.gacha-history-row>span{
+  grid-row:1 / span 2;
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  border-radius:999px;
+  border:2px solid #5a3924;
+  background:#fff0bd;
+  color:#5a3924;
+  font-weight:1000;
+  font-size:12px;
+}
+
+.gacha-history-row b{
+  color:#2f2418;
+}
+
+.gacha-history-row small{
+  color:#6d5a42;
+}
+
+.gacha-history-row.pity-hit{
+  background:linear-gradient(180deg,#fff9db,#ffe5a0);
+  box-shadow:0 4px 0 rgba(90,57,36,.18),0 0 18px rgba(247,216,123,.36);
+}
 
 @keyframes gachaMist{to{transform:rotate(360deg)}}
 @keyframes gachaCircle{to{transform:rotate(360deg)}}
