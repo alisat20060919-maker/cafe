@@ -1,0 +1,170 @@
+/* core99：補完 58/59/69/75 的 UI 層 */
+
+/* 75：委託刷新列 */
+#page-commissions .commission-refresh-bar{
+  flex:0 0 auto!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto auto auto!important;
+  align-items:center!important;
+  gap:7px!important;
+  margin:0 0 9px!important;
+  padding:8px!important;
+  border:3px solid #5a3924!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg,#fff8df,#e8c56d)!important;
+  box-shadow:0 4px 0 rgba(90,57,36,.16)!important;
+  color:#302012!important;
+}
+
+#page-commissions .commission-refresh-bar div{
+  display:grid!important;
+  gap:2px!important;
+  min-width:0!important;
+}
+
+#page-commissions .commission-refresh-bar b{
+  color:#302012!important;
+  font-size:13px!important;
+  font-weight:1000!important;
+}
+
+#page-commissions .commission-refresh-bar span{
+  color:#6d5236!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+#page-commissions .commission-refresh-bar button{
+  min-height:32px!important;
+  padding:6px 9px!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,#a8d878,#5f9d48)!important;
+  color:#17350e!important;
+  box-shadow:0 3px 0 rgba(90,57,36,.18)!important;
+  font-size:11px!important;
+  font-weight:1000!important;
+  white-space:nowrap!important;
+}
+
+#page-commissions .commission-refresh-bar button:nth-of-type(2),
+#page-commissions .commission-refresh-bar button:nth-of-type(3){
+  background:linear-gradient(180deg,#fff3bd,#e2b45a)!important;
+  color:#302012!important;
+}
+
+#page-commissions .commission-refresh-bar button:disabled{
+  background:linear-gradient(180deg,#e9e1d0,#b8aa8e)!important;
+  color:#4a3a29!important;
+  opacity:.72!important;
+}
+
+/* 58/59：未解鎖委託視覺更明確 */
+.core-quest-card.commission-card.status-locked{
+  opacity:.78!important;
+  filter:saturate(.7)!important;
+}
+
+.core-quest-card.commission-card.status-locked::after{
+  content:"LOCKED";
+  position:absolute;
+  right:10px;
+  top:8px;
+  padding:3px 7px;
+  border:2px solid #5a3924;
+  border-radius:999px;
+  background:rgba(255,253,245,.9);
+  color:#5a3924;
+  font-size:10px;
+  font-weight:1000;
+  letter-spacing:.08em;
+}
+
+.commission-lock-line{
+  margin:0!important;
+  color:#8f3f24!important;
+  font-size:10.5px!important;
+  font-weight:900!important;
+  line-height:1.2!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+
+/* 69：祈願演出彈窗 */
+.gacha-ritual-modal{
+  display:grid!important;
+  justify-items:center!important;
+  gap:10px!important;
+  text-align:center!important;
+  background:
+    radial-gradient(circle at 50% 20%,rgba(255,240,162,.34),transparent 36%),
+    linear-gradient(180deg,#21395f,#2f5738)!important;
+  color:#fff6d6!important;
+  border-color:#5a3924!important;
+  overflow:hidden!important;
+}
+
+.gacha-ritual-modal h2{color:#fff8dc!important;margin:0!important}
+.gacha-ritual-modal p{color:#fff0bd!important;margin:0!important;font-weight:900!important}
+
+.gacha-ritual-circle{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:132px;
+  height:132px;
+  margin:4px 0;
+  border:4px solid rgba(255,235,147,.75);
+  border-radius:999px;
+  background:radial-gradient(circle,rgba(255,255,255,.88),rgba(255,224,103,.5) 34%,rgba(104,210,173,.18) 62%,transparent 72%);
+  box-shadow:0 0 28px rgba(255,222,107,.52),inset 0 0 22px rgba(255,255,255,.42);
+  animation:gachaRitualPulse .75s ease-in-out infinite alternate;
+}
+
+.gacha-ritual-circle span{
+  position:relative;
+  z-index:3;
+  color:#fff8d8;
+  font-size:52px;
+  text-shadow:0 0 16px rgba(255,229,128,.92),0 3px 0 rgba(90,57,36,.24);
+}
+
+.gacha-ritual-circle i{
+  position:absolute;
+  inset:12px;
+  border:2px dashed rgba(255,250,210,.8);
+  border-radius:999px;
+  animation:gachaRitualSpin 2.4s linear infinite;
+}
+
+.gacha-ritual-circle i:nth-of-type(2){inset:28px;animation-direction:reverse;animation-duration:1.8s}
+.gacha-ritual-circle i:nth-of-type(3){inset:-10px;border-style:solid;opacity:.36;animation-duration:3.4s}
+.gacha-ritual-modal.is-pity .gacha-ritual-circle{box-shadow:0 0 38px rgba(255,222,107,.82),0 0 70px rgba(255,255,255,.34)}
+
+/* 72：咖啡廳場景商店入口 */
+.scene-card.cafe .tag-shop{
+  left:auto!important;
+  right:12%!important;
+  top:36%!important;
+  background:linear-gradient(180deg,#fff3bd,#e2b45a)!important;
+  color:#302012!important;
+}
+
+@keyframes gachaRitualPulse{from{transform:scale(.96);opacity:.82}to{transform:scale(1.05);opacity:1}}
+@keyframes gachaRitualSpin{to{transform:rotate(360deg)}}
+
+@media(max-width:560px){
+  #page-commissions .commission-refresh-bar{
+    grid-template-columns:1fr 1fr 1fr!important;
+    gap:6px!important;
+    padding:7px!important;
+  }
+  #page-commissions .commission-refresh-bar div{grid-column:1/-1!important;grid-template-columns:auto 1fr!important;align-items:center!important;gap:7px!important}
+  #page-commissions .commission-refresh-bar button{min-height:30px!important;padding:5px 6px!important;font-size:10px!important}
+  .gacha-ritual-circle{width:116px;height:116px}
+  .gacha-ritual-circle span{font-size:46px}
+}
