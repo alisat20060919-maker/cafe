@@ -46,15 +46,25 @@ function showDropRateModal(locationId = '') {
   `);
 }
 
+function ensureCornerDropButton(scene) {
+  const info = scene?.querySelector('.scene-info');
+  if (!info || info.querySelector('.gather-help-button')) return;
+  const button = document.createElement('button');
+  button.className = 'gather-help-button';
+  button.type = 'button';
+  button.dataset.gatherDropHelp = scene.id;
+  button.setAttribute('aria-label', `查看${getSceneTitle(scene.id)}掉落機率`);
+  button.textContent = '?';
+  info.appendChild(button);
+}
+
 function enhanceDropHint(line) {
   if (!line || line.dataset.dropHelpReady === 'true') return;
   const scene = line.closest('.scene-card');
   if (!scene?.id) return;
   line.dataset.dropHelpReady = 'true';
-  line.innerHTML = `
-    <span class="drop-help-label">可能掉落</span>
-    <button class="gather-help-button" type="button" data-gather-drop-help="${scene.id}" aria-label="查看${getSceneTitle(scene.id)}掉落機率">?</button>
-  `;
+  line.innerHTML = '<span class="drop-help-label">可能掉落</span>';
+  ensureCornerDropButton(scene);
 }
 
 function enhanceDropHints(root = document) {
