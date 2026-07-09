@@ -1,1 +1,1 @@
-export { renderCollection } from './pages-collection.js?v=fixed-album-20260709';
+export { renderCollection } from './pages-collection.js?v=fixed-scroll-20260709';
