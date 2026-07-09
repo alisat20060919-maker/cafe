@@ -104,23 +104,31 @@ function renderAlbum() {
   return `<section class="album-shell"><div class="album-page"><div class="album-title"><h2>精靈咖啡屋圖鑑</h2><b>${stats.found}/${stats.total}</b></div>${renderTabs()}<div class="album-grid-wrap"><div class="album-grid-head"><h3>${cat.icon} ${cat.label}</h3><small>${entries.filter((e) => e.discovered).length}/${entries.length}</small></div><div class="album-icon-grid">${entries.map(renderSlot).join('')}</div></div>${renderDetail(selected)}</div></section>`;
 }
 
-function bindAlbum(page) {
-  page.addEventListener('click', (event) => {
-    const tab = event.target.closest('[data-album-category]');
-    if (tab) {
-      currentCategory = tab.dataset.albumCategory || 'material';
-      selectedId = null;
-      selectedKind = currentCategory === 'fairy' ? 'fairy' : 'item';
-      renderCollection();
-      return;
-    }
-    const slot = event.target.closest('[data-entry-id]');
-    if (slot) {
-      selectedKind = slot.dataset.entryKind || 'item';
-      selectedId = slot.dataset.entryId;
-      renderCollection();
-    }
-  }, { once: true });
+function handleCollectionClick(event) {
+  const page = document.querySelector('#page-collection');
+  if (!page?.contains(event.target)) return;
+
+  const tab = event.target.closest('[data-album-category]');
+  if (tab) {
+    currentCategory = tab.dataset.albumCategory || 'material';
+    selectedId = null;
+    selectedKind = currentCategory === 'fairy' ? 'fairy' : 'item';
+    renderCollection();
+    return;
+  }
+
+  const slot = event.target.closest('[data-entry-id]');
+  if (slot) {
+    selectedKind = slot.dataset.entryKind || 'item';
+    selectedId = slot.dataset.entryId;
+    renderCollection();
+  }
+}
+
+export function initCollectionPage() {
+  if (document.body.dataset.collectionEventsBound === 'true') return;
+  document.body.dataset.collectionEventsBound = 'true';
+  document.addEventListener('click', handleCollectionClick);
 }
 
 export function renderCollection() {
@@ -128,5 +136,4 @@ export function renderCollection() {
   if (!page) return;
   getState();
   page.innerHTML = `${renderStyle()}${renderAlbum()}`;
-  bindAlbum(page);
 }
