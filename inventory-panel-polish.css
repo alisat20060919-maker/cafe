@@ -1,4 +1,4 @@
-/* core92：背包格子壓縮高度、放大圖示、名稱可讀 */
+/* core93：背包主格子完全拿掉名稱與類型文字，只留圖示 */
 #page-inventory.core-page-host.active{
   display:flex!important;
   flex-direction:column!important;
@@ -9,16 +9,8 @@
   border:4px solid #5a3924!important;
 }
 
-#page-inventory .inventory-page-head{
-  flex:0 0 auto!important;
-  margin-bottom:10px!important;
-}
-
-#page-inventory .collection-entry-actions{
-  justify-content:flex-end!important;
-  margin:0 0 9px!important;
-}
-
+#page-inventory .inventory-page-head{flex:0 0 auto!important;margin-bottom:10px!important}
+#page-inventory .collection-entry-actions{justify-content:flex-end!important;margin:0 0 9px!important}
 #page-inventory .collection-entry-actions button{
   border:2px solid #5a3924!important;
   border-radius:999px!important;
@@ -73,13 +65,7 @@
   box-shadow:0 3px 0 rgba(90,57,36,.18);
 }
 
-.inventory-toolbar{
-  display:grid;
-  grid-template-columns:minmax(0,1fr) 150px;
-  gap:8px;
-  margin-bottom:8px;
-}
-
+.inventory-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;margin-bottom:8px}
 .inventory-search-box,
 .inventory-sort-box{
   display:grid;
@@ -90,15 +76,8 @@
   background:#fff7df;
   box-shadow:0 3px 0 rgba(90,57,36,.14);
 }
-
 .inventory-search-box label,
-.inventory-sort-box label{
-  color:#5a3924;
-  font-size:10.5px;
-  font-weight:1000;
-  letter-spacing:.08em;
-}
-
+.inventory-sort-box label{color:#5a3924;font-size:10.5px;font-weight:1000;letter-spacing:.08em}
 .inventory-search-box input,
 .inventory-sort-box select{
   width:100%;
@@ -121,12 +100,10 @@
   background:linear-gradient(180deg,#6b4428,#432615);
   box-shadow:0 4px 0 rgba(42,24,12,.22);
 }
-
 .inventory-filter-panel>div{display:grid;gap:4px}
 .inventory-filter-panel p{margin:0;color:#fff4ca;font-size:10.5px;font-weight:1000;letter-spacing:.1em}
 .inventory-filter-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
 .inventory-filter-tabs::-webkit-scrollbar{display:none}
-
 .inventory-filter-tabs button{
   flex:0 0 auto;
   display:inline-grid;
@@ -143,7 +120,6 @@
   font-size:11.5px;
   font-weight:1000;
 }
-
 .inventory-filter-tabs button.active{background:linear-gradient(180deg,#a8d878,#5f9d48);color:#17350e}
 .inventory-filter-tabs button b{font-size:11.5px;white-space:nowrap}
 
@@ -163,18 +139,17 @@
 .inventory-slot-card.core-item-card{
   position:relative!important;
   display:grid!important;
-  grid-template-rows:auto 58px 2.35em auto!important;
-  justify-items:center!important;
-  gap:4px!important;
-  min-height:132px!important;
+  grid-template-rows:auto 1fr!important;
+  place-items:center!important;
+  min-height:112px!important;
   width:100%!important;
   margin:0!important;
-  padding:7px 5px 8px!important;
+  padding:8px 6px 10px!important;
   border:3px solid #5a3924!important;
   border-radius:18px!important;
   background:
-    radial-gradient(circle at 50% 38%,rgba(255,255,255,.55),transparent 30%),
-    linear-gradient(180deg,#fffdf5 0%,#f7ebc8 45%,#e3b24a 100%)!important;
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.62),transparent 33%),
+    linear-gradient(180deg,#fffdf5 0%,#f7ebc8 48%,#e3b24a 100%)!important;
   color:#302012!important;
   text-align:center!important;
   box-shadow:0 4px 0 rgba(90,57,36,.18),0 9px 14px rgba(28,16,8,.08)!important;
@@ -186,18 +161,19 @@
 .inventory-slot-card.rarity-ssr,
 .inventory-slot-card.ssr{
   background:
-    radial-gradient(circle at 50% 38%,rgba(255,255,255,.64),transparent 30%),
-    linear-gradient(180deg,#fff8d7 0%,#f0dc9a 45%,#d19b43 100%)!important;
+    radial-gradient(circle at 50% 50%,rgba(255,255,255,.7),transparent 34%),
+    linear-gradient(180deg,#fff8d7 0%,#f0dc9a 48%,#d19b43 100%)!important;
   box-shadow:0 4px 0 rgba(90,57,36,.18),0 0 18px rgba(255,223,113,.24)!important;
 }
 
 .inventory-slot-rarity{
   justify-self:start;
+  align-self:start;
   min-height:20px;
   padding:3px 7px;
   border:2px solid rgba(90,57,36,.55);
   border-radius:999px;
-  background:rgba(255,253,245,.9);
+  background:rgba(255,253,245,.92);
   color:#5a3924;
   font-size:10.5px;
   font-weight:1000;
@@ -207,63 +183,42 @@
 .inventory-slot-icon{
   display:grid!important;
   place-items:center!important;
-  width:58px!important;
-  height:58px!important;
-  margin-top:-3px!important;
+  width:70px!important;
+  height:70px!important;
+  margin-top:-2px!important;
   border:3px solid #5a3924!important;
-  border-radius:18px!important;
+  border-radius:20px!important;
   background:
-    radial-gradient(circle at 35% 20%,rgba(255,255,255,.72),transparent 34%),
+    radial-gradient(circle at 35% 20%,rgba(255,255,255,.76),transparent 34%),
     linear-gradient(180deg,#fff8d6,#e2bd67)!important;
   color:#2f2418!important;
-  font-size:34px!important;
+  font-size:42px!important;
   line-height:1!important;
   box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(90,57,36,.16)!important;
   filter:drop-shadow(0 2px 0 rgba(90,57,36,.14));
 }
 
-.inventory-slot-card b{
-  width:100%!important;
-  color:#302012!important;
-  font-size:12px!important;
-  line-height:1.15!important;
-  white-space:normal!important;
-  overflow:hidden!important;
-  display:-webkit-box!important;
-  -webkit-line-clamp:2!important;
-  -webkit-box-orient:vertical!important;
-  text-overflow:ellipsis!important;
-}
-
-.inventory-slot-card small{
-  width:100%!important;
-  color:#6d5236!important;
-  font-size:10.5px!important;
-  font-weight:900!important;
-  white-space:nowrap!important;
-  overflow:hidden!important;
-  text-overflow:ellipsis!important;
-}
+.inventory-slot-card b,
+.inventory-slot-card small{display:none!important}
 
 .inventory-slot-card strong{
   position:absolute!important;
   top:8px!important;
   right:6px!important;
-  min-width:38px!important;
-  max-width:54px!important;
-  padding:4px 6px!important;
+  min-width:34px!important;
+  max-width:48px!important;
+  padding:4px 5px!important;
   border:3px solid #5a3924!important;
   border-radius:14px!important;
   background:linear-gradient(180deg,#fff7d3,#e3b24a)!important;
   color:#3d2a18!important;
-  font-size:11px!important;
+  font-size:10.5px!important;
   font-weight:1000!important;
   box-shadow:0 3px 0 rgba(90,57,36,.17)!important;
   white-space:nowrap!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
 }
-
 .inventory-fairy-slot .inventory-slot-icon{background:radial-gradient(circle,#fffdf2,#ffd98a)!important}
 
 #inventory-list[data-current-filter="material"] .core-item-card:not([data-category="material"]),
@@ -300,9 +255,7 @@
   .inventory-toolbar{grid-template-columns:1fr;gap:7px}
   .inventory-filter-panel{padding:6px;gap:6px}
   .inventory-slot-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;padding:7px!important}
-  .inventory-slot-card.core-item-card{min-height:124px!important;border-radius:16px!important;padding:6px 4px 7px!important;grid-template-rows:auto 54px 2.25em auto!important}
-  .inventory-slot-icon{width:54px!important;height:54px!important;font-size:31px!important;border-radius:16px!important}
-  .inventory-slot-card b{font-size:11.5px!important}
-  .inventory-slot-card small{font-size:10px!important}
-  .inventory-slot-card strong{min-width:34px!important;max-width:48px!important;font-size:10.5px!important;right:5px!important;top:7px!important}
+  .inventory-slot-card.core-item-card{min-height:104px!important;border-radius:16px!important;padding:7px 5px 8px!important}
+  .inventory-slot-icon{width:64px!important;height:64px!important;font-size:38px!important;border-radius:18px!important}
+  .inventory-slot-card strong{min-width:32px!important;max-width:44px!important;font-size:10px!important;right:5px!important;top:7px!important}
 }
