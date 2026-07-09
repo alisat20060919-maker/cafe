@@ -20,17 +20,18 @@
   <link rel="stylesheet" href="fairies.css?v=ui13" />
   <link rel="stylesheet" href="ui-polish.css?v=ui22" />
   <link rel="stylesheet" href="drop-corner.css?v=ui02" />
+  <link rel="stylesheet" href="top-icons.css?v=ui01" />
   <script type="importmap">
     {"imports":{
-      "@main":"./main.js?v=core81","@dev/checks":"./dev-checks.js?v=core81","@db":"./game-data.js?v=core81",
-      "@data/items":"./data-items.js?v=core81","@data/recipes":"./data-recipes.js?v=core81","@data/story":"./data-story.js?v=core81",
-      "@validator":"./game-db-validator.js?v=core81","@state":"./game-state.js?v=core81","@save":"./save.js?v=core81","@ui":"./ui.js?v=core81",
-      "@home":"./home.js?v=core81","@router":"./router.js?v=core81","@eventBus":"./event-bus.js?v=core81","@utils":"./utils.js?v=core81",
-      "@actions/daily":"./daily-actions.js?v=core81","@actions/gacha":"./gacha-actions.js?v=core81","@actions/commission":"./commission-actions.js?v=core81",
-      "@actions/gather":"./gather-actions.js?v=core81","@actions/craft":"./craft-actions.js?v=core81","@actions/player":"./player-actions.js?v=core81",
-      "@actions/fairy":"./fairy-actions.js?v=core81","@actions/shop":"./shop-actions.js?v=core81",
-      "@pages/gacha":"./pages-gacha.js?v=core81","@pages/inventory":"./pages-inventory.js?v=core81","@pages/fairies":"./pages-fairies.js?v=core81",
-      "@pages/collection":"./pages-collection.js?v=core81","@pages/commissions":"./pages-commissions.js?v=core81","@pages/shop":"./pages-shop.js?v=core81"
+      "@main":"./main.js?v=core82","@dev/checks":"./dev-checks.js?v=core82","@db":"./game-data.js?v=core82",
+      "@data/items":"./data-items.js?v=core82","@data/recipes":"./data-recipes.js?v=core82","@data/story":"./data-story.js?v=core82",
+      "@validator":"./game-db-validator.js?v=core82","@state":"./game-state.js?v=core82","@save":"./save.js?v=core82","@ui":"./ui.js?v=core82",
+      "@home":"./home.js?v=core82","@router":"./router.js?v=core82","@eventBus":"./event-bus.js?v=core82","@utils":"./utils.js?v=core82",
+      "@actions/daily":"./daily-actions.js?v=core82","@actions/gacha":"./gacha-actions.js?v=core82","@actions/commission":"./commission-actions.js?v=core82",
+      "@actions/gather":"./gather-actions.js?v=core82","@actions/craft":"./craft-actions.js?v=core82","@actions/player":"./player-actions.js?v=core82",
+      "@actions/fairy":"./fairy-actions.js?v=core82","@actions/shop":"./shop-actions.js?v=core82",
+      "@pages/gacha":"./pages-gacha.js?v=core82","@pages/inventory":"./pages-inventory.js?v=core82","@pages/fairies":"./pages-fairies.js?v=core82",
+      "@pages/collection":"./pages-collection.js?v=core82","@pages/commissions":"./pages-commissions.js?v=core82","@pages/shop":"./pages-shop.js?v=core82"
     }}
   </script>
 </head>
@@ -45,9 +46,13 @@
           <div><p class="save-label">精靈咖啡屋｜Save v16</p><h1>精靈咖啡屋</h1></div>
         </div>
         <div class="status-pills" aria-label="玩家狀態列"></div>
-        <div class="top-actions" aria-label="快速功能">
-          <button type="button" data-action="daily">🎁<span>簽到</span></button>
-          <button type="button" data-action="settings">⚙️<span>設定</span></button>
+        <div class="top-actions image-top-actions" aria-label="快速功能">
+          <button class="image-action-button" type="button" data-route="shop" aria-label="打開商鋪">
+            <img src="./assets/images/ui/ui-shop-cart.webp" alt="商鋪" />
+          </button>
+          <button class="image-action-button" type="button" data-action="settings" aria-label="打開設定">
+            <img src="./assets/images/ui/ui-gear.webp" alt="設定" />
+          </button>
         </div>
       </header>
 
@@ -137,7 +142,6 @@
       <section class="page core-page-host" id="page-shop" aria-label="精靈商鋪頁"></section>
       <section class="page core-page-host" id="page-collection" aria-label="圖鑑頁"></section>
 
-      <button class="floating-shop-button" type="button" data-route="shop" aria-label="打開商鋪">🛒<span>商鋪</span></button>
       <footer class="bottom-dock" aria-label="底部功能列">
         <button type="button" data-route="gacha">🎰<span>祈願</span></button>
         <button type="button" data-route="commissions">📋<span>委託</span></button>
