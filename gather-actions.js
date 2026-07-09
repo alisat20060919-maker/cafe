@@ -1,5 +1,5 @@
 import { GameDB } from '@db';
-import { getState, addItem, persistState, isSceneUnlocked } from '@state';
+import { getState, replaceState, addItem, persistState, isSceneUnlocked } from '@state';
 import { getTotalFairyBuffValue, getOwnedFairyBuffs } from '@actions/fairy';
 
 const locationHints = {
@@ -19,6 +19,10 @@ const locationHints = {
     message: '煉金室之後會用來把一階素材煉成二階、三階素材，或製作魔法產品。現在還不能煉成。',
   },
 };
+
+function cloneStateForWrite() {
+  return JSON.parse(JSON.stringify(getState()));
+}
 
 function getDailyGatherLimit() {
   return Number(GameDB.gatherConfig?.dailyLimit || 5);
@@ -68,18 +72,23 @@ function localDateString(date = new Date()) {
 
 function getGatherRecord(locationId) {
   const state = getState();
-  state.gathering ||= {};
-  state.gathering[locationId] ||= { lastDate: null, count: 0 };
-  return state.gathering[locationId];
+  return state.gathering?.[locationId] || { lastDate: null, count: 0 };
 }
 
-function refreshDailyRecord(record) {
+function getFreshDailyRecord(record) {
   const today = localDateString();
-  if (record.lastDate !== today) {
-    record.lastDate = today;
-    record.count = 0;
-  }
-  return record;
+  if (record.lastDate !== today) return { lastDate: today, count: 0 };
+  return { lastDate: today, count: Math.max(0, Number(record.count || 0)) };
+}
+
+function updateGatherRecord(locationId, record) {
+  const nextState = cloneStateForWrite();
+  nextState.gathering ||= {};
+  nextState.gathering[locationId] = {
+    lastDate: record.lastDate || localDateString(),
+    count: Math.max(0, Number(record.count || 0)),
+  };
+  replaceState(nextState);
 }
 
 function pickWeighted(drops) {
@@ -173,7 +182,7 @@ export function getGatherStatus(locationId = 'backyard') {
   const table = getGatherTable(locationId);
   if (!table || !isSceneUnlocked(locationId)) return null;
   const limit = getDailyGatherLimit();
-  const record = getState().gathering?.[locationId] || { lastDate: null, count: 0 };
+  const record = getGatherRecord(locationId);
   const today = localDateString();
   const used = record.lastDate === today ? Number(record.count || 0) : 0;
   const remaining = Math.max(0, limit - used);
@@ -189,7 +198,7 @@ export function gatherAt(locationId = 'backyard') {
   }
 
   const limit = getDailyGatherLimit();
-  const record = refreshDailyRecord(getGatherRecord(locationId));
+  const record = getFreshDailyRecord(getGatherRecord(locationId));
   const currentCount = Number(record.count || 0);
   if (currentCount >= limit) {
     persistState(`gather:${locationId}:limit`);
@@ -203,9 +212,9 @@ export function gatherAt(locationId = 'backyard') {
   addItem(drop.itemId, drop.qty || 1);
   const specialEvent = rollSpecialEvent(table, locationId);
   const buffLabels = getAppliedBuffLabels(locationId);
-  record.count = currentCount + 1;
-  persistState(`gather:${locationId}`);
-  const remaining = Math.max(0, limit - record.count);
+  const nextRecord = { lastDate: record.lastDate, count: currentCount + 1 };
+  updateGatherRecord(locationId, nextRecord);
+  const remaining = Math.max(0, limit - nextRecord.count);
 
   return {
     ok: true,
@@ -217,7 +226,7 @@ export function gatherAt(locationId = 'backyard') {
     buffLabels,
     remaining,
     limit,
-    used: record.count,
+    used: nextRecord.count,
     isDepleted: remaining <= 0,
     preview: getGatherDropPreview(locationId),
     message: `你找到了 ${formatGatherDrop(drop)}。${specialEvent ? ` ${specialEvent.title}！` : ''}${buffLabels.length ? ` Buff：${buffLabels.join('、')}。` : ''}今日還能採集 ${remaining} 次。`,
