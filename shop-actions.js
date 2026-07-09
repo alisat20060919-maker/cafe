@@ -10,8 +10,26 @@ import {
   persistState,
 } from '@state';
 
+const extraShopItems = {
+  shop_magic_fertilizer: {
+    id: 'shop_magic_fertilizer',
+    itemId: 'magic_fertilizer',
+    qty: 1,
+    price: { currency: 'leafCoin', amount: 150 },
+    dailyLimit: 2,
+    description: '使用後可恢復今日採集次數，適合素材卡關時補救。',
+  },
+};
+
+export function getAllShopItems() {
+  return {
+    ...(GameDB.shopItems || {}),
+    ...extraShopItems,
+  };
+}
+
 function getShopItem(shopItemId) {
-  return GameDB.shopItems?.[shopItemId] || null;
+  return getAllShopItems()?.[shopItemId] || null;
 }
 
 function getStarSugarPack(packId) {
@@ -75,6 +93,7 @@ export function buyShopItem(shopItemId) {
   const view = getShopItemView(shopItemId);
   if (!view) return { ok: false, message: '找不到這個商品。' };
   if (view.isSoldOut) return { ok: false, message: '今天已經買完了，明天再來吧。' };
+  if (!view.item) return { ok: false, message: '商品資料不存在，請檢查 GameDB.items。' };
   if (!view.canAfford) return { ok: false, message: `${view.priceText}不足。` };
   if (!spendCurrency(view.price.currency, view.price.amount)) return { ok: false, message: `${view.priceText}不足。` };
 
