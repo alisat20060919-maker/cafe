@@ -5,7 +5,7 @@ import { emitNotice } from '@eventBus';
 import { showModal } from '@ui';
 
 function pageHeader(kicker, title, body) {
-  return `<div class="core-page-head"><span>${kicker}</span><h2>${title}</h2><p>${body}</p></div>`;
+  return `<div class="core-page-head gacha-page-head"><span>${kicker}</span><h2>${title}</h2><p>${body}</p></div>`;
 }
 
 function getRecordMeta(record) {
@@ -31,10 +31,9 @@ function renderPityStatus() {
   const percent = Math.round((pity.pityCounter / pity.hardPityAt) * 100);
   return `
     <div class="gacha-pity-box">
-      <b>SSR 保底進度</b>
-      <span>${pity.pityCounter}/${pity.hardPityAt}｜還差 ${pity.remaining} 抽</span>
+      <div><b>SSR 保底</b><span>${pity.pityCounter}/${pity.hardPityAt}</span></div>
       <em><strong style="width:${Math.min(100, percent)}%"></strong></em>
-      <small>累計祈願 ${pity.totalPulls} 次；抽到 SSR 後保底歸零。</small>
+      <small>還差 ${pity.remaining} 抽保底；累計 ${pity.totalPulls} 抽。</small>
     </div>`;
 }
 
@@ -75,6 +74,42 @@ function showGachaResultModal(records = []) {
       <div class="core-list">${records.map(renderDrop).join('')}</div>
     </div>
   `);
+}
+
+function getFeaturedFairy(pool) {
+  const fairyDrop = (pool.drops || []).find((drop) => drop.kind === 'fairy');
+  return GameDB.fairies?.[fairyDrop?.id] || Object.values(GameDB.fairies || {})[0] || null;
+}
+
+function renderFeaturedCharacter(fairy) {
+  if (!fairy) return '';
+  const buff = fairy.passiveBuff?.label || '祈願限定精靈';
+  return `
+    <section class="gacha-character-banner" aria-label="本期祈願角色">
+      <div class="gacha-banner-copy">
+        <span class="gacha-banner-tag">SSR PICK UP</span>
+        <h3>${fairy.name}</h3>
+        <p>「${fairy.quote || '今天的魔法，也會好好抵達。'}」</p>
+        <div class="gacha-character-tags"><span>${fairy.rarity || 'SSR'}</span><span>${buff}</span></div>
+      </div>
+      <div class="gacha-character-stage" aria-label="${fairy.name} 立繪佔位">
+        <div class="gacha-character-aura"></div>
+        <div class="gacha-character-standee"><span>${fairy.icon || '🧚'}</span></div>
+        <div class="gacha-character-nameplate">${fairy.name}</div>
+      </div>
+    </section>`;
+}
+
+function renderPoolDrops(pool) {
+  const drops = (pool.drops || []).slice(0, 6);
+  return `
+    <div class="gacha-pool-preview">
+      <span>可能獲得</span>
+      <div>${drops.map((drop) => {
+        const meta = drop.kind === 'fairy' ? GameDB.fairies?.[drop.id] : GameDB.items?.[drop.id];
+        return `<b>${meta?.icon || '◇'}</b>`;
+      }).join('')}</div>
+    </div>`;
 }
 
 function handleGachaClick(event) {
@@ -120,20 +155,25 @@ export function renderGacha() {
   const state = getState();
   const pool = GameDB.gachaPools.standard;
   const costMeta = GameDB.currencies[pool.cost.currency];
+  const featuredFairy = getFeaturedFairy(pool);
   page.innerHTML = `
-    ${pageHeader('WISH', '星糖祈願', '祈願結果用彈窗展示；紀錄收在右側按鈕，不塞在主畫面。')}
-    <section class="core-gacha-layout gacha-stage">
+    ${pageHeader('WISH', '星糖祈願', '本期精靈 Pick Up。立繪先用佔位，之後可以換成你畫的角色圖。')}
+    <section class="gacha-wish-page">
       <div class="gacha-stage-actions">
         <button type="button" data-gacha-history>祈願紀錄</button>
       </div>
-      <div class="core-gacha-machine">
-        <div class="gacha-magic-circle"><div class="core-orb">✦</div></div>
-        <h3>${pool.name}</h3>
-        <p>${pool.description}</p>
+      ${renderFeaturedCharacter(featuredFairy)}
+      <section class="gacha-control-panel">
+        <div class="gacha-pool-title">
+          <span>STANDARD WISH</span>
+          <h3>${pool.name}</h3>
+          <p>${pool.description}</p>
+        </div>
         ${renderPityStatus()}
-        <div class="core-pills"><span>持有：${costMeta.icon} ${state.player[pool.cost.currency]}</span><span>單抽 ${pool.cost.amount}</span></div>
-        <div class="core-actions-row"><button type="button" data-draw="1">抽 1 次</button><button type="button" data-draw="10">抽 10 次</button></div>
-      </div>
+        ${renderPoolDrops(pool)}
+        <div class="gacha-currency-row"><span>持有 ${costMeta.icon} ${state.player[pool.cost.currency]}</span><span>單抽 ${costMeta.icon} ${pool.cost.amount}</span></div>
+        <div class="gacha-draw-actions"><button type="button" data-draw="1">祈願 1 次</button><button type="button" data-draw="10">祈願 10 次</button></div>
+      </section>
     </section>`;
 }
 
