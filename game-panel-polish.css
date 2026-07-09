@@ -1,0 +1,337 @@
+/* core85：參考遊戲 UI 的面板整理層，不動功能，只整理層級與質感 */
+:root{
+  --panel-ink:#302012;
+  --panel-brown:#5a3924;
+  --panel-brown-dark:#2e1a10;
+  --panel-gold:#e7bd64;
+  --panel-gold-light:#fff3bd;
+  --panel-cream:#fff7df;
+  --panel-green:#4f7f43;
+  --panel-green-dark:#31572d;
+  --panel-shadow:0 6px 0 rgba(68,39,20,.26),0 16px 24px rgba(30,18,10,.16);
+}
+
+/* 通用頁面：整頁像一塊遊戲內頁板，不像普通網頁 */
+.core-page-host.active{
+  position:relative!important;
+  padding:14px!important;
+  background:
+    linear-gradient(180deg,rgba(255,241,177,.22),transparent 80px),
+    linear-gradient(180deg,#6c9652 0%,#416a3b 54%,#2f4e31 100%)!important;
+  border:4px solid var(--panel-brown)!important;
+  border-radius:26px!important;
+  box-shadow:inset 0 0 0 3px rgba(255,239,180,.28),0 12px 26px rgba(44,27,15,.2)!important;
+}
+
+.core-page-host.active::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(255,240,184,.18);
+  border-radius:20px;
+  pointer-events:none;
+}
+
+/* 頁面標題改成木牌 + 奶油內框 */
+.core-page-head,
+.shop-page-head,
+.fairy-page-head{
+  position:relative!important;
+  margin:0 0 14px!important;
+  padding:15px 17px!important;
+  background:
+    linear-gradient(180deg,rgba(255,249,222,.96),rgba(255,236,172,.92))!important;
+  border:3px solid var(--panel-brown)!important;
+  border-radius:24px!important;
+  box-shadow:var(--panel-shadow)!important;
+  overflow:hidden!important;
+}
+
+.core-page-head::after,
+.shop-page-head::after,
+.fairy-page-head::after{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:7px;
+  height:2px;
+  border-radius:999px;
+  background:rgba(90,57,36,.16);
+}
+
+.core-page-head>span,
+.shop-page-head>span,
+.fairy-page-head>span{
+  display:inline-grid!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin-bottom:4px!important;
+  padding:3px 9px!important;
+  border:2px solid var(--panel-brown)!important;
+  border-radius:999px!important;
+  background:#fffdf2!important;
+  color:#734821!important;
+  font-size:11px!important;
+  letter-spacing:.12em!important;
+}
+
+.core-page-head h2,
+.shop-page-head h2,
+.fairy-page-head h2{
+  margin:0!important;
+  color:var(--panel-ink)!important;
+  font-size:26px!important;
+  line-height:1.08!important;
+}
+
+.core-page-head p,
+.shop-page-head p,
+.fairy-page-head p{
+  max-width:34em!important;
+  margin:6px 0 0!important;
+  color:#725437!important;
+  font-size:13px!important;
+  font-weight:800!important;
+}
+
+/* 資源列：不要像文字，改成遊戲狀態膠囊 */
+.core-actions-row{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  align-items:center!important;
+  gap:8px!important;
+  margin:10px 0 14px!important;
+}
+
+.core-actions-row>span,
+.core-actions-row>a{
+  display:inline-flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  min-height:34px!important;
+  padding:6px 11px!important;
+  border:2px solid var(--panel-brown)!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,#fff7cf,#eac46d)!important;
+  color:var(--panel-ink)!important;
+  font-weight:1000!important;
+  box-shadow:0 3px 0 rgba(90,57,36,.24)!important;
+}
+
+/* 區塊標題：像木牌貼在面板上 */
+.shop-section,
+.gacha-stage,
+.core-filter-group,
+.core-list{
+  position:relative!important;
+}
+
+.shop-section-head{
+  position:relative!important;
+  padding:13px 15px 13px 18px!important;
+  border:3px solid var(--panel-brown)!important;
+  border-radius:21px!important;
+  background:
+    linear-gradient(180deg,#6b4428,#432615)!important;
+  color:#fff4ca!important;
+  box-shadow:0 5px 0 rgba(42,24,12,.28)!important;
+}
+
+.shop-section-head::before{
+  content:"";
+  position:absolute;
+  left:10px;
+  top:12px;
+  bottom:12px;
+  width:5px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff2ae,#d8a33e);
+}
+
+.shop-section-head span,
+.shop-section-head h3,
+.shop-section-head p{
+  color:#fff4ca!important;
+}
+
+.shop-section-head span{opacity:.86!important}
+.shop-section-head p{color:#ead1a4!important}
+
+/* 星糖課金包：更像遊戲商城，不像普通商品卡 */
+.shop-star-pack-grid{
+  gap:12px!important;
+}
+
+.shop-star-pack-card{
+  position:relative!important;
+  overflow:hidden!important;
+  border:3px solid var(--panel-brown)!important;
+  border-radius:25px!important;
+  background:
+    radial-gradient(circle at 26% 8%,rgba(255,255,255,.75),transparent 24%),
+    radial-gradient(circle at 78% 0%,rgba(255,242,158,.55),transparent 25%),
+    linear-gradient(180deg,#fff6c8 0%,#f0bf59 58%,#b97730 100%)!important;
+  box-shadow:var(--panel-shadow)!important;
+}
+
+.shop-star-pack-card::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border:1px solid rgba(90,57,36,.22);
+  border-radius:18px;
+  pointer-events:none;
+}
+
+.shop-star-pack-icon{
+  position:relative!important;
+  z-index:1!important;
+  background:radial-gradient(circle,#fffef0,#f3cf72)!important;
+  border:3px solid var(--panel-brown)!important;
+  color:#7b4912!important;
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.58),0 4px 0 rgba(90,57,36,.2)!important;
+}
+
+.shop-star-pack-body,
+.shop-star-pack-card button{position:relative!important;z-index:1!important}
+
+.shop-star-pack-body h3{
+  font-size:18px!important;
+  letter-spacing:.02em!important;
+}
+
+.shop-star-pack-body strong{
+  justify-self:center!important;
+  width:max-content!important;
+  padding:4px 10px!important;
+  border-radius:999px!important;
+  background:rgba(255,253,238,.54)!important;
+  border:2px solid rgba(90,57,36,.36)!important;
+}
+
+.shop-star-pack-card button,
+.shop-item-card button,
+.gacha-stage-actions button{
+  border:3px solid var(--panel-brown)!important;
+  background:linear-gradient(180deg,#a9e86d,#5f9d3d)!important;
+  color:#17350e!important;
+  box-shadow:0 4px 0 rgba(56,34,18,.28)!important;
+}
+
+/* 每日素材：做成商店清單，而不是三欄網頁卡 */
+.shop-item-card{
+  border:3px solid var(--panel-brown)!important;
+  background:linear-gradient(180deg,#fffaf0,#f5e7c6)!important;
+  border-radius:22px!important;
+  box-shadow:0 5px 0 rgba(90,57,36,.16)!important;
+}
+
+.shop-item-body h3{color:var(--panel-ink)!important}
+.shop-item-body p{color:#6d5236!important;font-weight:800!important}
+.shop-item-body span{color:#7b4c24!important}
+
+.shop-item-icon{
+  border:3px solid var(--panel-brown)!important;
+  background:linear-gradient(180deg,#fff7d0,#e2bd68)!important;
+  border-radius:18px!important;
+}
+
+/* 祈願主面板：像祭壇卡，不要像表單區塊 */
+#page-gacha .core-page-head{
+  margin-bottom:10px!important;
+}
+
+.gacha-stage-actions{
+  position:absolute!important;
+  top:10px!important;
+  right:10px!important;
+  z-index:4!important;
+  margin:0!important;
+}
+
+.core-gacha-machine{
+  position:relative!important;
+  min-height:360px!important;
+  padding:52px 18px 18px!important;
+  border:4px solid var(--panel-brown)!important;
+  border-radius:28px!important;
+  background:
+    radial-gradient(circle at 50% 15%,rgba(255,246,179,.35),transparent 26%),
+    linear-gradient(180deg,#35587b 0%,#3d6d46 48%,#2e4c2f 100%)!important;
+  box-shadow:inset 0 0 0 3px rgba(255,240,184,.18),var(--panel-shadow)!important;
+  color:#fff5d6!important;
+  overflow:hidden!important;
+}
+
+.core-gacha-machine h3,
+.core-gacha-machine p{
+  position:relative!important;
+  z-index:1!important;
+  color:#fff5d6!important;
+  text-align:center!important;
+}
+
+.core-gacha-machine h3{
+  width:max-content!important;
+  max-width:100%!important;
+  margin:4px auto 6px!important;
+  padding:9px 22px!important;
+  border:3px solid var(--panel-brown)!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,#fff4bd,#e3b558)!important;
+  color:var(--panel-ink)!important;
+  box-shadow:0 5px 0 rgba(44,25,13,.22)!important;
+}
+
+.gacha-pity-box{
+  border:2px solid rgba(255,241,184,.42)!important;
+  background:rgba(30,20,14,.34)!important;
+  border-radius:20px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.14)!important;
+}
+
+.core-gacha-machine .core-pills{
+  justify-content:center!important;
+}
+
+.core-gacha-machine .core-pills span{
+  background:#fff1bd!important;
+  color:var(--panel-ink)!important;
+  border:2px solid var(--panel-brown)!important;
+}
+
+.core-gacha-machine .core-actions-row{
+  justify-content:center!important;
+}
+
+.core-gacha-machine .core-actions-row button{
+  min-width:120px!important;
+  border:3px solid var(--panel-brown)!important;
+  background:linear-gradient(180deg,#fff3bd,#e0ad49)!important;
+  color:var(--panel-ink)!important;
+  box-shadow:0 5px 0 rgba(56,34,18,.28)!important;
+}
+
+/* 彈窗也跟遊戲 UI 統一 */
+.core-modal-card{
+  border:4px solid var(--panel-brown)!important;
+  border-radius:28px!important;
+  background:linear-gradient(180deg,#fff8e2,#f0dfb8)!important;
+  box-shadow:0 18px 48px rgba(28,16,8,.34)!important;
+}
+
+.core-modal-close{
+  border:3px solid var(--panel-brown)!important;
+  background:linear-gradient(180deg,#fff3bd,#e0ad49)!important;
+  box-shadow:0 3px 0 rgba(56,34,18,.24)!important;
+}
+
+@media(max-width:560px){
+  .core-page-host.active{padding:11px!important;border-radius:22px!important}
+  .core-page-head h2,.shop-page-head h2,.fairy-page-head h2{font-size:23px!important}
+  .gacha-stage-actions{top:8px!important;right:8px!important}
+  .gacha-stage-actions button{padding:8px 11px!important;font-size:12px!important}
+  .core-gacha-machine{min-height:330px!important;padding-top:50px!important}
+  .shop-star-pack-card{border-radius:22px!important}
+}
