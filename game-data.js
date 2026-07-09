@@ -3,7 +3,7 @@ import { recipes } from '@data/recipes';
 import { openingStory } from '@data/story';
 
 export const GameDB = {
-  version: 22,
+  version: 23,
 
   itemTypes: ['material', 'refined_material', 'sweet', 'drink', 'product', 'rare_material', 'event_material'],
   materialTypes: ['material', 'refined_material', 'rare_material', 'event_material'],
@@ -495,7 +495,7 @@ export const GameDB = {
       source: ['祈願'],
       quote: '甜甜的好運，已經送到你手上囉。',
       description: '喜歡偷吃莓果塔的小精靈，走過的地方會留下金色糖屑。',
-      story: '她總是假裝自己沒有偷吃莓果塔，但嘴角的金色糖屑會把她出賣。',
+      story: '她總是假裝自己沒有偷吃莓果塔，但每次嘴邊都沾著星星莓果醬。',
       favoriteSweets: ['star_berry_tart', 'forest_cookie'],
       passiveBuff: { type: 'gatherQtyBonus', target: 'backyard', value: 0.2, label: '後山採集量 +20%' },
       dialogues: {
@@ -533,6 +533,36 @@ export const GameDB = {
 
   shopConfig: {
     dailyLimitDefault: 3,
+  },
+
+  starSugarPacks: {
+    star_sugar_pack_s: {
+      id: 'star_sugar_pack_s',
+      title: '小袋星糖',
+      icon: '✦',
+      amount: 120,
+      priceText: '免費測試',
+      badge: 'TEST',
+      description: '測試用星糖補給，暫時不接真付款。',
+    },
+    star_sugar_pack_m: {
+      id: 'star_sugar_pack_m',
+      title: '星糖罐',
+      icon: '✦',
+      amount: 680,
+      priceText: '免費測試',
+      badge: 'HOT',
+      description: '正式版可改成真正的課金商品，現在先免費領。',
+    },
+    star_sugar_pack_l: {
+      id: 'star_sugar_pack_l',
+      title: '滿月星糖箱',
+      icon: '✦',
+      amount: 1280,
+      priceText: '免費測試',
+      badge: 'MAX',
+      description: '大量星糖測試包，用來驗證祈願與商店流程。',
+    },
   },
 
   shopItems: {
