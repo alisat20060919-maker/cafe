@@ -1,158 +1,116 @@
-/* core93：背包主格子完全拿掉名稱與類型文字，只留圖示 */
+/* core94：背包改成緊湊物品欄方格，不再像大卡片 */
 #page-inventory.core-page-host.active{
   display:flex!important;
   flex-direction:column!important;
   min-height:clamp(560px,calc(100svh - 300px),760px)!important;
   background:
-    radial-gradient(circle at 18% -8%,rgba(255,238,166,.18),transparent 32%),
-    linear-gradient(180deg,#6f8b54 0%,#486f3e 52%,#2f4d30 100%)!important;
+    radial-gradient(circle at 18% -8%,rgba(255,238,166,.16),transparent 30%),
+    linear-gradient(180deg,#587947 0%,#385f38 52%,#263f2a 100%)!important;
   border:4px solid #5a3924!important;
 }
 
-#page-inventory .inventory-page-head{flex:0 0 auto!important;margin-bottom:10px!important}
-#page-inventory .collection-entry-actions{justify-content:flex-end!important;margin:0 0 9px!important}
-#page-inventory .collection-entry-actions button{
-  border:2px solid #5a3924!important;
-  border-radius:999px!important;
-  background:linear-gradient(180deg,#fff3bd,#e2b45a)!important;
-  color:#302012!important;
-  box-shadow:0 3px 0 rgba(90,57,36,.22)!important;
-  font-weight:1000!important;
-}
+#page-inventory .inventory-page-head{flex:0 0 auto!important;margin-bottom:9px!important}
+#page-inventory .collection-entry-actions,
+.inventory-toolbar{display:none!important}
 
 .inventory-hero-card{
   display:grid;
   grid-template-columns:1fr auto;
-  gap:12px;
+  gap:10px;
   align-items:center;
-  padding:13px;
-  border:4px solid #5a3924;
-  border-radius:24px;
-  background:
-    radial-gradient(circle at 80% 10%,rgba(255,255,255,.34),transparent 26%),
-    linear-gradient(180deg,#fff7cf,#d9b56a 58%,#9b6b3c);
+  padding:9px 11px;
+  border:3px solid #5a3924;
+  border-radius:18px;
+  background:linear-gradient(180deg,#fff7df,#e8c772);
   color:#302012;
-  box-shadow:inset 0 0 0 3px rgba(255,248,214,.24),0 6px 0 rgba(90,57,36,.2),0 16px 24px rgba(35,21,10,.14);
-  margin-bottom:10px;
+  box-shadow:0 4px 0 rgba(90,57,36,.16);
+  margin-bottom:8px;
 }
 
-.inventory-hero-copy{display:grid;gap:5px}
-.inventory-hero-copy span{
-  width:max-content;
-  max-width:100%;
-  padding:4px 9px;
-  border:2px solid #5a3924;
-  border-radius:999px;
-  background:#fffdf2;
-  color:#7a4e2b;
-  font-size:11px;
-  font-weight:1000;
-  letter-spacing:.12em;
-}
-.inventory-hero-copy h3{margin:0;color:#302012;font-size:23px;line-height:1.08}
-.inventory-hero-copy p{margin:0;color:#62442c;font-size:12px;line-height:1.4;font-weight:900}
-.inventory-hero-stats{display:grid;gap:6px;min-width:88px}
+.inventory-hero-copy{display:grid;gap:2px}
+.inventory-hero-copy span{display:none}
+.inventory-hero-copy h3{margin:0;color:#302012;font-size:18px;line-height:1.08}
+.inventory-hero-copy p{margin:0;color:#6d5236;font-size:11px;line-height:1.35;font-weight:900}
+.inventory-hero-stats{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap;min-width:0}
 .inventory-hero-stats b{
   display:grid;
   place-items:center;
-  min-height:30px;
-  padding:5px 9px;
-  border:2px solid #5a3924;
-  border-radius:999px;
-  background:#fff7df;
-  color:#302012;
-  font-size:12px;
-  box-shadow:0 3px 0 rgba(90,57,36,.18);
-}
-
-.inventory-toolbar{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;margin-bottom:8px}
-.inventory-search-box,
-.inventory-sort-box{
-  display:grid;
-  gap:3px;
-  padding:7px;
-  border:3px solid #5a3924;
-  border-radius:17px;
-  background:#fff7df;
-  box-shadow:0 3px 0 rgba(90,57,36,.14);
-}
-.inventory-search-box label,
-.inventory-sort-box label{color:#5a3924;font-size:10.5px;font-weight:1000;letter-spacing:.08em}
-.inventory-search-box input,
-.inventory-sort-box select{
-  width:100%;
-  min-height:32px;
+  min-height:26px;
+  padding:4px 7px;
   border:2px solid #5a3924;
   border-radius:999px;
   background:#fffdf5;
   color:#302012;
-  font-weight:900;
-  padding:0 10px;
+  font-size:10.5px;
+  box-shadow:0 2px 0 rgba(90,57,36,.14);
+  white-space:nowrap;
 }
 
 .inventory-filter-panel{
   display:grid;
-  gap:6px;
+  gap:5px;
   padding:7px;
   margin-bottom:8px;
   border:3px solid #5a3924;
-  border-radius:20px;
+  border-radius:18px;
   background:linear-gradient(180deg,#6b4428,#432615);
   box-shadow:0 4px 0 rgba(42,24,12,.22);
 }
-.inventory-filter-panel>div{display:grid;gap:4px}
+.inventory-filter-panel>div{display:grid;gap:4px;min-width:0}
 .inventory-filter-panel p{margin:0;color:#fff4ca;font-size:10.5px;font-weight:1000;letter-spacing:.1em}
-.inventory-filter-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.inventory-filter-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;min-width:0}
 .inventory-filter-tabs::-webkit-scrollbar{display:none}
 .inventory-filter-tabs button{
   flex:0 0 auto;
   display:inline-grid;
-  grid-template-columns:auto 1fr;
+  grid-template-columns:auto auto;
   align-items:center;
   gap:4px;
-  min-height:32px;
-  padding:4px 9px;
+  min-height:30px;
+  padding:4px 8px;
   border:2px solid #5a3924;
   border-radius:999px;
   background:linear-gradient(180deg,#fff3bd,#e2b45a);
   color:#302012;
-  box-shadow:0 3px 0 rgba(42,24,12,.2);
-  font-size:11.5px;
+  box-shadow:0 2px 0 rgba(42,24,12,.2);
+  font-size:11px;
   font-weight:1000;
 }
 .inventory-filter-tabs button.active{background:linear-gradient(180deg,#a8d878,#5f9d48);color:#17350e}
-.inventory-filter-tabs button b{font-size:11.5px;white-space:nowrap}
+.inventory-filter-tabs button b{font-size:11px;white-space:nowrap}
 
 .inventory-slot-grid{
   flex:1 1 auto!important;
   display:grid!important;
-  grid-template-columns:repeat(auto-fill,minmax(92px,1fr))!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
   align-content:start!important;
-  gap:8px!important;
-  padding:9px!important;
+  gap:7px!important;
+  padding:8px!important;
   border:3px solid #5a3924!important;
   border-radius:22px!important;
-  background:rgba(255,247,223,.52)!important;
-  box-shadow:inset 0 0 0 2px rgba(255,248,214,.22),0 5px 0 rgba(90,57,36,.14)!important;
+  background:
+    linear-gradient(180deg,rgba(255,248,221,.26),rgba(255,248,221,.08)),
+    linear-gradient(180deg,#315f34,#27472b)!important;
+  box-shadow:inset 0 0 0 2px rgba(255,248,214,.15),0 5px 0 rgba(90,57,36,.14)!important;
 }
 
 .inventory-slot-card.core-item-card{
   position:relative!important;
   display:grid!important;
-  grid-template-rows:auto 1fr!important;
   place-items:center!important;
-  min-height:112px!important;
+  aspect-ratio:1 / 1!important;
+  min-height:0!important;
   width:100%!important;
   margin:0!important;
-  padding:8px 6px 10px!important;
+  padding:7px!important;
   border:3px solid #5a3924!important;
   border-radius:18px!important;
   background:
-    radial-gradient(circle at 50% 50%,rgba(255,255,255,.62),transparent 33%),
-    linear-gradient(180deg,#fffdf5 0%,#f7ebc8 48%,#e3b24a 100%)!important;
+    radial-gradient(circle at 35% 18%,rgba(255,255,255,.64),transparent 32%),
+    linear-gradient(180deg,#fff5c9 0%,#dcae4c 100%)!important;
   color:#302012!important;
   text-align:center!important;
-  box-shadow:0 4px 0 rgba(90,57,36,.18),0 9px 14px rgba(28,16,8,.08)!important;
+  box-shadow:0 4px 0 rgba(46,26,12,.2),0 8px 12px rgba(28,16,8,.09)!important;
   cursor:pointer!important;
   overflow:hidden!important;
 }
@@ -161,41 +119,41 @@
 .inventory-slot-card.rarity-ssr,
 .inventory-slot-card.ssr{
   background:
-    radial-gradient(circle at 50% 50%,rgba(255,255,255,.7),transparent 34%),
-    linear-gradient(180deg,#fff8d7 0%,#f0dc9a 48%,#d19b43 100%)!important;
-  box-shadow:0 4px 0 rgba(90,57,36,.18),0 0 18px rgba(255,223,113,.24)!important;
+    radial-gradient(circle at 35% 18%,rgba(255,255,255,.72),transparent 32%),
+    linear-gradient(180deg,#fff8d7 0%,#d99a32 100%)!important;
+  box-shadow:0 4px 0 rgba(46,26,12,.2),0 0 16px rgba(255,223,113,.24)!important;
 }
 
 .inventory-slot-rarity{
-  justify-self:start;
-  align-self:start;
-  min-height:20px;
-  padding:3px 7px;
-  border:2px solid rgba(90,57,36,.55);
-  border-radius:999px;
-  background:rgba(255,253,245,.92);
-  color:#5a3924;
-  font-size:10.5px;
-  font-weight:1000;
-  line-height:1;
+  position:absolute!important;
+  top:5px!important;
+  left:5px!important;
+  min-height:18px!important;
+  padding:2px 6px!important;
+  border:2px solid rgba(90,57,36,.55)!important;
+  border-radius:999px!important;
+  background:rgba(255,253,245,.94)!important;
+  color:#5a3924!important;
+  font-size:10px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  z-index:2!important;
 }
 
 .inventory-slot-icon{
   display:grid!important;
   place-items:center!important;
-  width:70px!important;
-  height:70px!important;
-  margin-top:-2px!important;
-  border:3px solid #5a3924!important;
-  border-radius:20px!important;
-  background:
-    radial-gradient(circle at 35% 20%,rgba(255,255,255,.76),transparent 34%),
-    linear-gradient(180deg,#fff8d6,#e2bd67)!important;
+  width:62px!important;
+  height:62px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
   color:#2f2418!important;
-  font-size:42px!important;
+  font-size:46px!important;
   line-height:1!important;
-  box-shadow:inset 0 2px 0 rgba(255,255,255,.5),0 3px 0 rgba(90,57,36,.16)!important;
-  filter:drop-shadow(0 2px 0 rgba(90,57,36,.14));
+  box-shadow:none!important;
+  filter:drop-shadow(0 3px 0 rgba(90,57,36,.2));
 }
 
 .inventory-slot-card b,
@@ -203,23 +161,25 @@
 
 .inventory-slot-card strong{
   position:absolute!important;
-  top:8px!important;
-  right:6px!important;
-  min-width:34px!important;
-  max-width:48px!important;
-  padding:4px 5px!important;
-  border:3px solid #5a3924!important;
-  border-radius:14px!important;
+  right:5px!important;
+  bottom:5px!important;
+  top:auto!important;
+  min-width:30px!important;
+  max-width:44px!important;
+  padding:3px 5px!important;
+  border:2px solid #5a3924!important;
+  border-radius:999px!important;
   background:linear-gradient(180deg,#fff7d3,#e3b24a)!important;
   color:#3d2a18!important;
-  font-size:10.5px!important;
+  font-size:10px!important;
   font-weight:1000!important;
-  box-shadow:0 3px 0 rgba(90,57,36,.17)!important;
+  box-shadow:0 2px 0 rgba(90,57,36,.17)!important;
   white-space:nowrap!important;
   overflow:hidden!important;
   text-overflow:ellipsis!important;
+  z-index:2!important;
 }
-.inventory-fairy-slot .inventory-slot-icon{background:radial-gradient(circle,#fffdf2,#ffd98a)!important}
+.inventory-fairy-slot .inventory-slot-icon{background:transparent!important}
 
 #inventory-list[data-current-filter="material"] .core-item-card:not([data-category="material"]),
 #inventory-list[data-current-filter="sweet"] .core-item-card:not([data-category="sweet"]),
@@ -250,12 +210,12 @@
 @media(max-width:560px){
   #page-inventory.core-page-host.active{min-height:calc(100svh - 315px)!important;padding:9px!important}
   #page-inventory .inventory-page-head{padding:11px 13px!important}
-  .inventory-hero-card{grid-template-columns:1fr;gap:8px;padding:11px;border-radius:22px}
-  .inventory-hero-stats{grid-template-columns:repeat(3,minmax(0,1fr));min-width:0}
-  .inventory-toolbar{grid-template-columns:1fr;gap:7px}
+  .inventory-hero-card{grid-template-columns:1fr;gap:6px;padding:9px;border-radius:18px}
+  .inventory-hero-stats{justify-content:flex-start}
   .inventory-filter-panel{padding:6px;gap:6px}
-  .inventory-slot-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;padding:7px!important}
-  .inventory-slot-card.core-item-card{min-height:104px!important;border-radius:16px!important;padding:7px 5px 8px!important}
-  .inventory-slot-icon{width:64px!important;height:64px!important;font-size:38px!important;border-radius:18px!important}
-  .inventory-slot-card strong{min-width:32px!important;max-width:44px!important;font-size:10px!important;right:5px!important;top:7px!important}
+  .inventory-slot-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:7px!important;padding:7px!important}
+  .inventory-slot-card.core-item-card{border-radius:15px!important;padding:6px!important}
+  .inventory-slot-icon{width:54px!important;height:54px!important;font-size:40px!important}
+  .inventory-slot-rarity{font-size:9.5px!important;padding:2px 5px!important;top:4px!important;left:4px!important}
+  .inventory-slot-card strong{font-size:9.5px!important;right:4px!important;bottom:4px!important;min-width:28px!important;max-width:40px!important}
 }
