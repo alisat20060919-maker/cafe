@@ -1,0 +1,44 @@
+/* 單一修正：掉落機率 ? 固定在場景資訊框右上角 */
+.scene-info{
+  position:relative!important;
+  padding-right:64px!important;
+}
+.scene-info .gather-preview-line{
+  display:block!important;
+  width:max-content!important;
+  max-width:100%!important;
+  margin-top:9px!important;
+  margin-left:0!important;
+  clear:both!important;
+}
+.scene-info .gather-preview-line .drop-help-label{
+  color:#fff8dc!important;
+  font-weight:900!important;
+}
+.scene-info>.gather-help-button{
+  position:absolute!important;
+  top:14px!important;
+  right:14px!important;
+  z-index:20!important;
+  display:grid!important;
+  place-items:center!important;
+  width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,#fff6ca,#e4b760)!important;
+  color:#3d2819!important;
+  border:2px solid #5a3924!important;
+  box-shadow:0 4px 0 rgba(90,57,36,.28),0 8px 18px rgba(20,12,6,.22)!important;
+  font-size:19px!important;
+  line-height:1!important;
+}
+.scene-info>.gather-help-button:active{
+  transform:translateY(2px)!important;
+  box-shadow:0 2px 0 rgba(90,57,36,.28)!important;
+}
+@media(max-width:520px){
+  .scene-info{padding-right:58px!important}
+  .scene-info>.gather-help-button{top:12px!important;right:12px!important;width:32px!important;height:32px!important;min-height:32px!important}
+}
