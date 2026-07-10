@@ -2,7 +2,7 @@ import { GameDB } from '@db';
 import { isUnlocked, getUnlockRequirementText } from '@state';
 import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
 import { showModal } from '@ui';
-import { showCraftStationModal } from './craft-ui.js?v=core002';
+import { navigate } from '@router';
 
 let activeIndex = 0;
 let homeRoot;
@@ -91,13 +91,6 @@ function getStationRequirementText(sceneId) {
 function getStationLockMessage(sceneId) {
   const label = GameDB.stations?.[sceneId]?.label || GameDB.scenes?.[sceneId]?.label || sceneId;
   return `${label}尚未解鎖。${getStationRequirementText(sceneId)}後就能進入。`;
-}
-
-function getStationOpenMessage(sceneId) {
-  const station = GameDB.stations?.[sceneId];
-  const recipeCount = Object.values(GameDB.recipes || {}).filter((recipe) => recipe.station === sceneId).length;
-  if (!recipeCount) return `${station?.label || sceneId}目前還沒有可製作配方。`;
-  return `${station?.label || sceneId}目前有 ${recipeCount} 份配方，可以查看材料並選擇單次或全部製作。`;
 }
 
 function renderPreviewText(locationId) {
@@ -246,9 +239,7 @@ function showLocationHintModal(scene) {
 }
 
 function openRecipeStation(scene) {
-  const message = getStationOpenMessage(scene.id);
-  showCraftStationModal(scene.id);
-  setDialogue(scene.dataset.speaker || '甜點精靈', scene.dataset.title, message);
+  navigate(scene.id);
 }
 
 export function setActiveScene(index) {
