@@ -1,0 +1,1 @@
+Automated world map and multi-region gathering regression verification.
