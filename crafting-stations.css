@@ -1,0 +1,242 @@
+.craft-station-page {
+  min-height: 100%;
+  padding: 22px 24px 108px;
+  background:
+    radial-gradient(circle at 12% 4%, rgba(255, 232, 168, .18), transparent 24%),
+    linear-gradient(180deg, #214d37 0%, #183a2b 52%, #122b21 100%);
+  color: #fff8df;
+}
+
+#page-alchemy .craft-station-page {
+  background:
+    radial-gradient(circle at 82% 6%, rgba(189, 158, 255, .18), transparent 26%),
+    linear-gradient(180deg, #403047 0%, #30243a 52%, #211927 100%);
+}
+
+.craft-station-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+  padding: 18px;
+  border: 2px solid rgba(247, 216, 123, .48);
+  border-radius: 26px;
+  background: rgba(38, 27, 20, .42);
+  box-shadow: inset 0 0 0 4px rgba(255, 255, 255, .035), 0 16px 34px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(12px);
+}
+
+.craft-station-title-wrap {
+  min-width: 0;
+  text-align: center;
+}
+
+.craft-station-kicker {
+  display: block;
+  margin-bottom: 4px;
+  color: #f4d983;
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.craft-station-title-wrap h2 {
+  margin: 0;
+  color: #fff5cf;
+  font-size: clamp(1.55rem, 4vw, 2.35rem);
+  line-height: 1.1;
+  text-shadow: 0 3px 0 rgba(45, 27, 18, .55);
+}
+
+.craft-station-title-wrap p {
+  margin: 7px 0 0;
+  color: rgba(244, 244, 222, .82);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.craft-station-back,
+.craft-station-inventory {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 2px solid rgba(247, 216, 123, .58);
+  border-radius: 999px;
+  color: #3b291d;
+  background: linear-gradient(180deg, #fff0aa, #e7b862);
+  box-shadow: inset 0 -3px 0 rgba(81, 47, 24, .18), 0 8px 16px rgba(0, 0, 0, .14);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.craft-station-inventory {
+  color: #fff4d7;
+  background: rgba(54, 38, 28, .72);
+}
+
+.craft-station-summary {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.craft-station-summary span {
+  padding: 8px 13px;
+  border: 1px solid rgba(247, 216, 123, .36);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .08);
+  color: #f8ebc2;
+  font-size: .84rem;
+  font-weight: 800;
+}
+
+.craft-station-recipes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.craft-station-recipes .recipe-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  padding: 17px;
+  border: 2px solid rgba(247, 216, 123, .38);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 252, 239, .96), rgba(246, 229, 196, .95));
+  color: #563923;
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .42), 0 12px 24px rgba(0, 0, 0, .17);
+}
+
+.craft-station-recipes .recipe-card h3 {
+  margin: 9px 0 6px;
+  font-size: 1.13rem;
+  color: #50341f;
+}
+
+.craft-station-recipes .recipe-card > p {
+  margin: 0 0 12px;
+  line-height: 1.55;
+  color: #75563f;
+}
+
+.craft-station-recipes .core-recipe,
+.craft-station-recipes .core-reward {
+  margin-top: 8px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(117, 86, 52, .08);
+  line-height: 1.55;
+}
+
+.craft-station-recipes .core-recipe span,
+.craft-station-recipes .core-reward span {
+  display: inline;
+}
+
+.craft-station-recipes .is-lacking {
+  color: #a33a2f;
+  font-weight: 900;
+}
+
+.craft-station-recipes .core-muted {
+  margin-top: 10px;
+  color: #856b57;
+  font-size: .78rem;
+}
+
+.recipe-action-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.recipe-action-row button,
+.craft-station-recipes .recipe-card > button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff9e9;
+  background: linear-gradient(180deg, #8e603c, #654128);
+  box-shadow: inset 0 -3px 0 rgba(46, 25, 14, .26), 0 7px 13px rgba(83, 46, 24, .18);
+  font-weight: 900;
+}
+
+.recipe-action-row button:last-child {
+  color: #3d291d;
+  background: linear-gradient(180deg, #ffe89a, #e8b75d);
+}
+
+.craft-station-recipes button:disabled {
+  opacity: .55;
+  filter: grayscale(.25);
+}
+
+.craft-station-locked {
+  max-width: 520px;
+  margin: 52px auto 0;
+  padding: 28px;
+  border: 2px solid rgba(247, 216, 123, .42);
+  border-radius: 28px;
+  text-align: center;
+  background: rgba(35, 25, 20, .48);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, .22);
+}
+
+.craft-station-large-icon {
+  font-size: 3.4rem;
+}
+
+.craft-station-locked h2 {
+  margin: 10px 0 7px;
+}
+
+.craft-station-locked p {
+  color: rgba(255, 248, 225, .8);
+}
+
+.craft-station-locked button {
+  margin-top: 12px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+@media (max-width: 760px) {
+  .craft-station-page {
+    padding: 14px 12px calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .craft-station-header {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .craft-station-title-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .craft-station-back,
+  .craft-station-inventory {
+    width: 100%;
+    padding-inline: 10px;
+  }
+
+  .craft-station-recipes {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .recipe-action-row {
+    grid-template-columns: 1fr;
+  }
+}
