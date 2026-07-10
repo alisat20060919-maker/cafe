@@ -1,5 +1,6 @@
 import { GameDB } from '@db';
-import { getState, replaceState, addItem, persistState, isSceneUnlocked } from '@state';
+import { getState, addItem, isSceneUnlocked } from '@state';
+import { setGatheringRecord } from './state-transactions.js?v=core001';
 import { getTotalFairyBuffValue, getOwnedFairyBuffs } from '@actions/fairy';
 
 const locationHints = {
@@ -19,10 +20,6 @@ const locationHints = {
     message: '煉金室之後會用來把一階素材煉成二階、三階素材，或製作魔法產品。現在還不能煉成。',
   },
 };
-
-function cloneStateForWrite() {
-  return JSON.parse(JSON.stringify(getState()));
-}
 
 function getDailyGatherLimit() {
   return Number(GameDB.gatherConfig?.dailyLimit || 5);
@@ -79,16 +76,6 @@ function getFreshDailyRecord(record) {
   const today = localDateString();
   if (record.lastDate !== today) return { lastDate: today, count: 0 };
   return { lastDate: today, count: Math.max(0, Number(record.count || 0)) };
-}
-
-function updateGatherRecord(locationId, record) {
-  const nextState = cloneStateForWrite();
-  nextState.gathering ||= {};
-  nextState.gathering[locationId] = {
-    lastDate: record.lastDate || localDateString(),
-    count: Math.max(0, Number(record.count || 0)),
-  };
-  replaceState(nextState);
 }
 
 function pickWeighted(drops) {
@@ -201,7 +188,6 @@ export function gatherAt(locationId = 'backyard') {
   const record = getFreshDailyRecord(getGatherRecord(locationId));
   const currentCount = Number(record.count || 0);
   if (currentCount >= limit) {
-    persistState(`gather:${locationId}:limit`);
     return { ok: false, title: table.emptyTitle || '今天採集完成', message: `今天這裡的素材已經採完了。明天再來吧。(${limit}/${limit})`, remaining: 0, limit, used: limit, isDepleted: true, preview: getGatherDropPreview(locationId) };
   }
 
@@ -213,7 +199,7 @@ export function gatherAt(locationId = 'backyard') {
   const specialEvent = rollSpecialEvent(table, locationId);
   const buffLabels = getAppliedBuffLabels(locationId);
   const nextRecord = { lastDate: record.lastDate, count: currentCount + 1 };
-  updateGatherRecord(locationId, nextRecord);
+  setGatheringRecord(locationId, nextRecord);
   const remaining = Math.max(0, limit - nextRecord.count);
 
   return {
