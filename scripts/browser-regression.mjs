@@ -114,7 +114,7 @@ async function testModalScrollLock(page) {
   };
 }
 
-async function testCraftStationPages(page) {
+async function testWorldMapFlow(page) {
   const closeButton = page.locator('#modalHost [data-close-modal]').first();
   if (await closeButton.count()) await closeButton.click();
 
@@ -132,36 +132,80 @@ async function testCraftStationPages(page) {
     testState.player.exp = Math.max(Number(testState.player.exp || 0), 999999);
     testState.player.level = Math.max(Number(testState.player.level || 1), 99);
     testState.unlockedScenes ||= {};
+    testState.unlockedScenes.backyard = true;
+    testState.unlockedScenes.greenhouse = true;
     testState.unlockedScenes.kitchen = true;
     testState.unlockedScenes.alchemy = true;
+    testState.gathering ||= {};
+    testState.gathering.backyard = { lastDate: null, count: 0 };
+    testState.gathering.greenhouse = { lastDate: null, count: 0 };
     stateModule.replaceState(testState);
     return clone;
   });
 
-  await page.locator('[data-route="home"]').first().click();
-  await page.locator('[data-target="kitchen"]').click();
-  await page.locator('#kitchen .enter-button').click();
-  await page.locator('#page-kitchen.active .craft-station-page').waitFor({ state: 'visible' });
+  await page.evaluate(async () => {
+    const routerModule = await import('./router.js?v=core100');
+    routerModule.navigate('home');
+  });
 
+  await page.locator('#page-home.active [data-route="world"]').first().click();
+  await page.locator('#page-world.active .world-map-page').waitFor({ state: 'visible' });
+
+  const world = await page.evaluate(() => ({
+    active: document.querySelector('#page-world')?.classList.contains('active'),
+    nodes: document.querySelectorAll('#page-world [data-world-location]').length,
+    hasCafe: Boolean(document.querySelector('#page-world [data-world-location="cafe"]')),
+    hasBackyard: Boolean(document.querySelector('#page-world [data-world-location="backyard"]')),
+    hasGreenhouse: Boolean(document.querySelector('#page-world [data-world-location="greenhouse"]')),
+    hasKitchen: Boolean(document.querySelector('#page-world [data-world-location="kitchen"]')),
+    hasAlchemy: Boolean(document.querySelector('#page-world [data-world-location="alchemy"]')),
+    noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }));
+
+  await page.locator('#page-world [data-world-location="backyard"]').click();
+  await page.locator('#modalHost [data-world-gather="backyard"]').waitFor({ state: 'visible' });
+  const gatherBefore = await page.locator('#modalHost .gather-result-status').textContent();
+  await page.locator('#modalHost [data-world-gather="backyard"]').click();
+  await page.locator('#modalHost [data-return-world-map]').waitFor({ state: 'visible' });
+  const gatherResult = await page.evaluate(() => ({
+    title: document.querySelector('#modalHost h2')?.textContent || '',
+    message: document.querySelector('#modalHost p')?.textContent || '',
+    remaining: document.querySelector('#modalHost .gather-result-status')?.textContent || '',
+  }));
+  await page.locator('#modalHost [data-return-world-map]').click();
+  await page.locator('#page-world.active').waitFor({ state: 'visible' });
+
+  await page.locator('#page-world [data-world-location="kitchen"]').click();
+  await page.locator('#page-kitchen.active .craft-station-page').waitFor({ state: 'visible' });
   const kitchen = await page.evaluate(() => ({
     active: document.querySelector('#page-kitchen')?.classList.contains('active'),
     title: document.querySelector('#page-kitchen .craft-station-title-wrap h2')?.textContent || '',
     recipeCards: document.querySelectorAll('#page-kitchen .recipe-card').length,
-    hasBackButton: Boolean(document.querySelector('#page-kitchen [data-route="home"]')),
+    hasWorldBackButton: Boolean(document.querySelector('#page-kitchen [data-route="world"]')),
     noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
   }));
 
-  await page.locator('#page-kitchen [data-route="home"]').first().click();
-  await page.locator('#page-home.active').waitFor({ state: 'visible' });
-  await page.locator('[data-target="alchemy"]').click();
-  await page.locator('#alchemy .enter-button').click();
+  await page.locator('#page-kitchen [data-route="world"]').first().click();
+  await page.locator('#page-world.active').waitFor({ state: 'visible' });
+  await page.locator('#page-world [data-world-location="alchemy"]').click();
   await page.locator('#page-alchemy.active .craft-station-page').waitFor({ state: 'visible' });
-
   const alchemy = await page.evaluate(() => ({
     active: document.querySelector('#page-alchemy')?.classList.contains('active'),
     title: document.querySelector('#page-alchemy .craft-station-title-wrap h2')?.textContent || '',
     recipeCards: document.querySelectorAll('#page-alchemy .recipe-card').length,
-    hasInventoryButton: Boolean(document.querySelector('#page-alchemy [data-route="inventory"]')),
+    hasWorldBackButton: Boolean(document.querySelector('#page-alchemy [data-route="world"]')),
+    noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }));
+
+  await page.locator('#page-alchemy [data-route="world"]').first().click();
+  await page.locator('#page-world.active [data-world-location="cafe"]').click();
+  await page.locator('#page-home.active .home-world-gateway').waitFor({ state: 'visible' });
+
+  const home = await page.evaluate(() => ({
+    active: document.querySelector('#page-home')?.classList.contains('active'),
+    hasGateway: Boolean(document.querySelector('#page-home .home-world-gateway')),
+    oldSliderRemoved: !document.querySelector('#page-home .map-viewport')
+      && !document.querySelector('#page-home .location-tabs'),
     noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
   }));
 
@@ -173,18 +217,36 @@ async function testCraftStationPages(page) {
   }, originalState);
 
   return {
+    world,
+    gather: { before: gatherBefore || '', ...gatherResult },
     kitchen,
     alchemy,
-    ok: kitchen.active
+    home,
+    ok: world.active
+      && world.nodes === 5
+      && world.hasCafe
+      && world.hasBackyard
+      && world.hasGreenhouse
+      && world.hasKitchen
+      && world.hasAlchemy
+      && world.noHorizontalOverflow
+      && gatherResult.title.length > 0
+      && gatherResult.message.length > 0
+      && gatherResult.remaining.includes('今日剩餘')
+      && kitchen.active
       && kitchen.title.includes('廚房')
       && kitchen.recipeCards > 0
-      && kitchen.hasBackButton
+      && kitchen.hasWorldBackButton
       && kitchen.noHorizontalOverflow
       && alchemy.active
       && alchemy.title.includes('煉金室')
       && alchemy.recipeCards > 0
-      && alchemy.hasInventoryButton
-      && alchemy.noHorizontalOverflow,
+      && alchemy.hasWorldBackButton
+      && alchemy.noHorizontalOverflow
+      && home.active
+      && home.hasGateway
+      && home.oldSliderRemoved
+      && home.noHorizontalOverflow,
   };
 }
 
@@ -233,7 +295,7 @@ async function runEngine(engineName, browserType) {
     const appResults = await readAppResults(page);
     const layout = await testMobileLayout(page);
     const modalScrollLock = await testModalScrollLock(page);
-    const stationPages = await testCraftStationPages(page);
+    const worldMapFlow = await testWorldMapFlow(page);
 
     const saveBeforeReload = await page.evaluate(() => localStorage.getItem('fairyCafeSave'));
     await page.reload({ waitUntil: 'networkidle', timeout: 60_000 });
@@ -258,14 +320,14 @@ async function runEngine(engineName, browserType) {
       ok: Boolean(appResults.integrity?.ok && appResults.smoke?.ok && appResults.edge?.ok)
         && layoutOk
         && modalScrollLock.ok
-        && stationPages.ok
+        && worldMapFlow.ok
         && persistence.ok
         && pageErrors.length === 0
         && relevantFailedRequests.length === 0,
       ...appResults,
       layout: { ...layout, ok: layoutOk },
       modalScrollLock,
-      stationPages,
+      worldMapFlow,
       persistence,
       pageErrors,
       failedRequests: relevantFailedRequests,
