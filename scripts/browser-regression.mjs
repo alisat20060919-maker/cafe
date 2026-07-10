@@ -114,6 +114,129 @@ async function testModalScrollLock(page) {
   };
 }
 
+async function testBackyardPage(page) {
+  const closeButton = page.locator('#modalHost [data-close-modal]').first();
+  if (await closeButton.count()) await closeButton.click();
+
+  const originalState = await page.evaluate(async () => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const current = stateModule.getState();
+    const clone = typeof structuredClone === 'function'
+      ? structuredClone(current)
+      : JSON.parse(JSON.stringify(current));
+    const testState = typeof structuredClone === 'function'
+      ? structuredClone(current)
+      : JSON.parse(JSON.stringify(current));
+
+    testState.fairies ||= {};
+    testState.fairies.star_berry_fairy = {
+      owned: true,
+      affection: 12,
+      obtainedAt: new Date(0).toISOString(),
+    };
+    testState.collection ||= {};
+    testState.collection.discoveredFairies ||= {};
+    testState.collection.discoveredFairies.star_berry_fairy = true;
+    testState.gathering ||= {};
+    testState.gathering.backyard = { lastDate: null, count: 0 };
+    testState.expeditions = { active: null, history: [] };
+    stateModule.replaceState(testState);
+    return clone;
+  });
+
+  await page.evaluate(async () => {
+    const routerModule = await import('./router.js?v=core100');
+    routerModule.navigate('home');
+  });
+  await page.locator('[data-target="backyard"]').click();
+  await page.locator('#backyard .enter-button').click();
+  await page.locator('#page-backyard.active .backyard-page').waitFor({ state: 'visible' });
+
+  const initial = await page.evaluate(() => ({
+    active: document.querySelector('#page-backyard')?.classList.contains('active'),
+    hasPersonalGather: Boolean(document.querySelector('#page-backyard [data-backyard-gather]')),
+    regionCards: document.querySelectorAll('#page-backyard [data-start-expedition]').length,
+    fairyOptions: document.querySelectorAll('#page-backyard #expeditionFairySelect option').length,
+    noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }));
+
+  const gatherStatusBefore = await page.locator('#page-backyard .backyard-status-row').first().textContent();
+  await page.locator('#page-backyard [data-backyard-gather]').click();
+  await page.locator('#modalHost [data-return-backyard]').waitFor({ state: 'visible' });
+  const gatherResult = await page.evaluate(() => ({
+    title: document.querySelector('#modalHost h2')?.textContent || '',
+    status: document.querySelector('#modalHost .gather-result-status')?.textContent || '',
+  }));
+  await page.locator('#modalHost [data-return-backyard]').click();
+  await page.locator('#page-backyard.active').waitFor({ state: 'visible' });
+
+  await page.locator('#page-backyard [data-start-expedition="snow_mountain"]').click();
+  await page.locator('#modalHost [data-return-backyard]').waitFor({ state: 'visible' });
+  const startResult = await page.evaluate(() => ({
+    title: document.querySelector('#modalHost h2')?.textContent || '',
+    message: document.querySelector('#modalHost p')?.textContent || '',
+  }));
+  await page.locator('#modalHost [data-return-backyard]').click();
+  await page.locator('#page-backyard.active [data-active-expedition]').waitFor({ state: 'visible' });
+
+  await page.evaluate(async () => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const routerModule = await import('./router.js?v=core100');
+    const current = stateModule.getState();
+    const next = typeof structuredClone === 'function'
+      ? structuredClone(current)
+      : JSON.parse(JSON.stringify(current));
+    next.expeditions.active.completesAt = new Date(Date.now() - 1000).toISOString();
+    stateModule.replaceState(next);
+    routerModule.navigate('backyard');
+  });
+
+  await page.locator('#page-backyard [data-claim-expedition]').waitFor({ state: 'visible' });
+  await page.locator('#page-backyard [data-claim-expedition]').click();
+  await page.locator('#modalHost [data-return-backyard]').waitFor({ state: 'visible' });
+  const claimResult = await page.evaluate(async () => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const state = stateModule.getState();
+    return {
+      title: document.querySelector('#modalHost h2')?.textContent || '',
+      rewards: document.querySelectorAll('#modalHost .expedition-claim-rewards span').length,
+      activeCleared: !state.expeditions?.active,
+      historyCount: state.expeditions?.history?.length || 0,
+      discoveredRewardCount: Object.values(state.expeditions?.history?.[0]?.rewards || {})
+        .reduce((sum, qty) => sum + Number(qty || 0), 0),
+    };
+  });
+  await page.locator('#modalHost [data-return-backyard]').click();
+
+  await page.evaluate(async (savedState) => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const routerModule = await import('./router.js?v=core100');
+    stateModule.replaceState(savedState);
+    routerModule.navigate('home');
+  }, originalState);
+
+  return {
+    initial,
+    gather: { before: gatherStatusBefore || '', ...gatherResult },
+    startResult,
+    claimResult,
+    ok: initial.active
+      && initial.hasPersonalGather
+      && initial.regionCards === 5
+      && initial.fairyOptions > 0
+      && initial.noHorizontalOverflow
+      && gatherResult.title.length > 0
+      && gatherResult.status.includes('今日剩餘')
+      && startResult.title.includes('出發')
+      && startResult.message.includes('冰封雪山')
+      && claimResult.title.includes('遠征歸來')
+      && claimResult.rewards > 0
+      && claimResult.activeCleared
+      && claimResult.historyCount === 1
+      && claimResult.discoveredRewardCount > 0,
+  };
+}
+
 async function testCraftStationPages(page) {
   const closeButton = page.locator('#modalHost [data-close-modal]').first();
   if (await closeButton.count()) await closeButton.click();
@@ -233,6 +356,7 @@ async function runEngine(engineName, browserType) {
     const appResults = await readAppResults(page);
     const layout = await testMobileLayout(page);
     const modalScrollLock = await testModalScrollLock(page);
+    const backyardPage = await testBackyardPage(page);
     const stationPages = await testCraftStationPages(page);
 
     const saveBeforeReload = await page.evaluate(() => localStorage.getItem('fairyCafeSave'));
@@ -258,6 +382,7 @@ async function runEngine(engineName, browserType) {
       ok: Boolean(appResults.integrity?.ok && appResults.smoke?.ok && appResults.edge?.ok)
         && layoutOk
         && modalScrollLock.ok
+        && backyardPage.ok
         && stationPages.ok
         && persistence.ok
         && pageErrors.length === 0
@@ -265,6 +390,7 @@ async function runEngine(engineName, browserType) {
       ...appResults,
       layout: { ...layout, ok: layoutOk },
       modalScrollLock,
+      backyardPage,
       stationPages,
       persistence,
       pageErrors,
