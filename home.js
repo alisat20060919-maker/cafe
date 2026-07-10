@@ -1,10 +1,5 @@
-import { GameDB } from '@db';
-import { isUnlocked, getUnlockRequirementText } from '@state';
-import { canGatherAt, canEnterGatherArea, gatherAt, getGatherStatus, getLocationHint, getGatherDropPreview } from '@actions/gather';
-import { showModal } from '@ui';
 import { navigate } from '@router';
 
-let activeIndex = 0;
 let homeRoot;
 
 const interiorDialogue = {
@@ -24,11 +19,6 @@ const interiorDialogue = {
     place: '客人訂單',
     text: '訂單會依照待確認、製作中、已完成分類。之後這裡可以變成真正的排單紀錄。',
   },
-};
-
-const gatherSpeakers = {
-  backyard: '採集精靈',
-  greenhouse: '花園精靈',
 };
 
 const hotspotPositions = {
@@ -66,205 +56,6 @@ function applyHotspotPositions() {
   });
 }
 
-function isRecipeStation(sceneId) {
-  return Boolean(GameDB.stations?.[sceneId]);
-}
-
-function canEnterRecipeStation(sceneId) {
-  return isRecipeStation(sceneId) && isUnlocked({ station: sceneId });
-}
-
-function getStationUnlockLevel(sceneId) {
-  return Number(Object.entries(GameDB.levelConfig?.unlocks || {})
-    .find(([, unlocks]) => (unlocks.scenes || []).includes(sceneId))?.[0] || 0);
-}
-
-function getStationRequirement(sceneId) {
-  const level = getStationUnlockLevel(sceneId);
-  return level > 1 ? { level } : { station: sceneId };
-}
-
-function getStationRequirementText(sceneId) {
-  return getUnlockRequirementText(getStationRequirement(sceneId)) || `解鎖${GameDB.stations?.[sceneId]?.label || sceneId}`;
-}
-
-function getStationLockMessage(sceneId) {
-  const label = GameDB.stations?.[sceneId]?.label || GameDB.scenes?.[sceneId]?.label || sceneId;
-  return `${label}尚未解鎖。${getStationRequirementText(sceneId)}後就能進入。`;
-}
-
-function renderPreviewText(locationId) {
-  const preview = getGatherDropPreview(locationId).slice(0, 4);
-  if (!preview.length) return '';
-  return preview.map((drop) => `${drop.icon}${drop.name}`).join('、');
-}
-
-function renderPreviewList(preview = []) {
-  if (!preview.length) return '';
-
-  return `
-    <div class="gather-preview-list">
-      <b>可能掉落</b>
-      ${preview.map((drop) => `
-        <span>${drop.icon} ${drop.name} ×${drop.qty}｜${drop.chance}%</span>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderSpecialEvent(event) {
-  if (!event) return '';
-
-  return `
-    <div class="gather-preview-list gather-special-event">
-      <b>${event.icon || '✨'} ${event.title}</b>
-      <span>${event.message}</span>
-      ${(event.rewards || []).map((drop) => `
-        <span>額外獲得：${drop.icon} ${drop.name} ×${drop.qty}</span>
-      `).join('')}
-    </div>
-  `;
-}
-
-function renderSceneStatusBadges() {
-  $all('.scene-card').forEach((scene) => {
-    scene.querySelector('.gather-status-badge')?.remove();
-    scene.querySelector('.gather-preview-line')?.remove();
-    scene.querySelector('.station-lock-badge')?.remove();
-    scene.querySelector('.station-requirement-line')?.remove();
-
-    const enterButton = scene.querySelector('.enter-button');
-    if (enterButton && !enterButton.dataset.defaultLabel) enterButton.dataset.defaultLabel = enterButton.textContent;
-
-    const stationLocked = isRecipeStation(scene.id) && !canEnterRecipeStation(scene.id);
-    scene.classList.toggle('is-locked', stationLocked);
-
-    if (stationLocked) {
-      if (enterButton) enterButton.textContent = '查看解鎖條件';
-      const badge = document.createElement('div');
-      badge.className = 'station-lock-badge';
-      badge.textContent = '🔒 尚未解鎖';
-
-      const line = document.createElement('div');
-      line.className = 'station-requirement-line';
-      line.textContent = getStationRequirementText(scene.id);
-
-      const info = scene.querySelector('.scene-info');
-      info?.appendChild(badge);
-      info?.appendChild(line);
-      return;
-    }
-
-    if (enterButton) enterButton.textContent = enterButton.dataset.defaultLabel || enterButton.textContent;
-
-    const status = getGatherStatus(scene.id);
-    if (!status) return;
-
-    const badge = document.createElement('div');
-    badge.className = 'gather-status-badge';
-    badge.dataset.depleted = status.isDepleted ? 'true' : 'false';
-    badge.textContent = status.label;
-
-    const previewLine = document.createElement('div');
-    previewLine.className = 'gather-preview-line';
-    previewLine.textContent = `可能掉落：${renderPreviewText(scene.id)}`;
-
-    const info = scene.querySelector('.scene-info');
-    info?.appendChild(badge);
-    info?.appendChild(previewLine);
-  });
-}
-
-function showGatherResultModal(result) {
-  const previewHtml = renderPreviewList(result.preview || []);
-  const eventHtml = renderSpecialEvent(result.specialEvent);
-
-  if (!result.ok) {
-    showModal(`
-      <div class="core-modal-card compact gather-result-modal is-empty">
-        <button type="button" class="core-modal-close" data-close-modal>×</button>
-        <span class="core-modal-kicker">GATHER RESULT</span>
-        <div class="gather-result-icon">🧺</div>
-        <h2>${result.title || '今天採集完成'}</h2>
-        <p>${result.message}</p>
-        <div class="gather-result-status">剩餘 ${result.remaining || 0}/${result.limit || 0}</div>
-        ${previewHtml}
-      </div>
-    `);
-    return;
-  }
-
-  const drop = result.dropView;
-  showModal(`
-    <div class="core-modal-card compact gather-result-modal">
-      <button type="button" class="core-modal-close" data-close-modal>×</button>
-      <span class="core-modal-kicker">GATHER RESULT</span>
-      <div class="gather-result-icon">${drop.icon}</div>
-      <h2>${result.title}</h2>
-      <p>你找到了 <b>${drop.name}</b> ×${drop.qty}</p>
-      <div class="gather-result-meta">
-        <span>${drop.rarity}</span>
-        <span>${drop.typeLabel}</span>
-        <span>${drop.chance}%</span>
-      </div>
-      ${eventHtml}
-      <div class="gather-result-status">今日剩餘 ${result.remaining}/${result.limit}</div>
-      ${previewHtml}
-    </div>
-  `);
-}
-
-function showLocationHintModal(scene) {
-  const isLockedStation = isRecipeStation(scene.id) && !canEnterRecipeStation(scene.id);
-  const hint = isLockedStation
-    ? {
-      kind: 'station',
-      title: `${GameDB.stations?.[scene.id]?.label || scene.dataset.title}尚未解鎖`,
-      message: getStationLockMessage(scene.id),
-    }
-    : getLocationHint(scene.id);
-  const icon = isLockedStation || hint.kind === 'station' ? '🔒' : '🗺️';
-
-  showModal(`
-    <div class="core-modal-card compact location-hint-modal">
-      <button type="button" class="core-modal-close" data-close-modal>×</button>
-      <span class="core-modal-kicker">AREA INFO</span>
-      <div class="gather-result-icon">${icon}</div>
-      <h2>${hint.title}</h2>
-      <p>${hint.message}</p>
-    </div>
-  `);
-
-  setDialogue(scene.dataset.speaker || '小店長', scene.dataset.title, hint.message);
-}
-
-function openRecipeStation(scene) {
-  navigate(scene.id);
-}
-
-export function setActiveScene(index) {
-  const scenes = $all('.scene-card');
-  const tabs = $all('.tab');
-  if (!scenes.length) return;
-
-  const numericIndex = Number(index);
-  const safeIndex = Number.isFinite(numericIndex) ? numericIndex : 0;
-  activeIndex = Math.max(0, Math.min(safeIndex, scenes.length - 1));
-  const scene = scenes[activeIndex];
-  if (!scene) return;
-
-  scenes.forEach((item, itemIndex) => {
-    item.classList.toggle('active', itemIndex === activeIndex);
-  });
-
-  tabs.forEach((tab) => {
-    tab.classList.toggle('active', tab.dataset.target === scene.id);
-  });
-
-  renderSceneStatusBadges();
-  setDialogue(scene.dataset.speaker, scene.dataset.title, scene.dataset.dialogue);
-}
-
 function setInteriorPanel(panelName = 'menu') {
   const dialogue = interiorDialogue[panelName] || interiorDialogue.menu;
 
@@ -283,58 +74,20 @@ function setInteriorPanel(panelName = 'menu') {
   setDialogue('小店長', dialogue.place, dialogue.text);
 }
 
-function closeInsidePage() {
-  homeRoot?.classList.remove('inside-mode');
-  setActiveScene(activeIndex);
-}
-
 function openCafeInside() {
   homeRoot?.classList.add('inside-mode');
   applyHotspotPositions();
   setInteriorPanel('menu');
 }
 
-function handleGatherScene(scene) {
-  const result = gatherAt(scene.id);
-  renderSceneStatusBadges();
-  showGatherResultModal(result);
-  setDialogue(gatherSpeakers[scene.id] || scene.dataset.speaker, scene.dataset.title, result.message);
-}
-
-function scrollToScene(index) {
-  closeInsidePage();
-  const viewport = $('#mapViewport');
-  const scenes = $all('.scene-card');
-  const numericIndex = Number(index);
-  const safeIndex = Number.isFinite(numericIndex) ? numericIndex : 0;
-  const scene = scenes[Math.max(0, Math.min(safeIndex, scenes.length - 1))];
-  if (!viewport || !scene) return;
-
-  viewport.scrollTo({
-    left: scene.offsetLeft,
-    behavior: 'smooth',
-  });
-  setActiveScene(scenes.indexOf(scene));
-}
-
-export function goToScene(sceneId = 'backyard') {
-  const scenes = $all('.scene-card');
-  const index = scenes.findIndex((scene) => scene.id === sceneId);
-  scrollToScene(index >= 0 ? index : 0);
+function closeCafeInside() {
+  homeRoot?.classList.remove('inside-mode');
+  setDialogue('小店長', '咖啡廳', '歡迎回來！要先進店裡看看，還是打開世界地圖出發呢？');
 }
 
 function bindHomeEvents() {
-  $('#prevScene')?.addEventListener('click', () => scrollToScene(activeIndex - 1));
-  $('#nextScene')?.addEventListener('click', () => scrollToScene(activeIndex + 1));
-  $('#backToMap')?.addEventListener('click', closeInsidePage);
-
-  $all('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const scenes = $all('.scene-card');
-      const index = scenes.findIndex((scene) => scene.id === tab.dataset.target);
-      scrollToScene(index);
-    });
-  });
+  $('#enterCafe')?.addEventListener('click', openCafeInside);
+  $('#backToMap')?.addEventListener('click', closeCafeInside);
 
   $all('.inside-action').forEach((button) => {
     button.addEventListener('click', () => setInteriorPanel(button.dataset.panel));
@@ -343,57 +96,14 @@ function bindHomeEvents() {
   $all('.room-hotspot').forEach((hotspot) => {
     hotspot.addEventListener('click', () => setInteriorPanel(hotspot.dataset.panel));
   });
+}
 
-  $all('.scene-card').forEach((scene, index) => {
-    scene.querySelector('.enter-button')?.addEventListener('click', () => {
-      setActiveScene(index);
-
-      if (scene.id === 'cafe') {
-        openCafeInside();
-        return;
-      }
-
-      if (isRecipeStation(scene.id)) {
-        if (!canEnterRecipeStation(scene.id)) {
-          showLocationHintModal(scene);
-          return;
-        }
-
-        openRecipeStation(scene);
-        return;
-      }
-
-      if (canEnterGatherArea(scene.id)) {
-        handleGatherScene(scene);
-        return;
-      }
-
-      if (canGatherAt(scene.id)) {
-        showLocationHintModal(scene);
-        return;
-      }
-
-      showLocationHintModal(scene);
-    });
-  });
-
-  const viewport = $('#mapViewport');
-  let scrollTimer;
-  viewport?.addEventListener('scroll', () => {
-    window.clearTimeout(scrollTimer);
-    scrollTimer = window.setTimeout(() => {
-      if (!homeRoot?.classList.contains('active')) return;
-      if (homeRoot.classList.contains('inside-mode')) return;
-      if (!viewport.clientWidth) return;
-      const index = Math.round(viewport.scrollLeft / viewport.clientWidth);
-      setActiveScene(index);
-    }, 80);
-  });
-
-  viewport?.addEventListener('keydown', (event) => {
-    if (event.key === 'ArrowLeft') scrollToScene(activeIndex - 1);
-    if (event.key === 'ArrowRight') scrollToScene(activeIndex + 1);
-  });
+export function goToScene(sceneId = 'cafe') {
+  if (sceneId === 'cafe') {
+    navigate('home');
+    return;
+  }
+  navigate('world');
 }
 
 export function initHome() {
@@ -401,13 +111,10 @@ export function initHome() {
   if (!homeRoot || homeRoot.dataset.homeReady === 'true') return;
   homeRoot.dataset.homeReady = 'true';
   applyHotspotPositions();
-  renderSceneStatusBadges();
   bindHomeEvents();
-  setActiveScene(0);
+  closeCafeInside();
 }
 
 export function renderHome() {
-  homeRoot?.classList.remove('inside-mode');
-  renderSceneStatusBadges();
-  setActiveScene(activeIndex);
+  closeCafeInside();
 }
