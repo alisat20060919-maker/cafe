@@ -1,5 +1,5 @@
 import { GameDB } from '@db';
-import { fairies } from './data-fairies.js';
+import { fairies } from './data-fairies.js?v=core002';
 
 function getFairyWeight(fairy = {}) {
   if (fairy.rarity === 'SSR') return 1;
