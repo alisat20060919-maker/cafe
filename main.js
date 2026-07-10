@@ -1,4 +1,5 @@
 import { runDevChecks } from '@dev/checks';
+import { runDataIntegrityChecks } from './data-integrity-checks.js?v=core001';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js';
 import { initState } from '@state';
@@ -121,6 +122,7 @@ function boot() {
   applyFairyExpansion();
   initState();
   runDevChecks();
+  runDataIntegrityChecks();
   initUI();
   initHome();
   initGatherDropHelp();
