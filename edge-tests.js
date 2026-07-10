@@ -257,6 +257,10 @@ function testFairyEventBinding(original) {
   });
 
   for (let i = 0; i < 20; i += 1) renderFairies();
+  const selectButton = document.querySelector(`#page-fairies [data-fairy-select="${fairy.id}"]`);
+  assert(selectButton, '找不到測試精靈選擇按鈕');
+  selectButton.click();
+
   const button = document.querySelector(`#page-fairies [data-feed-fairy="${fairy.id}"][data-gift-item="${itemId}"]`);
   assert(button, '找不到精靈送禮按鈕');
   button.click();
