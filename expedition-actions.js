@@ -133,7 +133,8 @@ export function claimExpedition(options = {}) {
 
   const random = typeof options.random === 'function' ? options.random : Math.random;
   const rewards = {};
-  const rolls = Math.max(1, Number(options.rewardRolls ?? expeditionConfig.rewardRolls || 1));
+  const configuredRolls = options.rewardRolls ?? expeditionConfig.rewardRolls ?? 1;
+  const rolls = Math.max(1, Number(configuredRolls));
   for (let index = 0; index < rolls; index += 1) {
     const drop = weightedPick(activeView.region.drops, random);
     if (!drop) continue;
