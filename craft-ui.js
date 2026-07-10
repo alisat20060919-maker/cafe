@@ -1,6 +1,6 @@
 import { GameDB } from '@db';
 import { getState } from '@state';
-import { canCraft, craftRecipe, getMaxCraftable } from '@actions/craft';
+import { canCraft, craftRecipe, getMaxCraftable } from './craft-actions.js?v=core101';
 import { showModal } from '@ui';
 
 function escapeHtml(value = '') {
