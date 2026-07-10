@@ -6,6 +6,10 @@ function isRecord(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
 
+function hasOwn(record, key) {
+  return Object.prototype.hasOwnProperty.call(record || {}, key);
+}
+
 function toNonNegativeNumber(value, fallback = 0) {
   const number = Number(value);
   return Number.isFinite(number) ? Math.max(0, number) : fallback;
@@ -18,7 +22,7 @@ function toNullableString(value) {
 function migrateQuantityMap(map = {}) {
   if (!isRecord(map)) return map;
   Object.entries(ITEM_ID_ALIASES).forEach(([legacyId, canonicalId]) => {
-    if (!Object.prototype.hasOwnProperty.call(map, legacyId)) return;
+    if (!hasOwn(map, legacyId)) return;
     const legacyValue = toNonNegativeNumber(map[legacyId]);
     const canonicalValue = toNonNegativeNumber(map[canonicalId]);
     map[canonicalId] = canonicalValue + legacyValue;
@@ -30,7 +34,7 @@ function migrateQuantityMap(map = {}) {
 function migrateBooleanMap(map = {}) {
   if (!isRecord(map)) return map;
   Object.entries(ITEM_ID_ALIASES).forEach(([legacyId, canonicalId]) => {
-    if (!Object.prototype.hasOwnProperty.call(map, legacyId)) return;
+    if (!hasOwn(map, legacyId)) return;
     map[canonicalId] = Boolean(map[canonicalId] || map[legacyId]);
     delete map[legacyId];
   });
@@ -59,6 +63,21 @@ function sanitizeBooleanMap(map = {}) {
   );
 }
 
+function sanitizePlayerState(player = {}) {
+  if (!isRecord(player)) return {};
+  const normalized = {};
+  const numberFields = ['level', 'exp', 'starSugar', 'leafCoin', 'tickets'];
+
+  numberFields.forEach((key) => {
+    if (!hasOwn(player, key) || !Number.isFinite(Number(player[key]))) return;
+    normalized[key] = key === 'level'
+      ? Math.max(1, Math.floor(toNonNegativeNumber(player[key], 1)))
+      : toNonNegativeNumber(player[key]);
+  });
+
+  return normalized;
+}
+
 function sanitizeFairyState(fairies = {}) {
   if (!isRecord(fairies)) return {};
   return Object.fromEntries(
@@ -74,17 +93,19 @@ function sanitizeFairyState(fairies = {}) {
 
 function sanitizeCommissionState(commissions = {}) {
   if (!isRecord(commissions)) return {};
-  return Object.fromEntries(
-    Object.entries(commissions)
-      .filter(([, record]) => isRecord(record))
-      .map(([commissionId, record]) => {
-        const status = record.status === 'claimed' ? 'completed' : record.status;
-        return [commissionId, {
-          status: ['completed', 'in_progress'].includes(status) ? status : 'in_progress',
-          completedAt: status === 'completed' ? toNullableString(record.completedAt) : null,
-        }];
-      }),
-  );
+  const normalized = {};
+
+  Object.entries(commissions).forEach(([commissionId, record]) => {
+    if (!isRecord(record)) return;
+    const status = record.status === 'claimed' ? 'completed' : record.status;
+    if (!['completed', 'in_progress'].includes(status)) return;
+    normalized[commissionId] = {
+      status,
+      completedAt: status === 'completed' ? toNullableString(record.completedAt) : null,
+    };
+  });
+
+  return normalized;
 }
 
 function sanitizeGatheringState(gathering = {}) {
@@ -117,14 +138,7 @@ function sanitizeGachaHistory(history = []) {
 }
 
 function sanitizeSaveShape(save) {
-  save.player = isRecord(save.player) ? {
-    level: Math.max(1, Math.floor(toNonNegativeNumber(save.player.level, 1))),
-    exp: toNonNegativeNumber(save.player.exp),
-    starSugar: toNonNegativeNumber(save.player.starSugar),
-    leafCoin: toNonNegativeNumber(save.player.leafCoin),
-    tickets: toNonNegativeNumber(save.player.tickets),
-  } : {};
-
+  save.player = sanitizePlayerState(save.player);
   save.inventory = sanitizeNumberMap(save.inventory);
   save.fairies = sanitizeFairyState(save.fairies);
   save.commissions = sanitizeCommissionState(save.commissions);
@@ -196,7 +210,7 @@ export function applyLegacyGameDataAliases(GameDB) {
   Object.values(GameDB.recipes || {}).forEach((recipe) => {
     if (!isRecord(recipe?.cost)) return;
     Object.entries(ITEM_ID_ALIASES).forEach(([legacyId, canonicalId]) => {
-      if (!Object.prototype.hasOwnProperty.call(recipe.cost, legacyId)) return;
+      if (!hasOwn(recipe.cost, legacyId)) return;
       recipe.cost[canonicalId] = Number(recipe.cost[canonicalId] || 0) + Number(recipe.cost[legacyId] || 0);
       delete recipe.cost[legacyId];
     });
