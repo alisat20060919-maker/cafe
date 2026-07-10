@@ -114,6 +114,80 @@ async function testModalScrollLock(page) {
   };
 }
 
+async function testCraftStationPages(page) {
+  const closeButton = page.locator('#modalHost [data-close-modal]').first();
+  if (await closeButton.count()) await closeButton.click();
+
+  const originalState = await page.evaluate(async () => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const current = stateModule.getState();
+    const clone = typeof structuredClone === 'function'
+      ? structuredClone(current)
+      : JSON.parse(JSON.stringify(current));
+    const testState = typeof structuredClone === 'function'
+      ? structuredClone(current)
+      : JSON.parse(JSON.stringify(current));
+
+    testState.player ||= {};
+    testState.player.exp = Math.max(Number(testState.player.exp || 0), 999999);
+    testState.player.level = Math.max(Number(testState.player.level || 1), 99);
+    testState.unlockedScenes ||= {};
+    testState.unlockedScenes.kitchen = true;
+    testState.unlockedScenes.alchemy = true;
+    stateModule.replaceState(testState);
+    return clone;
+  });
+
+  await page.locator('[data-route="home"]').first().click();
+  await page.locator('[data-target="kitchen"]').click();
+  await page.locator('#kitchen .enter-button').click();
+  await page.locator('#page-kitchen.active .craft-station-page').waitFor({ state: 'visible' });
+
+  const kitchen = await page.evaluate(() => ({
+    active: document.querySelector('#page-kitchen')?.classList.contains('active'),
+    title: document.querySelector('#page-kitchen .craft-station-title-wrap h2')?.textContent || '',
+    recipeCards: document.querySelectorAll('#page-kitchen .recipe-card').length,
+    hasBackButton: Boolean(document.querySelector('#page-kitchen [data-route="home"]')),
+    noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }));
+
+  await page.locator('#page-kitchen [data-route="home"]').first().click();
+  await page.locator('#page-home.active').waitFor({ state: 'visible' });
+  await page.locator('[data-target="alchemy"]').click();
+  await page.locator('#alchemy .enter-button').click();
+  await page.locator('#page-alchemy.active .craft-station-page').waitFor({ state: 'visible' });
+
+  const alchemy = await page.evaluate(() => ({
+    active: document.querySelector('#page-alchemy')?.classList.contains('active'),
+    title: document.querySelector('#page-alchemy .craft-station-title-wrap h2')?.textContent || '',
+    recipeCards: document.querySelectorAll('#page-alchemy .recipe-card').length,
+    hasInventoryButton: Boolean(document.querySelector('#page-alchemy [data-route="inventory"]')),
+    noHorizontalOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }));
+
+  await page.evaluate(async (savedState) => {
+    const stateModule = await import('./game-state.js?v=core101');
+    const routerModule = await import('./router.js?v=core100');
+    stateModule.replaceState(savedState);
+    routerModule.navigate('home');
+  }, originalState);
+
+  return {
+    kitchen,
+    alchemy,
+    ok: kitchen.active
+      && kitchen.title.includes('廚房')
+      && kitchen.recipeCards > 0
+      && kitchen.hasBackButton
+      && kitchen.noHorizontalOverflow
+      && alchemy.active
+      && alchemy.title.includes('煉金室')
+      && alchemy.recipeCards > 0
+      && alchemy.hasInventoryButton
+      && alchemy.noHorizontalOverflow,
+  };
+}
+
 async function runEngine(engineName, browserType) {
   const consoleMessages = [];
   const pageErrors = [];
@@ -159,6 +233,7 @@ async function runEngine(engineName, browserType) {
     const appResults = await readAppResults(page);
     const layout = await testMobileLayout(page);
     const modalScrollLock = await testModalScrollLock(page);
+    const stationPages = await testCraftStationPages(page);
 
     const saveBeforeReload = await page.evaluate(() => localStorage.getItem('fairyCafeSave'));
     await page.reload({ waitUntil: 'networkidle', timeout: 60_000 });
@@ -183,12 +258,14 @@ async function runEngine(engineName, browserType) {
       ok: Boolean(appResults.integrity?.ok && appResults.smoke?.ok && appResults.edge?.ok)
         && layoutOk
         && modalScrollLock.ok
+        && stationPages.ok
         && persistence.ok
         && pageErrors.length === 0
         && relevantFailedRequests.length === 0,
       ...appResults,
       layout: { ...layout, ok: layoutOk },
       modalScrollLock,
+      stationPages,
       persistence,
       pageErrors,
       failedRequests: relevantFailedRequests,
