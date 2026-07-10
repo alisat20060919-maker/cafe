@@ -1,3 +1,5 @@
+import { migrateLegacySaveIds } from './data-aliases.js?v=core001';
+
 export const SAVE_KEY = 'fairyCafeSave';
 
 function isRecord(value) {
@@ -7,7 +9,7 @@ function isRecord(value) {
 function parseSaveJson(raw) {
   const parsed = JSON.parse(raw);
   if (!isRecord(parsed)) throw new Error('存檔根節點必須是物件');
-  return parsed;
+  return migrateLegacySaveIds(parsed);
 }
 
 export function loadSave() {
@@ -52,13 +54,10 @@ export function importSave(text) {
   const cleaned = String(text || '').trim();
   if (!cleaned) throw new Error('沒有輸入存檔文字');
 
-  let parsed;
   try {
     const json = decodeURIComponent(escape(atob(cleaned)));
-    parsed = parseSaveJson(json);
+    return parseSaveJson(json);
   } catch (base64Error) {
-    parsed = parseSaveJson(cleaned);
+    return parseSaveJson(cleaned);
   }
-
-  return parsed;
 }
