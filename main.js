@@ -4,6 +4,8 @@ import { applyLegacyGameDataAliases } from './data-aliases.js?v=core002';
 import { runSmokeTests, renderSmokeTestReport } from './smoke-tests.js?v=core002';
 import { runEdgeTests, renderEdgeTestReport } from './edge-tests.js?v=core002';
 import { initCraftUI, renderCraftStationPage } from './craft-ui.js?v=core003';
+import { initBackyardEntry } from './backyard-entry.js?v=core001';
+import { initBackyardPage, renderBackyardPage } from './backyard-page.js?v=core001';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
@@ -130,6 +132,8 @@ function boot() {
   runDataIntegrityChecks();
   initUI();
   initCraftUI();
+  initBackyardEntry();
+  initBackyardPage();
   initHome();
   initGatherDropHelp();
   initGachaPage();
@@ -141,6 +145,7 @@ function boot() {
 
   initRouter({
     home: { render: renderHome },
+    backyard: { render: renderBackyardPage },
     kitchen: { render: () => renderCraftStationPage('kitchen') },
     alchemy: { render: () => renderCraftStationPage('alchemy') },
     gacha: { render: renderGacha },
