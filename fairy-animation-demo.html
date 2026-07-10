@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>精靈待機動畫原型</title>
+  <style>
+    :root{
+      --ink:#4f3426;
+      --cream:#fff8dd;
+      --gold:#f4cf76;
+      --berry:#d94f79;
+      --leaf:#6ea85c;
+      --wing:#dff8ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      padding:24px;
+      background:
+        radial-gradient(circle at 50% 10%,rgba(255,244,189,.55),transparent 30%),
+        linear-gradient(180deg,#8fc3ba 0%,#6da56a 52%,#355c3f 100%);
+      font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;
+      color:var(--ink);
+    }
+    .panel{
+      width:min(920px,100%);
+      padding:22px;
+      border:4px solid var(--ink);
+      border-radius:30px;
+      background:rgba(255,251,234,.92);
+      box-shadow:0 14px 0 rgba(79,52,38,.18),0 24px 50px rgba(29,51,39,.28);
+    }
+    h1{margin:0 0 6px;font-size:clamp(24px,4vw,40px)}
+    .lead{margin:0 0 22px;color:#765844;font-weight:700}
+    .stage{
+      position:relative;
+      min-height:520px;
+      overflow:hidden;
+      display:grid;
+      place-items:center;
+      border:3px solid var(--ink);
+      border-radius:26px;
+      background:
+        radial-gradient(circle at 50% 32%,rgba(255,244,180,.9),transparent 27%),
+        linear-gradient(180deg,#76a9ae 0%,#78ad68 60%,#3c6948 100%);
+    }
+    .stage::before{
+      content:"";
+      position:absolute;
+      inset:auto -10% -35px;
+      height:165px;
+      background:
+        radial-gradient(ellipse at 22% 50%,#4b844d 0 31%,transparent 33%),
+        radial-gradient(ellipse at 67% 45%,#3f7546 0 36%,transparent 38%),
+        linear-gradient(180deg,transparent,#2e5237);
+    }
+    .sparkles{position:absolute;inset:0;pointer-events:none}
+    .sparkles i{
+      position:absolute;
+      width:9px;height:9px;
+      border-radius:50%;
+      background:#fff6b9;
+      box-shadow:0 0 14px #fff0a2;
+      animation:sparkle 2.8s ease-in-out infinite;
+    }
+    .sparkles i:nth-child(1){left:20%;top:28%;animation-delay:-.5s}
+    .sparkles i:nth-child(2){left:75%;top:18%;animation-delay:-1.2s}
+    .sparkles i:nth-child(3){left:68%;top:60%;animation-delay:-2s}
+    .sparkles i:nth-child(4){left:27%;top:68%;animation-delay:-.9s}
+
+    .fairy-wrap{
+      position:relative;
+      width:260px;
+      height:360px;
+      animation:float 3.2s ease-in-out infinite;
+      transform-origin:50% 80%;
+    }
+    .aura{
+      position:absolute;
+      width:250px;height:250px;
+      left:50%;top:40px;
+      transform:translateX(-50%);
+      border-radius:50%;
+      background:radial-gradient(circle,rgba(255,246,184,.9),rgba(255,210,108,.35) 38%,transparent 70%);
+      filter:blur(2px);
+      animation:aura 2.6s ease-in-out infinite alternate;
+    }
+    .wing{
+      position:absolute;
+      top:105px;
+      width:88px;height:138px;
+      border:4px solid var(--ink);
+      background:linear-gradient(180deg,rgba(255,255,255,.92),var(--wing));
+      box-shadow:inset 0 0 18px rgba(110,193,220,.35),0 8px 0 rgba(79,52,38,.12);
+      z-index:1;
+    }
+    .wing.left{
+      left:20px;
+      border-radius:72% 30% 68% 38%;
+      transform:rotate(-24deg);
+      transform-origin:100% 55%;
+      animation:wingLeft 1.8s ease-in-out infinite;
+    }
+    .wing.right{
+      right:20px;
+      border-radius:30% 72% 38% 68%;
+      transform:rotate(24deg);
+      transform-origin:0 55%;
+      animation:wingRight 1.8s ease-in-out infinite;
+    }
+    .body{
+      position:absolute;
+      z-index:3;
+      left:50%;top:150px;
+      width:118px;height:150px;
+      transform:translateX(-50%);
+      border:4px solid var(--ink);
+      border-radius:48% 48% 38% 38%;
+      background:
+        radial-gradient(circle at 50% 18%,rgba(255,255,255,.55),transparent 24%),
+        linear-gradient(180deg,#fff0c9 0 33%,#f08fb0 34% 68%,#b94e73 69% 100%);
+      box-shadow:0 10px 0 rgba(79,52,38,.16);
+      animation:breathe 2.4s ease-in-out infinite;
+    }
+    .head{
+      position:absolute;
+      z-index:4;
+      left:50%;top:64px;
+      width:128px;height:118px;
+      transform:translateX(-50%);
+      border:4px solid var(--ink);
+      border-radius:48% 48% 44% 44%;
+      background:linear-gradient(180deg,#fff7dd,#ffd6bf);
+      box-shadow:0 8px 0 rgba(79,52,38,.14);
+      animation:headBob 3.2s ease-in-out infinite;
+    }
+    .hair{
+      position:absolute;
+      inset:-8px -6px auto;
+      height:72px;
+      border:4px solid var(--ink);
+      border-bottom:0;
+      border-radius:58% 58% 35% 35%;
+      background:linear-gradient(180deg,#6f3b4f,#b44c70);
+    }
+    .leaf{
+      position:absolute;
+      top:-24px;
+      width:46px;height:74px;
+      border:4px solid var(--ink);
+      background:linear-gradient(180deg,#b5dc7a,var(--leaf));
+      z-index:5;
+    }
+    .leaf.one{left:42px;border-radius:70% 30% 65% 35%;transform:rotate(-8deg)}
+    .leaf.two{right:26px;border-radius:30% 70% 35% 65%;transform:rotate(24deg)}
+    .face{position:absolute;inset:56px 0 0;text-align:center;font-size:35px;line-height:1}
+    .face::after{
+      content:"";
+      position:absolute;
+      left:50%;top:8px;
+      width:52px;height:5px;
+      transform:translateX(-50%) scaleX(0);
+      border-radius:999px;
+      background:#6e4051;
+      animation:blink 4.2s infinite;
+    }
+    .berry{
+      position:absolute;
+      z-index:5;
+      right:-18px;bottom:22px;
+      width:58px;height:62px;
+      display:grid;place-items:center;
+      border:4px solid var(--ink);
+      border-radius:48% 48% 56% 56%;
+      background:linear-gradient(180deg,#ff7899,var(--berry));
+      color:#fff2a8;
+      font-size:24px;
+      animation:berrySway 2.2s ease-in-out infinite;
+    }
+    .shadow{
+      position:absolute;
+      left:50%;bottom:13px;
+      width:150px;height:30px;
+      transform:translateX(-50%);
+      border-radius:50%;
+      background:rgba(39,65,43,.38);
+      filter:blur(5px);
+      animation:shadow 3.2s ease-in-out infinite;
+    }
+    .tag{
+      position:absolute;
+      left:50%;bottom:25px;
+      z-index:6;
+      transform:translateX(-50%);
+      padding:8px 16px;
+      border:3px solid var(--ink);
+      border-radius:999px;
+      background:linear-gradient(180deg,#fff7ce,#e9bd62);
+      font-weight:1000;
+      white-space:nowrap;
+      box-shadow:0 5px 0 rgba(79,52,38,.18);
+    }
+    .notes{
+      margin-top:16px;
+      display:grid;
+      gap:8px;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+    .notes div{
+      padding:12px;
+      border:2px solid rgba(79,52,38,.3);
+      border-radius:16px;
+      background:#fffdf4;
+      font-weight:800;
+    }
+    @keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-15px) rotate(1deg)}}
+    @keyframes shadow{0%,100%{transform:translateX(-50%) scale(1);opacity:.45}50%{transform:translateX(-50%) scale(.82);opacity:.28}}
+    @keyframes aura{from{transform:translateX(-50%) scale(.94);opacity:.72}to{transform:translateX(-50%) scale(1.08);opacity:1}}
+    @keyframes wingLeft{0%,100%{transform:rotate(-24deg)}50%{transform:rotate(-37deg) scaleY(.96)}}
+    @keyframes wingRight{0%,100%{transform:rotate(24deg)}50%{transform:rotate(37deg) scaleY(.96)}}
+    @keyframes breathe{0%,100%{transform:translateX(-50%) scaleY(1)}50%{transform:translateX(-50%) scaleY(1.025)}}
+    @keyframes headBob{0%,100%{transform:translateX(-50%) rotate(-1deg)}50%{transform:translateX(-50%) rotate(1.5deg)}}
+    @keyframes berrySway{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(8deg)}}
+    @keyframes sparkle{0%,100%{transform:scale(.55);opacity:.25}50%{transform:scale(1.25);opacity:1}}
+    @keyframes blink{0%,46%,50%,100%{transform:translateX(-50%) scaleX(0)}47%,49%{transform:translateX(-50%) scaleX(1)}}
+    @media(max-width:620px){
+      .panel{padding:14px;border-radius:22px}
+      .stage{min-height:470px}
+      .fairy-wrap{transform:scale(.88)}
+      .notes{grid-template-columns:1fr}
+    }
+    @media(prefers-reduced-motion:reduce){
+      *{animation:none!important}
+    }
+  </style>
+</head>
+<body>
+  <main class="panel">
+    <h1>星星莓精靈｜偽 Spine 待機動畫</h1>
+    <p class="lead">目前先用 CSS 圖層示範。之後可把頭、身體、翅膀、手持物替換成你的透明 PNG。</p>
+    <section class="stage" aria-label="星星莓精靈動畫示範">
+      <div class="sparkles"><i></i><i></i><i></i><i></i></div>
+      <div class="shadow"></div>
+      <div class="fairy-wrap">
+        <div class="aura"></div>
+        <div class="wing left"></div>
+        <div class="wing right"></div>
+        <div class="body"></div>
+        <div class="head">
+          <span class="leaf one"></span>
+          <span class="leaf two"></span>
+          <span class="hair"></span>
+          <span class="face">•ᴗ•</span>
+        </div>
+        <div class="berry">✦</div>
+      </div>
+      <div class="tag">星星莓精靈・中間態</div>
+    </section>
+    <section class="notes">
+      <div>翅膀：左右分層拍動</div>
+      <div>角色：漂浮、呼吸、頭部輕晃</div>
+      <div>環境：光環、星點、影子同步</div>
+    </section>
+  </main>
+</body>
+</html>
