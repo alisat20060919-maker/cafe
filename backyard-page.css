@@ -1,0 +1,551 @@
+.backyard-page {
+  min-height: 100%;
+  padding: 22px 24px 112px;
+  color: #fff9df;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(255, 241, 174, .18), transparent 28%),
+    linear-gradient(180deg, #315d45 0%, #244a37 50%, #193529 100%);
+}
+
+.backyard-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+  padding: 17px 18px;
+  border: 2px solid rgba(247, 216, 123, .48);
+  border-radius: 26px;
+  background: rgba(41, 31, 22, .44);
+  box-shadow: inset 0 0 0 4px rgba(255,255,255,.035), 0 16px 34px rgba(0,0,0,.2);
+  backdrop-filter: blur(12px);
+}
+
+.backyard-header > div {
+  min-width: 0;
+  text-align: center;
+}
+
+.backyard-kicker {
+  display: block;
+  color: #efd37d;
+  font-size: .7rem;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.backyard-header h2 {
+  margin: 4px 0 0;
+  font-size: clamp(1.55rem, 4vw, 2.25rem);
+  line-height: 1.08;
+  text-shadow: 0 3px 0 rgba(34, 26, 18, .4);
+}
+
+.backyard-header p {
+  margin: 7px 0 0;
+  color: rgba(255, 249, 225, .82);
+  font-size: .88rem;
+  line-height: 1.5;
+}
+
+.backyard-back,
+.backyard-inventory {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 2px solid rgba(247, 216, 123, .58);
+  border-radius: 999px;
+  color: #3b291d;
+  background: linear-gradient(180deg, #fff0aa, #e7b862);
+  box-shadow: inset 0 -3px 0 rgba(81,47,24,.18), 0 8px 16px rgba(0,0,0,.14);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.backyard-inventory {
+  color: #fff4d7;
+  background: rgba(54, 38, 28, .72);
+}
+
+.backyard-scene-banner {
+  position: relative;
+  min-height: 180px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  border: 2px solid rgba(247, 216, 123, .42);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), rgba(19,44,28,.55)),
+    radial-gradient(circle at 18% 76%, rgba(99,153,88,.55) 0 12%, transparent 13%),
+    radial-gradient(circle at 82% 72%, rgba(89,142,82,.55) 0 12%, transparent 13%),
+    linear-gradient(180deg, #8fc5a8 0%, #5f956c 52%, #355d45 100%);
+  box-shadow: inset 0 0 0 5px rgba(255,255,255,.04), 0 14px 28px rgba(0,0,0,.16);
+}
+
+.backyard-scene-banner::before {
+  content: '🌲  🌿  ✨  🌳  🍓  🌲';
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  text-align: center;
+  font-size: clamp(2.4rem, 8vw, 5.6rem);
+  letter-spacing: .08em;
+  opacity: .78;
+  filter: drop-shadow(0 10px 12px rgba(19,48,31,.28));
+}
+
+.backyard-scene-copy {
+  position: absolute;
+  z-index: 2;
+  left: 18px;
+  right: 18px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 16px;
+  background: rgba(35, 56, 39, .72);
+  backdrop-filter: blur(10px);
+}
+
+.backyard-scene-copy b,
+.backyard-scene-copy span {
+  display: block;
+}
+
+.backyard-scene-copy span {
+  color: rgba(255,249,225,.76);
+  font-size: .78rem;
+}
+
+.backyard-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, .72fr) minmax(0, 1.28fr);
+  align-items: start;
+  gap: 14px;
+}
+
+.backyard-panel {
+  min-width: 0;
+  padding: 17px;
+  border: 2px solid rgba(247, 216, 123, .38);
+  border-radius: 24px;
+  color: #563923;
+  background: linear-gradient(180deg, rgba(255,252,239,.97), rgba(244,226,190,.96));
+  box-shadow: inset 0 0 0 3px rgba(255,255,255,.42), 0 13px 25px rgba(0,0,0,.16);
+}
+
+.backyard-panel-heading {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 11px;
+  align-items: start;
+}
+
+.backyard-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: rgba(255,255,255,.58);
+  font-size: 2rem;
+  box-shadow: inset 0 0 0 2px rgba(112,72,38,.1);
+}
+
+.backyard-panel-heading h3 {
+  margin: 4px 0 5px;
+  color: #4d331f;
+  font-size: 1.2rem;
+}
+
+.backyard-panel-heading p {
+  margin: 0;
+  color: #76573e;
+  font-size: .85rem;
+  line-height: 1.5;
+}
+
+.backyard-status-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 14px 0 10px;
+  flex-wrap: wrap;
+}
+
+.backyard-status-row span {
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(96,119,71,.1);
+  color: #6a513c;
+  font-size: .76rem;
+  font-weight: 800;
+}
+
+.backyard-drop-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.backyard-drop-chip {
+  display: block;
+  min-width: 0;
+  padding: 9px 10px;
+  border-radius: 14px;
+  background: rgba(117,86,52,.08);
+}
+
+.backyard-drop-chip b,
+.backyard-drop-chip small {
+  display: block;
+}
+
+.backyard-drop-chip b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .8rem;
+}
+
+.backyard-drop-chip small {
+  margin-top: 2px;
+  color: #866b55;
+  font-size: .68rem;
+}
+
+.backyard-primary-button,
+.expedition-region-card button,
+.backyard-empty-fairies button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff9e9;
+  background: linear-gradient(180deg, #7c9d5b, #55713e);
+  box-shadow: inset 0 -3px 0 rgba(38,57,28,.24), 0 7px 13px rgba(71,91,51,.18);
+  font-weight: 900;
+}
+
+.backyard-primary-button {
+  width: 100%;
+}
+
+.backyard-panel button:disabled {
+  opacity: .5;
+  filter: grayscale(.35);
+}
+
+.backyard-fairy-select {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 12px;
+  padding: 10px 11px;
+  border-radius: 15px;
+  background: rgba(117,86,52,.08);
+}
+
+.backyard-fairy-select span {
+  font-size: .8rem;
+  font-weight: 900;
+}
+
+.backyard-fairy-select select {
+  min-width: 0;
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 9px;
+  border: 1px solid rgba(91,60,34,.2);
+  border-radius: 11px;
+  color: #523720;
+  background: rgba(255,255,255,.82);
+  font-weight: 700;
+}
+
+.backyard-empty-fairies {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 12px;
+  padding: 11px;
+  border-radius: 16px;
+  background: rgba(117,86,52,.08);
+}
+
+.backyard-empty-fairies > span {
+  font-size: 1.8rem;
+}
+
+.backyard-empty-fairies b,
+.backyard-empty-fairies p {
+  display: block;
+}
+
+.backyard-empty-fairies p {
+  margin: 3px 0 0;
+  color: #7c614b;
+  font-size: .73rem;
+  line-height: 1.4;
+}
+
+.backyard-empty-fairies button {
+  padding: 8px 11px;
+  white-space: nowrap;
+}
+
+.expedition-region-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.expedition-region-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(107,75,43,.15);
+  border-radius: 17px;
+  background: rgba(255,255,255,.44);
+}
+
+.expedition-region-top {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+}
+
+.expedition-region-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(112,142,84,.12);
+  font-size: 1.6rem;
+}
+
+.expedition-region-card h4 {
+  margin: 0;
+  color: #4f3420;
+}
+
+.expedition-region-card small {
+  color: #8a6f58;
+  font-size: .7rem;
+}
+
+.expedition-region-card > p {
+  margin: 9px 0;
+  color: #775b45;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+
+.expedition-preview-list {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.expedition-preview-list span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(117,86,52,.08);
+  font-size: .66rem;
+  font-weight: 700;
+}
+
+.expedition-region-card button {
+  width: 100%;
+  margin-top: auto;
+}
+
+.active-expedition-card {
+  margin: 14px 0 12px;
+  padding: 18px;
+  border: 2px solid rgba(112,142,84,.24);
+  border-radius: 20px;
+  text-align: center;
+  background: rgba(255,255,255,.5);
+}
+
+.active-expedition-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 8px;
+  font-size: 2.6rem;
+}
+
+.active-expedition-route {
+  color: #8a6d4d;
+  font-size: 1.35rem;
+}
+
+.active-expedition-card h4 {
+  margin: 7px 0 5px;
+  color: #513620;
+  font-size: 1.05rem;
+}
+
+.active-expedition-card p {
+  margin: 0 0 10px;
+  color: #7b614b;
+  font-size: .76rem;
+}
+
+.expedition-countdown {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(104,137,77,.12);
+  color: #52703d;
+  font-size: 1.25rem;
+  font-weight: 900;
+  letter-spacing: .06em;
+}
+
+.backyard-history {
+  margin-top: 15px;
+  padding-top: 13px;
+  border-top: 1px solid rgba(107,75,43,.14);
+}
+
+.backyard-history h4 {
+  margin: 0 0 8px;
+  color: #5c4029;
+  font-size: .86rem;
+}
+
+.backyard-history-empty {
+  margin: 0;
+  color: #8b715b;
+  font-size: .74rem;
+}
+
+.backyard-history-list {
+  display: grid;
+  gap: 6px;
+}
+
+.backyard-history-list > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 9px;
+  border-radius: 12px;
+  background: rgba(117,86,52,.07);
+  font-size: .72rem;
+}
+
+.backyard-history-list small {
+  color: #7d624d;
+}
+
+.expedition-claim-rewards {
+  display: grid;
+  gap: 7px;
+  margin: 14px 0;
+}
+
+.expedition-claim-rewards span {
+  padding: 9px 10px;
+  border-radius: 13px;
+  background: rgba(117,86,52,.08);
+  font-weight: 800;
+}
+
+@media (max-width: 800px) {
+  .backyard-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .backyard-page {
+    padding: 14px 11px calc(96px + env(safe-area-inset-bottom));
+  }
+
+  .backyard-header {
+    grid-template-columns: 1fr 1fr;
+    gap: 9px;
+    padding: 13px;
+    border-radius: 22px;
+  }
+
+  .backyard-header > div {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  .backyard-back,
+  .backyard-inventory {
+    width: 100%;
+    padding-inline: 8px;
+  }
+
+  .backyard-scene-banner {
+    min-height: 150px;
+    border-radius: 23px;
+  }
+
+  .backyard-scene-copy {
+    display: block;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    padding: 10px 11px;
+  }
+
+  .backyard-scene-copy span {
+    margin-top: 3px;
+  }
+
+  .backyard-panel {
+    padding: 14px;
+    border-radius: 21px;
+  }
+
+  .expedition-region-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .backyard-empty-fairies {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .backyard-empty-fairies button {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+}
+
+@media (max-width: 430px) {
+  .backyard-drop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .backyard-fairy-select {
+    grid-template-columns: 1fr;
+  }
+
+  .backyard-history-list > div {
+    grid-template-columns: 1fr auto;
+  }
+
+  .backyard-history-list small {
+    grid-column: 1 / -1;
+  }
+}
