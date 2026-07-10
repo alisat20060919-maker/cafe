@@ -1,5 +1,6 @@
 import { runDevChecks } from '@dev/checks';
 import { runDataIntegrityChecks } from './data-integrity-checks.js?v=core001';
+import { applyLegacyGameDataAliases } from './data-aliases.js?v=core001';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js';
 import { initState } from '@state';
@@ -120,6 +121,7 @@ function initGatherDropHelp() {
 
 function boot() {
   applyFairyExpansion();
+  applyLegacyGameDataAliases(GameDB);
   initState();
   runDevChecks();
   runDataIntegrityChecks();
