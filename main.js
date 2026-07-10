@@ -1,6 +1,7 @@
 import { runDevChecks } from '@dev/checks';
 import { runDataIntegrityChecks } from './data-integrity-checks.js?v=core001';
 import { applyLegacyGameDataAliases } from './data-aliases.js?v=core002';
+import { runSmokeTests, renderSmokeTestReport } from './smoke-tests.js?v=core001';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
@@ -145,7 +146,12 @@ function boot() {
     shop: { render: renderShop },
   }, 'home');
 
-  showOpeningStoryIfNeeded();
+  const smokeReport = runSmokeTests();
+  if (!smokeReport.skipped) {
+    showModal(renderSmokeTestReport(smokeReport));
+  } else {
+    showOpeningStoryIfNeeded();
+  }
 }
 
 document.addEventListener('DOMContentLoaded', boot);
