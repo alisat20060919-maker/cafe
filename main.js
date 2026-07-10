@@ -3,6 +3,7 @@ import { runDataIntegrityChecks } from './data-integrity-checks.js?v=core001';
 import { applyLegacyGameDataAliases } from './data-aliases.js?v=core002';
 import { runSmokeTests, renderSmokeTestReport } from './smoke-tests.js?v=core001';
 import { runEdgeTests, renderEdgeTestReport } from './edge-tests.js?v=core002';
+import { initCraftUI } from './craft-ui.js?v=core001';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
@@ -128,6 +129,7 @@ function boot() {
   runDevChecks();
   runDataIntegrityChecks();
   initUI();
+  initCraftUI();
   initHome();
   initGatherDropHelp();
   initGachaPage();
