@@ -1,0 +1,58 @@
+name: Browser Regression
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Start static server
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/fairy-cafe-server.log 2>&1 &
+          echo $! > /tmp/fairy-cafe-server.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/fairy-cafe-server.log
+          exit 1
+
+      - name: Run browser regression tests
+        run: node scripts/browser-regression.mjs
+
+      - name: Upload regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-regression-report
+          path: test-results/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Print static server log
+        if: failure()
+        run: cat /tmp/fairy-cafe-server.log || true
