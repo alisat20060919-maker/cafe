@@ -1,4 +1,4 @@
-import { migrateLegacySaveIds } from './data-aliases.js?v=core002';
+import { migrateLegacySaveIds } from './data-aliases.js?v=core003';
 
 export const SAVE_KEY = 'fairyCafeSave';
 
