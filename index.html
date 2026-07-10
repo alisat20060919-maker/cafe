@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="inventory-panel-polish.css?v=ui04" />
   <link rel="stylesheet" href="phase75-fixes.css?v=ui01" />
   <link rel="stylesheet" href="gacha-lucky-v20.css?v=ui01" />
+  <link rel="stylesheet" href="crafting-stations.css?v=ui01" />
   <style>
     .floating-collection-button {
       position: absolute;
@@ -54,12 +55,12 @@
   </style>
   <script type="importmap">
     {"imports":{
-      "@main":"./main.js?v=core109","@dev/checks":"./dev-checks.js?v=core101","@db":"./game-data.js?v=core101",
+      "@main":"./main.js?v=core110","@dev/checks":"./dev-checks.js?v=core101","@db":"./game-data.js?v=core101",
       "@data/items":"./data-items.js?v=core103","@data/recipes":"./data-recipes.js?v=core102","@data/story":"./data-story.js?v=core100",
       "@validator":"./game-db-validator.js?v=core100","@state":"./game-state.js?v=core101","@save":"./save.js?v=core104","@ui":"./ui.js?v=core102",
-      "@home":"./home.js?v=core100","@router":"./router.js?v=core100","@eventBus":"./event-bus.js?v=core100","@utils":"./utils.js?v=core100",
+      "@home":"./home.js?v=core101","@router":"./router.js?v=core100","@eventBus":"./event-bus.js?v=core100","@utils":"./utils.js?v=core100",
       "@actions/daily":"./daily-actions.js?v=core102","@actions/gacha":"./gacha-actions.js?v=core103","@actions/commission":"./commission-actions.js?v=core102",
-      "@actions/gather":"./gather-actions.js?v=core102","@actions/craft":"./craft-actions.js?v=core100","@actions/player":"./player-actions.js?v=core100",
+      "@actions/gather":"./gather-actions.js?v=core102","@actions/craft":"./craft-actions.js?v=core101","@actions/player":"./player-actions.js?v=core100",
       "@actions/fairy":"./fairy-actions.js?v=core100","@actions/shop":"./shop-actions.js?v=core101",
       "@pages/gacha":"./pages-gacha.js?v=core101","@pages/inventory":"./pages-inventory.js?v=core101","@pages/fairies":"./pages-fairies.js?v=core101",
       "@pages/collection":"./pages-collection-v2.js?v=core107","@pages/commissions":"./pages-commissions.js?v=core100","@pages/shop":"./pages-shop.js?v=core101"
@@ -168,6 +169,8 @@
 
       <button class="floating-collection-button" type="button" data-route="collection" aria-label="打開圖鑑">📖<span>圖鑑</span></button>
 
+      <section class="page core-page-host" id="page-kitchen" aria-label="廚房製作頁"></section>
+      <section class="page core-page-host" id="page-alchemy" aria-label="煉金室製作頁"></section>
       <section class="page core-page-host" id="page-gacha" aria-label="祈願頁"></section>
       <section class="page core-page-host" id="page-commissions" aria-label="委託頁"></section>
       <section class="page core-page-host" id="page-inventory" aria-label="背包頁"></section>
