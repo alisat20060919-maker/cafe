@@ -1,16 +1,14 @@
 import { GameDB } from '@db';
-import {
-  getState,
-  canAffordItems,
-  spendItems,
-  addItem,
-  persistState,
-  isUnlocked,
-  getUnlockRequirementText,
-} from '@state';
+import { getState, isUnlocked, getUnlockRequirementText } from '@state';
+import { runStateTransaction } from './state-transactions.js?v=core001';
 
 function getRecipe(recipeId) {
   return GameDB.recipes?.[recipeId] || null;
+}
+
+function normalizeQuantity(value = 1) {
+  const quantity = Math.floor(Number(value || 1));
+  return Number.isFinite(quantity) ? Math.max(1, quantity) : 1;
 }
 
 function getItemView(itemId) {
@@ -24,24 +22,29 @@ function getItemView(itemId) {
   };
 }
 
-function getCostViews(cost = {}) {
-  const state = getState();
+function getCostViews(cost = {}, quantity = 1, currentState = getState()) {
+  const craftQuantity = normalizeQuantity(quantity);
   return Object.entries(cost || {}).map(([itemId, qty]) => {
-    const owned = Number(state.inventory?.[itemId] || 0);
+    const unitQty = Math.max(0, Number(qty || 0));
+    const required = unitQty * craftQuantity;
+    const owned = Number(currentState.inventory?.[itemId] || 0);
     return {
       ...getItemView(itemId),
-      qty,
+      unitQty,
+      qty: required,
       owned,
-      missing: Math.max(0, Number(qty || 0) - owned),
-      enough: owned >= Number(qty || 0),
+      missing: Math.max(0, required - owned),
+      enough: owned >= required,
     };
   });
 }
 
-function getOutputView(output = {}) {
+function getOutputView(output = {}, quantity = 1) {
+  const craftQuantity = normalizeQuantity(quantity);
   return {
     ...getItemView(output.itemId),
-    qty: Number(output.qty || 1),
+    unitQty: Math.max(1, Number(output.qty || 1)),
+    qty: Math.max(1, Number(output.qty || 1)) * craftQuantity,
   };
 }
 
@@ -67,14 +70,29 @@ function getRecipeRequirementText(recipe) {
   return getUnlockRequirementText(getRecipeRequirement(recipe)) || '需要解鎖配方';
 }
 
-export function canCraft(recipeId) {
+export function getMaxCraftable(recipeId, currentState = getState()) {
   const recipe = getRecipe(recipeId);
+  if (!recipe) return 0;
+  if (!isUnlocked(getRecipeRequirement(recipe), currentState)) return 0;
+
+  const entries = Object.entries(recipe.cost || {}).filter(([, qty]) => Number(qty || 0) > 0);
+  if (!entries.length) return 1;
+
+  return Math.max(0, Math.min(...entries.map(([itemId, qty]) => (
+    Math.floor(Number(currentState.inventory?.[itemId] || 0) / Number(qty || 1))
+  ))));
+}
+
+export function canCraft(recipeId, quantity = 1) {
+  const recipe = getRecipe(recipeId);
+  const craftQuantity = normalizeQuantity(quantity);
   if (!recipe) {
     return {
       ok: false,
       status: 'missing_recipe',
       message: '找不到這份配方。',
       missingItems: [],
+      quantity: craftQuantity,
     };
   }
 
@@ -83,6 +101,7 @@ export function canCraft(recipeId) {
       ok: false,
       status: 'locked_station',
       recipe,
+      quantity: craftQuantity,
       unlockRequirement: getStationRequirement(recipe),
       unlockRequirementText: getStationRequirementText(recipe),
       missingItems: [],
@@ -95,6 +114,7 @@ export function canCraft(recipeId) {
       ok: false,
       status: 'locked_recipe',
       recipe,
+      quantity: craftQuantity,
       unlockRequirement: getRecipeRequirement(recipe),
       unlockRequirementText: getRecipeRequirementText(recipe),
       missingItems: [],
@@ -102,12 +122,13 @@ export function canCraft(recipeId) {
     };
   }
 
-  const missingItems = getCostViews(recipe.cost).filter((item) => !item.enough);
+  const missingItems = getCostViews(recipe.cost, craftQuantity).filter((item) => !item.enough);
   if (missingItems.length) {
     return {
       ok: false,
       status: 'not_enough_items',
       recipe,
+      quantity: craftQuantity,
       missingItems,
       message: `素材不足：${missingItems.map((item) => `${item.icon}${item.name} 缺 ${item.missing}`).join('、')}`,
     };
@@ -117,15 +138,17 @@ export function canCraft(recipeId) {
     ok: true,
     status: 'ready',
     recipe,
+    quantity: craftQuantity,
     missingItems: [],
-    message: '素材足夠，可以製作。',
+    message: craftQuantity > 1 ? `素材足夠，可以製作 ${craftQuantity} 次。` : '素材足夠，可以製作。',
   };
 }
 
-export function getRecipeCraftView(recipeId) {
+export function getRecipeCraftView(recipeId, quantity = 1) {
   const recipe = getRecipe(recipeId);
   if (!recipe) return null;
-  const craftStatus = canCraft(recipeId);
+  const craftQuantity = normalizeQuantity(quantity);
+  const craftStatus = canCraft(recipeId, craftQuantity);
 
   return {
     id: recipe.id,
@@ -134,8 +157,10 @@ export function getRecipeCraftView(recipeId) {
     stationLabel: GameDB.stations?.[recipe.station]?.label || recipe.station,
     category: recipe.category,
     description: recipe.description,
-    costItems: getCostViews(recipe.cost),
-    outputItem: getOutputView(recipe.output),
+    quantity: craftQuantity,
+    maxCraftable: getMaxCraftable(recipeId),
+    costItems: getCostViews(recipe.cost, craftQuantity),
+    outputItem: getOutputView(recipe.output, craftQuantity),
     canCraft: craftStatus.ok,
     status: craftStatus.status,
     message: craftStatus.message,
@@ -143,8 +168,9 @@ export function getRecipeCraftView(recipeId) {
   };
 }
 
-export function craftRecipe(recipeId) {
+export function craftRecipe(recipeId, quantity = 1) {
   const recipe = getRecipe(recipeId);
+  const craftQuantity = normalizeQuantity(quantity);
   if (!recipe) {
     return {
       ok: false,
@@ -154,47 +180,58 @@ export function craftRecipe(recipeId) {
     };
   }
 
-  const craftStatus = canCraft(recipeId);
-  if (craftStatus.status === 'locked_station' || craftStatus.status === 'locked_recipe') {
+  const craftStatus = canCraft(recipeId, craftQuantity);
+  if (!craftStatus.ok) {
+    const locked = ['locked_station', 'locked_recipe'].includes(craftStatus.status);
     return {
       ok: false,
       status: craftStatus.status,
-      title: '尚未解鎖',
+      title: locked ? '尚未解鎖' : craftStatus.status === 'not_enough_items' ? '素材不足' : '製作失敗',
       recipe,
+      quantity: craftQuantity,
+      missingItems: craftStatus.missingItems || [],
       message: craftStatus.message,
     };
   }
 
-  if (!canAffordItems(recipe.cost)) {
-    return {
-      ok: false,
-      status: 'not_enough_items',
-      title: '素材不足',
-      recipe,
-      missingItems: getCostViews(recipe.cost).filter((item) => !item.enough),
-      message: canCraft(recipeId).message,
-    };
-  }
+  const output = getOutputView(recipe.output, craftQuantity);
 
-  if (!spendItems(recipe.cost)) {
+  try {
+    runStateTransaction((draft) => {
+      draft.inventory ||= {};
+      draft.collection ||= {};
+      draft.collection.discoveredItems ||= {};
+
+      const missingItems = getCostViews(recipe.cost, craftQuantity, draft).filter((item) => !item.enough);
+      if (missingItems.length) {
+        throw new Error(`素材不足：${missingItems.map((item) => `${item.name} 缺 ${item.missing}`).join('、')}`);
+      }
+
+      Object.entries(recipe.cost || {}).forEach(([itemId, unitQty]) => {
+        const required = Math.max(0, Number(unitQty || 0)) * craftQuantity;
+        draft.inventory[itemId] = Math.max(0, Number(draft.inventory[itemId] || 0) - required);
+      });
+
+      draft.inventory[recipe.output.itemId] = Number(draft.inventory[recipe.output.itemId] || 0) + output.qty;
+      draft.collection.discoveredItems[recipe.output.itemId] = true;
+    });
+  } catch (error) {
     return {
       ok: false,
-      status: 'spend_failed',
+      status: 'transaction_failed',
       title: '製作失敗',
       recipe,
-      message: '扣除素材時失敗，請重新確認背包。',
+      quantity: craftQuantity,
+      message: error?.message || '製作交易失敗，背包沒有被變更。',
     };
   }
-
-  const output = getOutputView(recipe.output);
-  addItem(recipe.output.itemId, output.qty);
-  persistState(`craft:${recipeId}`);
 
   return {
     ok: true,
     status: 'crafted',
     title: '製作完成',
     recipe,
+    quantity: craftQuantity,
     output,
     message: `完成了 ${output.icon}${output.name} ×${output.qty}。`,
   };
