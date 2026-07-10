@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>精靈咖啡屋｜首頁 UI 2.0</title>
+  <style>
+    :root{
+      --ink:#4b2f21;
+      --wood:#8a5a35;
+      --wood-dark:#5a3924;
+      --cream:#fff7df;
+      --paper:#f7e8bd;
+      --green:#5b8e58;
+      --green-dark:#31583c;
+      --gold:#f0ca71;
+      --sky:#9ccbd2;
+      --shadow:rgba(57,34,20,.22);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Noto Sans TC",sans-serif;background:#1e3b2c;color:var(--ink)}
+    button{font:inherit}
+    .app{
+      min-height:100svh;
+      display:grid;
+      place-items:center;
+      padding:12px;
+      background:
+        radial-gradient(circle at 50% 0%,rgba(255,244,183,.22),transparent 34%),
+        linear-gradient(180deg,#345f4a 0%,#203c2d 100%);
+    }
+    .game{
+      position:relative;
+      width:min(100%,470px);
+      aspect-ratio:9/16;
+      overflow:hidden;
+      border:4px solid var(--wood-dark);
+      border-radius:32px;
+      background:#7ab1b2;
+      box-shadow:0 16px 0 rgba(35,20,12,.2),0 28px 60px rgba(8,19,13,.45);
+      isolation:isolate;
+    }
+    .scene{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.24),transparent 30%),
+        linear-gradient(180deg,var(--sky) 0 35%,#8fbc75 36% 58%,#5f8b58 59% 100%);
+    }
+    .sun{
+      position:absolute;right:13%;top:10%;width:76px;height:76px;border-radius:50%;
+      background:radial-gradient(circle,#fff8cf 0 36%,#f6d886 37% 60%,rgba(246,216,134,.25) 61% 100%);
+      animation:pulse 4s ease-in-out infinite alternate;
+    }
+    .cloud{position:absolute;height:22px;border-radius:999px;background:rgba(255,255,255,.7);filter:blur(.2px);animation:drift 22s linear infinite}
+    .cloud::before,.cloud::after{content:"";position:absolute;border-radius:50%;background:inherit}
+    .cloud::before{width:32px;height:32px;left:12px;bottom:0}.cloud::after{width:24px;height:24px;right:13px;bottom:1px}
+    .cloud.c1{width:92px;left:-90px;top:15%}.cloud.c2{width:72px;left:-130px;top:23%;animation-delay:-9s}
+    .forest-back,.forest-front{position:absolute;inset:auto 0 0;pointer-events:none}
+    .forest-back{height:46%;background:
+      radial-gradient(ellipse at 10% 45%,#4f7c52 0 18%,transparent 19%),
+      radial-gradient(ellipse at 30% 42%,#5c8a57 0 21%,transparent 22%),
+      radial-gradient(ellipse at 58% 48%,#47764d 0 21%,transparent 22%),
+      radial-gradient(ellipse at 85% 43%,#5b8d58 0 22%,transparent 23%),
+      linear-gradient(180deg,transparent,#456d48 65%)}
+    .forest-front{height:25%;background:
+      radial-gradient(ellipse at 15% 100%,#305b3e 0 42%,transparent 43%),
+      radial-gradient(ellipse at 55% 100%,#2b5439 0 48%,transparent 49%),
+      radial-gradient(ellipse at 90% 100%,#274e36 0 43%,transparent 44%)}
+    .cafe{
+      position:absolute;left:50%;bottom:21%;width:73%;height:44%;transform:translateX(-50%);
+      filter:drop-shadow(0 12px 0 rgba(65,37,21,.18));
+    }
+    .house{position:absolute;inset:18% 7% 0;border:4px solid var(--wood-dark);border-radius:28px 28px 14px 14px;background:linear-gradient(180deg,#f1d59a,#d7aa66)}
+    .roof{position:absolute;left:2%;right:2%;top:0;height:35%;clip-path:polygon(50% 0,100% 64%,92% 100%,8% 100%,0 64%);background:linear-gradient(180deg,#74472e,#4b2f22);border:4px solid var(--wood-dark)}
+    .sign{position:absolute;left:50%;top:24%;transform:translateX(-50%) rotate(-2deg);padding:8px 18px;border:3px solid var(--wood-dark);border-radius:12px;background:linear-gradient(180deg,#fff0b2,#dfaf58);font-weight:1000;letter-spacing:.08em;box-shadow:0 4px 0 rgba(76,45,27,.2)}
+    .door{position:absolute;left:50%;bottom:0;width:30%;height:48%;transform:translateX(-50%);border:4px solid var(--wood-dark);border-bottom:0;border-radius:18px 18px 0 0;background:linear-gradient(180deg,#7b5032,#51311f)}
+    .door::after{content:"";position:absolute;right:12%;top:48%;width:8px;height:8px;border-radius:50%;background:#f1ca72;border:2px solid var(--wood-dark)}
+    .window{position:absolute;top:50%;width:20%;height:22%;border:4px solid var(--wood-dark);border-radius:12px;background:linear-gradient(180deg,#d8f7ff,#8dcbd7);box-shadow:inset 0 0 15px rgba(255,255,255,.7),0 0 18px rgba(255,236,158,.45)}
+    .window.w1{left:11%}.window.w2{right:11%}
+    .chimney{position:absolute;right:18%;top:7%;width:12%;height:22%;border:4px solid var(--wood-dark);background:#9f6844;z-index:-1}
+    .smoke{position:absolute;right:19%;top:0;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.58);animation:smoke 3.6s ease-in-out infinite}
+    .smoke::before,.smoke::after{content:"";position:absolute;border-radius:50%;background:inherit}.smoke::before{width:18px;height:18px;left:-10px;top:10px}.smoke::after{width:14px;height:14px;right:-7px;top:-9px}
+
+    .hotspot{
+      position:absolute;z-index:8;display:grid;place-items:center;width:52px;height:52px;padding:0;
+      border:3px solid var(--wood-dark);border-radius:50%;background:linear-gradient(180deg,#fff8d8,#e5b95e);
+      box-shadow:0 5px 0 rgba(74,43,25,.22),0 10px 24px rgba(56,35,21,.18);font-size:25px;cursor:pointer;
+      animation:hotspot 2.2s ease-in-out infinite;
+    }
+    .hotspot span{position:absolute;top:56px;white-space:nowrap;padding:4px 8px;border:2px solid var(--wood-dark);border-radius:999px;background:rgba(255,249,225,.94);font-size:11px;font-weight:1000}
+    .hotspot:active{transform:scale(.92)}
+    .h-menu{left:10%;top:39%}.h-quest{right:8%;top:44%;animation-delay:-.6s}.h-gacha{right:17%;bottom:20%;animation-delay:-1.2s}.h-fairy{left:14%;bottom:24%;animation-delay:-1.7s}
+
+    .topbar{position:absolute;z-index:20;left:0;right:0;top:0;display:flex;align-items:flex-start;justify-content:space-between;padding:max(12px,env(safe-area-inset-top)) 12px 0;pointer-events:none}
+    .profile,.currency{pointer-events:auto;border:3px solid var(--wood-dark);background:rgba(255,248,221,.94);box-shadow:0 5px 0 rgba(64,38,23,.18)}
+    .profile{display:flex;align-items:center;gap:8px;padding:7px 10px 7px 7px;border-radius:999px}
+    .avatar{width:40px;height:40px;display:grid;place-items:center;border:3px solid var(--wood-dark);border-radius:50%;background:linear-gradient(180deg,#b7e184,#70aa5a);font-size:20px}
+    .profile b,.profile small{display:block}.profile b{font-size:13px}.profile small{font-size:9px;color:#7a5b45;font-weight:800}
+    .currency-wrap{display:grid;gap:6px}
+    .currency{display:flex;align-items:center;gap:6px;padding:6px 9px;border-radius:999px;font-size:11px;font-weight:1000}
+
+    .left-tools,.right-tools{position:absolute;z-index:18;top:23%;display:grid;gap:10px}
+    .left-tools{left:9px}.right-tools{right:9px}
+    .tool{width:45px;height:45px;border:3px solid var(--wood-dark);border-radius:15px;background:linear-gradient(180deg,#fff5c8,#dba954);box-shadow:0 5px 0 rgba(75,43,25,.2);font-size:21px;cursor:pointer}
+    .tool:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(75,43,25,.2)}
+
+    .npc{position:absolute;z-index:7;left:50%;bottom:31%;transform:translateX(-50%);width:78px;height:96px;display:grid;place-items:center;font-size:48px;filter:drop-shadow(0 7px 0 rgba(70,43,27,.2));animation:npcFloat 3s ease-in-out infinite}
+    .speech{position:absolute;z-index:9;left:50%;bottom:42%;transform:translateX(-50%);padding:8px 12px;border:3px solid var(--wood-dark);border-radius:16px;background:var(--cream);font-size:11px;font-weight:900;box-shadow:0 4px 0 rgba(75,43,25,.15);white-space:nowrap}
+    .speech::after{content:"";position:absolute;left:50%;bottom:-9px;width:14px;height:14px;background:var(--cream);border-right:3px solid var(--wood-dark);border-bottom:3px solid var(--wood-dark);transform:translateX(-50%) rotate(45deg)}
+
+    .dock{position:absolute;z-index:30;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);gap:6px;padding:9px;border:4px solid var(--wood-dark);border-radius:23px;background:linear-gradient(180deg,#8f5c36,#5a3924);box-shadow:0 7px 0 rgba(45,27,16,.3),0 14px 26px rgba(38,22,13,.22)}
+    .dock button{min-width:0;padding:7px 3px;border:2px solid rgba(71,41,24,.75);border-radius:14px;background:linear-gradient(180deg,#fff7d7,#d9a951);color:var(--ink);font-size:19px;font-weight:1000;box-shadow:inset 0 2px 0 rgba(255,255,255,.55)}
+    .dock button span{display:block;font-size:9px;margin-top:2px}.dock .home{transform:translateY(-12px);border-radius:50%;aspect-ratio:1;background:linear-gradient(180deg,#b6e879,#67a24c);font-size:23px}
+
+    .panel{position:absolute;z-index:40;left:50%;bottom:98px;width:calc(100% - 36px);transform:translate(-50%,18px) scale(.98);padding:16px;border:4px solid var(--wood-dark);border-radius:24px;background:
+      linear-gradient(180deg,rgba(255,255,255,.25),transparent 20%),
+      var(--paper);box-shadow:0 12px 0 rgba(69,42,25,.18),0 24px 48px rgba(29,19,12,.3);opacity:0;pointer-events:none;transition:.22s ease}
+    .panel.show{opacity:1;pointer-events:auto;transform:translate(-50%,0) scale(1)}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.panel h2{margin:0;font-size:21px}.close{width:34px;height:34px;border:2px solid var(--wood-dark);border-radius:50%;background:#fff8e5;font-weight:1000}
+    .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.card{padding:10px 6px;border:2px solid rgba(75,47,33,.35);border-radius:15px;background:#fffaf0;text-align:center;font-size:11px;font-weight:900}.card b{display:block;font-size:28px;margin-bottom:4px}
+
+    @keyframes drift{from{transform:translateX(0)}to{transform:translateX(650px)}}
+    @keyframes pulse{from{transform:scale(.95);opacity:.85}to{transform:scale(1.06);opacity:1}}
+    @keyframes smoke{0%{transform:translate(0,8px) scale(.75);opacity:0}40%{opacity:.75}100%{transform:translate(-18px,-48px) scale(1.35);opacity:0}}
+    @keyframes hotspot{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+    @keyframes npcFloat{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+    @media(max-width:380px){.hotspot{width:46px;height:46px;font-size:21px}.hotspot span{top:49px}.cafe{width:77%}.profile b{font-size:11px}.currency{font-size:9px}}
+    @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="game" aria-label="精靈咖啡屋首頁 UI 2.0 原型">
+      <div class="scene">
+        <div class="sun"></div><div class="cloud c1"></div><div class="cloud c2"></div>
+        <div class="forest-back"></div>
+        <div class="cafe">
+          <div class="chimney"></div><div class="smoke"></div><div class="roof"></div>
+          <div class="house"><div class="sign">FAIRY CAFE</div><div class="window w1"></div><div class="window w2"></div><div class="door"></div></div>
+        </div>
+        <div class="forest-front"></div>
+      </div>
+
+      <header class="topbar">
+        <div class="profile"><div class="avatar">🐾</div><div><b>小店主</b><small>LV. 03｜今日晴朗</small></div></div>
+        <div class="currency-wrap"><div class="currency">✦ 1,280</div><div class="currency">🍃 3,460</div></div>
+      </header>
+
+      <aside class="left-tools"><button class="tool" aria-label="郵件">✉️</button><button class="tool" aria-label="活動">🎪</button></aside>
+      <aside class="right-tools"><button class="tool" aria-label="圖鑑">📖</button><button class="tool" aria-label="設定">⚙️</button></aside>
+
+      <div class="speech">今天的星星莓很甜喔！</div>
+      <div class="npc">🧚‍♀️</div>
+
+      <button class="hotspot h-menu" data-panel="menu">🍰<span>今日菜單</span></button>
+      <button class="hotspot h-quest" data-panel="quest">📜<span>委託板</span></button>
+      <button class="hotspot h-gacha" data-panel="gacha">⭐<span>星糖祈願</span></button>
+      <button class="hotspot h-fairy" data-panel="fairy">🧚<span>精靈小屋</span></button>
+
+      <nav class="dock" aria-label="主要功能">
+        <button>📜<span>委託</span></button>
+        <button>🧺<span>背包</span></button>
+        <button class="home">🏠<span>店鋪</span></button>
+        <button>⭐<span>祈願</span></button>
+        <button>🧚<span>精靈</span></button>
+      </nav>
+
+      <section class="panel" id="panel" aria-live="polite">
+        <div class="panel-head"><h2 id="panelTitle">今日菜單</h2><button class="close" id="closePanel">×</button></div>
+        <div class="cards" id="panelCards"></div>
+      </section>
+    </section>
+  </main>
+  <script>
+    const panel = document.querySelector('#panel');
+    const title = document.querySelector('#panelTitle');
+    const cards = document.querySelector('#panelCards');
+    const data = {
+      menu:['🌙 月光拿鐵','🍓 星星莓塔','🌌 夜空可可'],
+      quest:['🐈 夜貓委託','🐇 郵差兔訂單','✨ 每日小任務'],
+      gacha:['✦ 單次祈願','🌟 十次祈願','📖 祈願紀錄'],
+      fairy:['🧚 月光精靈','🍓 星星莓精靈','🏮 蜂蜜燈籠精靈']
+    };
+    const labels={menu:'今日菜單',quest:'委託板',gacha:'星糖祈願',fairy:'精靈小屋'};
+    document.querySelectorAll('[data-panel]').forEach(button=>button.addEventListener('click',()=>{
+      const key=button.dataset.panel;
+      title.textContent=labels[key];
+      cards.innerHTML=data[key].map(item=>`<div class="card"><b>${item.slice(0,2)}</b>${item.slice(2)}</div>`).join('');
+      panel.classList.add('show');
+    }));
+    document.querySelector('#closePanel').addEventListener('click',()=>panel.classList.remove('show'));
+  </script>
+</body>
+</html>
