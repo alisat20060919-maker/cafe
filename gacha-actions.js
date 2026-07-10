@@ -1,9 +1,5 @@
 import { GameDB } from '@db';
-import { getState, replaceState } from '@state';
-
-function cloneStateForWrite() {
-  return JSON.parse(JSON.stringify(getState()));
-}
+import { createStateDraft, commitStateDraft } from './state-transactions.js?v=core001';
 
 function normalizeWorkingState(state) {
   state.player ||= {};
@@ -152,7 +148,7 @@ function drawOneFromState(state, poolId) {
 }
 
 export function getGachaPityStatus() {
-  const snapshot = normalizeWorkingState(cloneStateForWrite());
+  const snapshot = normalizeWorkingState(createStateDraft());
   return getPityStatusFromState(snapshot);
 }
 
@@ -168,7 +164,7 @@ export function drawGacha(poolId = 'standard') {
 
 export function drawGachaMany(poolId = 'standard', times = 1) {
   const count = Math.max(1, Math.floor(Number(times || 1)));
-  const workingState = normalizeWorkingState(cloneStateForWrite());
+  const workingState = normalizeWorkingState(createStateDraft());
   const drops = [];
   let lastError = null;
 
@@ -182,7 +178,7 @@ export function drawGachaMany(poolId = 'standard', times = 1) {
   }
 
   if (!drops.length && lastError) return lastError;
-  if (drops.length) replaceState(workingState);
+  if (drops.length) commitStateDraft(workingState);
 
   return {
     ok: true,
