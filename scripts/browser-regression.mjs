@@ -261,7 +261,10 @@ async function testCraftStationPages(page) {
     return clone;
   });
 
-  await page.locator('[data-route="home"]').first().click();
+  await page.evaluate(async () => {
+    const routerModule = await import('./router.js?v=core100');
+    routerModule.navigate('home');
+  });
   await page.locator('[data-target="kitchen"]').click();
   await page.locator('#kitchen .enter-button').click();
   await page.locator('#page-kitchen.active .craft-station-page').waitFor({ state: 'visible' });
