@@ -1,5 +1,23 @@
 import { GameDB } from '@db';
-import { getState, spendCurrency, addItem, addFairy, persistState } from '@state';
+import { getState, replaceState } from '@state';
+
+function cloneStateForWrite() {
+  return JSON.parse(JSON.stringify(getState()));
+}
+
+function normalizeWorkingState(state) {
+  state.player ||= {};
+  state.inventory ||= {};
+  state.fairies ||= {};
+  state.collection ||= {};
+  state.collection.discoveredItems ||= {};
+  state.collection.discoveredFairies ||= {};
+  state.gacha ||= { totalPulls: 0, pityCounter: 0 };
+  state.gacha.totalPulls = Math.max(0, Number(state.gacha.totalPulls || 0));
+  state.gacha.pityCounter = Math.max(0, Number(state.gacha.pityCounter || 0));
+  if (!Array.isArray(state.gachaHistory)) state.gachaHistory = [];
+  return state;
+}
 
 function getPoolDrops(pool) {
   const drops = [...(pool.drops || [])];
@@ -12,20 +30,22 @@ function getPoolDrops(pool) {
     }
   });
 
-  return drops;
+  return drops.filter((drop) => Number(drop.weight || 0) > 0);
 }
 
 function pickWeighted(drops) {
+  if (!drops.length) return null;
   const total = drops.reduce((sum, drop) => sum + Number(drop.weight || 0), 0);
   let roll = Math.random() * total;
   for (const drop of drops) {
     roll -= Number(drop.weight || 0);
     if (roll <= 0) return drop;
   }
-  return drops[drops.length - 1];
+  return drops[drops.length - 1] || null;
 }
 
 function isSsrDrop(drop) {
+  if (!drop) return false;
   if (drop.kind === 'fairy') return GameDB.fairies?.[drop.id]?.rarity === 'SSR';
   if (drop.kind === 'item') return GameDB.items?.[drop.id]?.rarity === 'SSR';
   return false;
@@ -36,9 +56,38 @@ function pickPityDrop(drops) {
   return pickWeighted(pityDrops.length ? pityDrops : drops);
 }
 
-function applyDrop(drop) {
-  if (drop.kind === 'fairy') addFairy(drop.id);
-  if (drop.kind === 'item') addItem(drop.id, drop.qty || 1);
+function spendCurrencyFromState(state, currencyId, amount) {
+  const cost = Math.max(0, Number(amount || 0));
+  const current = Math.max(0, Number(state.player?.[currencyId] || 0));
+  if (current < cost) return false;
+  state.player[currencyId] = current - cost;
+  return true;
+}
+
+function addItemToState(state, itemId, qty = 1) {
+  if (!GameDB.items?.[itemId]) return false;
+  const amount = Math.max(0, Number(qty || 0));
+  state.inventory[itemId] = Math.max(0, Number(state.inventory[itemId] || 0) + amount);
+  if (amount > 0) state.collection.discoveredItems[itemId] = true;
+  return true;
+}
+
+function addFairyToState(state, fairyId) {
+  if (!GameDB.fairies?.[fairyId]) return false;
+  const current = state.fairies[fairyId] || {};
+  state.fairies[fairyId] = {
+    owned: true,
+    affection: Math.max(0, Number(current.affection || 0)),
+    obtainedAt: current.obtainedAt || new Date().toISOString(),
+  };
+  state.collection.discoveredFairies[fairyId] = true;
+  return true;
+}
+
+function applyDropToState(state, drop) {
+  if (drop.kind === 'fairy') return addFairyToState(state, drop.id);
+  if (drop.kind === 'item') return addItemToState(state, drop.id, drop.qty || 1);
+  return false;
 }
 
 function createGachaRecord(poolId, drop, meta = {}) {
@@ -54,70 +103,77 @@ function createGachaRecord(poolId, drop, meta = {}) {
   };
 }
 
-function ensureGachaState() {
-  const state = getState();
-  state.gacha ||= { totalPulls: 0, pityCounter: 0 };
-  state.gacha.totalPulls = Math.max(0, Number(state.gacha.totalPulls || 0));
-  state.gacha.pityCounter = Math.max(0, Number(state.gacha.pityCounter || 0));
-  if (!Array.isArray(state.gachaHistory)) state.gachaHistory = [];
-  return state.gacha;
+function addGachaRecordToState(state, record) {
+  const limit = Math.max(1, Number(GameDB.gachaConfig?.historyLimit || 20));
+  state.gachaHistory = [record, ...(state.gachaHistory || [])].slice(0, limit);
 }
 
-function addGachaRecord(record) {
-  const state = getState();
-  state.gachaHistory.unshift(record);
-  state.gachaHistory = state.gachaHistory.slice(0, Number(GameDB.gachaConfig?.historyLimit || 20));
-}
-
-export function getGachaPityStatus() {
-  const gacha = ensureGachaState();
-  const hardPityAt = Number(GameDB.gachaConfig?.hardPityAt || 20);
+function getPityStatusFromState(state) {
+  const gacha = state.gacha || {};
+  const hardPityAt = Math.max(1, Number(GameDB.gachaConfig?.hardPityAt || 20));
+  const totalPulls = Math.max(0, Number(gacha.totalPulls || 0));
+  const pityCounter = Math.max(0, Number(gacha.pityCounter || 0));
   return {
-    totalPulls: gacha.totalPulls,
-    pityCounter: gacha.pityCounter,
+    totalPulls,
+    pityCounter,
     hardPityAt,
-    remaining: Math.max(0, hardPityAt - gacha.pityCounter),
+    remaining: Math.max(0, hardPityAt - pityCounter),
   };
 }
 
-export function drawGacha(poolId = 'standard', options = {}) {
-  const shouldPersist = options.persist !== false;
-  const pool = GameDB.gachaPools[poolId];
+function drawOneFromState(state, poolId) {
+  const pool = GameDB.gachaPools?.[poolId];
   if (!pool) return { ok: false, message: '找不到祈願池。' };
 
-  if (!spendCurrency(pool.cost.currency, pool.cost.amount)) {
-    const meta = GameDB.currencies[pool.cost.currency];
+  if (!spendCurrencyFromState(state, pool.cost.currency, pool.cost.amount)) {
+    const meta = GameDB.currencies?.[pool.cost.currency];
     return { ok: false, message: `${meta?.name || pool.cost.currency}不足。` };
   }
 
   const drops = getPoolDrops(pool);
-  const gacha = ensureGachaState();
-  const hardPityAt = Number(GameDB.gachaConfig?.hardPityAt || 20);
-  const pityHit = gacha.pityCounter + 1 >= hardPityAt;
-  const drop = pityHit ? pickPityDrop(drops) : pickWeighted(drops);
-  applyDrop(drop);
+  if (!drops.length) return { ok: false, message: '祈願池目前沒有可抽取內容。' };
 
-  gacha.totalPulls += 1;
-  gacha.pityCounter = isSsrDrop(drop) ? 0 : gacha.pityCounter + 1;
+  const hardPityAt = Math.max(1, Number(GameDB.gachaConfig?.hardPityAt || 20));
+  const pityHit = state.gacha.pityCounter + 1 >= hardPityAt;
+  const drop = pityHit ? pickPityDrop(drops) : pickWeighted(drops);
+  if (!drop || !applyDropToState(state, drop)) return { ok: false, message: '祈願結果資料無效。' };
+
+  state.gacha.totalPulls += 1;
+  state.gacha.pityCounter = isSsrDrop(drop) ? 0 : state.gacha.pityCounter + 1;
 
   const record = createGachaRecord(poolId, drop, {
     pityHit,
-    pityCounterAfter: gacha.pityCounter,
-    totalPullsAfter: gacha.totalPulls,
+    pityCounterAfter: state.gacha.pityCounter,
+    totalPullsAfter: state.gacha.totalPulls,
   });
-  addGachaRecord(record);
-  if (shouldPersist) persistState('gacha');
+  addGachaRecordToState(state, record);
 
-  return { ok: true, drop: record, pity: getGachaPityStatus() };
+  return { ok: true, drop: record };
+}
+
+export function getGachaPityStatus() {
+  const snapshot = normalizeWorkingState(cloneStateForWrite());
+  return getPityStatusFromState(snapshot);
+}
+
+export function drawGacha(poolId = 'standard') {
+  const result = drawGachaMany(poolId, 1);
+  if (!result.ok) return result;
+  return {
+    ok: true,
+    drop: result.drops[0],
+    pity: getGachaPityStatus(),
+  };
 }
 
 export function drawGachaMany(poolId = 'standard', times = 1) {
   const count = Math.max(1, Math.floor(Number(times || 1)));
+  const workingState = normalizeWorkingState(cloneStateForWrite());
   const drops = [];
   let lastError = null;
 
   for (let i = 0; i < count; i += 1) {
-    const result = drawGacha(poolId, { persist: false });
+    const result = drawOneFromState(workingState, poolId);
     if (!result.ok) {
       lastError = result;
       break;
@@ -125,7 +181,14 @@ export function drawGachaMany(poolId = 'standard', times = 1) {
     drops.push(result.drop);
   }
 
-  if (drops.length) persistState('gacha:batch');
   if (!drops.length && lastError) return lastError;
-  return { ok: true, drops, partial: Boolean(lastError), message: lastError?.message || '' };
+  if (drops.length) replaceState(workingState);
+
+  return {
+    ok: true,
+    drops,
+    partial: Boolean(lastError),
+    message: lastError?.message || '',
+    pity: getPityStatusFromState(workingState),
+  };
 }
