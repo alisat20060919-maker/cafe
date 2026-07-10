@@ -9,8 +9,9 @@ const iPhone = devices['iPhone 13'];
 await fs.mkdir(outputDir, { recursive: true });
 
 function filterFailedRequests(requests = []) {
-  return requests.filter(({ url }) => (
-    !url.includes('/assets/images/')
+  return requests.filter(({ url, resourceType }) => (
+    !['image', 'font', 'media'].includes(resourceType)
+    && !url.includes('/assets/images/')
     && !url.endsWith('.webp')
     && !url.endsWith('.png')
     && !url.endsWith('.jpg')
@@ -138,7 +139,11 @@ async function runEngine(engineName, browserType) {
       pageErrors.push(error?.stack || error?.message || String(error));
     });
     page.on('requestfailed', (request) => {
-      failedRequests.push({ url: request.url(), error: request.failure()?.errorText || 'request failed' });
+      failedRequests.push({
+        url: request.url(),
+        resourceType: request.resourceType(),
+        error: request.failure()?.errorText || 'request failed',
+      });
     });
 
     const response = await page.goto(testUrl, {
@@ -187,6 +192,7 @@ async function runEngine(engineName, browserType) {
       persistence,
       pageErrors,
       failedRequests: relevantFailedRequests,
+      ignoredAssetFailures: failedRequests.filter(({ resourceType }) => ['image', 'font', 'media'].includes(resourceType)),
       consoleMessages,
     };
   } catch (error) {
