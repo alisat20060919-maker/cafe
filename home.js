@@ -247,8 +247,11 @@ export function setActiveScene(index) {
   const tabs = $all('.tab');
   if (!scenes.length) return;
 
-  activeIndex = Math.max(0, Math.min(index, scenes.length - 1));
+  const numericIndex = Number(index);
+  const safeIndex = Number.isFinite(numericIndex) ? numericIndex : 0;
+  activeIndex = Math.max(0, Math.min(safeIndex, scenes.length - 1));
   const scene = scenes[activeIndex];
+  if (!scene) return;
 
   scenes.forEach((item, itemIndex) => {
     item.classList.toggle('active', itemIndex === activeIndex);
@@ -302,7 +305,9 @@ function scrollToScene(index) {
   closeInsidePage();
   const viewport = $('#mapViewport');
   const scenes = $all('.scene-card');
-  const scene = scenes[Math.max(0, Math.min(index, scenes.length - 1))];
+  const numericIndex = Number(index);
+  const safeIndex = Number.isFinite(numericIndex) ? numericIndex : 0;
+  const scene = scenes[Math.max(0, Math.min(safeIndex, scenes.length - 1))];
   if (!viewport || !scene) return;
 
   viewport.scrollTo({
@@ -377,7 +382,9 @@ function bindHomeEvents() {
   viewport?.addEventListener('scroll', () => {
     window.clearTimeout(scrollTimer);
     scrollTimer = window.setTimeout(() => {
-      if (homeRoot?.classList.contains('inside-mode')) return;
+      if (!homeRoot?.classList.contains('active')) return;
+      if (homeRoot.classList.contains('inside-mode')) return;
+      if (!viewport.clientWidth) return;
       const index = Math.round(viewport.scrollLeft / viewport.clientWidth);
       setActiveScene(index);
     }, 80);
