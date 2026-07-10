@@ -1,5 +1,6 @@
 import { GameDB } from '@db';
-import { getState, replaceState, addReward } from '@state';
+import { getState, addReward } from '@state';
+import { setDailyCheckIn } from './state-transactions.js?v=core001';
 import { formatReward } from '@utils';
 
 function localDateString(date = new Date()) {
@@ -13,10 +14,6 @@ function yesterdayString() {
   const date = new Date();
   date.setDate(date.getDate() - 1);
   return localDateString(date);
-}
-
-function cloneStateForWrite() {
-  return JSON.parse(JSON.stringify(getState()));
 }
 
 export function claimDailyReward() {
@@ -33,11 +30,7 @@ export function claimDailyReward() {
   const reward = GameDB.dailyRewards[(nextStreak - 1) % GameDB.dailyRewards.length];
 
   addReward(reward);
-  const nextState = cloneStateForWrite();
-  nextState.daily ||= {};
-  nextState.daily.lastCheckIn = today;
-  nextState.daily.streak = nextStreak;
-  replaceState(nextState);
+  setDailyCheckIn(today, nextStreak);
 
   return { ok: true, streak: nextStreak, reward, message: `簽到成功：${formatReward(reward)}` };
 }
