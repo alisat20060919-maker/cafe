@@ -1,8 +1,8 @@
 import { runDevChecks } from '@dev/checks';
 import { runDataIntegrityChecks } from './data-integrity-checks.js?v=core001';
-import { applyLegacyGameDataAliases } from './data-aliases.js?v=core001';
+import { applyLegacyGameDataAliases } from './data-aliases.js?v=core002';
 import { GameDB } from '@db';
-import { applyFairyExpansion } from './fairy-expansion.js';
+import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
 import { getGatherDropPreview } from '@actions/gather';
 import { initUI, showModal, showOpeningStoryIfNeeded } from '@ui';
