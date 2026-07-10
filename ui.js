@@ -1,5 +1,6 @@
 import { GameDB } from '@db';
 import { getState, resetState, replaceState, markOpeningStorySeen } from '@state';
+import { toggleSetting } from './state-transactions.js?v=core001';
 import { claimDailyReward } from '@actions/daily';
 import { exportSave, importSave } from '@save';
 import { Events, on } from '@eventBus';
@@ -16,8 +17,6 @@ function getProgressPercent(progress) { return Math.round(getProgressRatio(progr
 function getExpText(progress) { return progress.isMax ? `EXP ${progress.exp}` : `EXP ${progress.currentLevelExp}/${progress.neededForNext}`; }
 function getUnlockLabel(entry = {}) { if (entry.label) return entry.label; if (entry.type === 'scene') return GameDB.scenes?.[entry.id]?.name || entry.id; if (entry.type === 'recipe') return GameDB.recipes?.[entry.id]?.name || entry.id; return entry.id || '新內容'; }
 function renderLevelUnlocks(unlocked = []) { if (!unlocked.length) return '<p class="level-up-note">新的魔法正在準備中，繼續完成委託累積經驗吧。</p>'; return `<div class="level-up-unlocks"><span>NEW UNLOCK</span>${unlocked.map((entry) => `<b>🔓 ${getUnlockLabel(entry)}</b>`).join('')}</div>`; }
-
-function cloneStateForWrite() { return JSON.parse(JSON.stringify(getState())); }
 
 function lockBodyScroll() {
   if (document.body.classList.contains('core-modal-open')) return;
@@ -63,12 +62,12 @@ function handleModalClick(event) {
   const settingButton = event.target.closest('[data-setting]');
   if (settingButton) {
     const key = settingButton.dataset.setting;
-    if (!['animation', 'softMode', 'sound'].includes(key)) return;
-    const nextState = cloneStateForWrite();
-    nextState.settings ||= {};
-    nextState.settings[key] = !Boolean(nextState.settings[key]);
-    replaceState(nextState);
-    openSettings();
+    try {
+      toggleSetting(key);
+      openSettings();
+    } catch (error) {
+      showNotice('設定失敗', error.message || '無法更新設定。');
+    }
     return;
   }
 
