@@ -6,6 +6,7 @@ import { drawGachaMany } from '@actions/gacha';
 import { claimDailyReward } from '@actions/daily';
 import { gatherAt } from '@actions/gather';
 import { completeCommission } from '@actions/commission';
+import { craftRecipe, getMaxCraftable } from './craft-actions.js?v=core101';
 import { exportSave, importSave } from '@save';
 
 function shouldRunSmokeTests() {
@@ -128,6 +129,52 @@ function testGathering(original) {
   return `${locationId}：${result.dropView?.name || itemId}`;
 }
 
+function testAtomicBatchCrafting(original) {
+  const recipe = Object.values(GameDB.recipes || {}).find((entry) => (
+    entry?.station === 'kitchen'
+    && Object.keys(entry.cost || {}).length > 0
+    && GameDB.items?.[entry.output?.itemId]
+  ));
+  assert(recipe, '找不到可測試的廚房配方');
+  const quantity = 3;
+  const initialOutput = 2;
+
+  prepareState(original, (draft) => {
+    draft.player ||= {};
+    draft.player.exp = Math.max(Number(draft.player.exp || 0), 999999);
+    draft.player.level = Math.max(Number(draft.player.level || 1), 99);
+    draft.unlockedScenes ||= {};
+    Object.keys(GameDB.scenes || {}).forEach((sceneId) => { draft.unlockedScenes[sceneId] = true; });
+    draft.inventory ||= {};
+    Object.entries(recipe.cost || {}).forEach(([itemId, unitQty]) => {
+      draft.inventory[itemId] = Number(unitQty || 0) * quantity;
+    });
+    draft.inventory[recipe.output.itemId] = initialOutput;
+    draft.collection ||= {};
+    draft.collection.discoveredItems ||= {};
+    delete draft.collection.discoveredItems[recipe.output.itemId];
+  });
+
+  assert(getMaxCraftable(recipe.id) === quantity, `最多製作次數不是 ${quantity}`);
+  const result = craftRecipe(recipe.id, quantity);
+  assert(result.ok, result.message || '批次製作失敗');
+
+  Object.keys(recipe.cost || {}).forEach((itemId) => {
+    assert(Number(getState().inventory?.[itemId] || 0) === 0, `${itemId} 沒有正確扣完`);
+  });
+
+  const expectedOutput = initialOutput + Number(recipe.output.qty || 1) * quantity;
+  assert(Number(getState().inventory?.[recipe.output.itemId] || 0) === expectedOutput, '批次成品數量不正確');
+  assert(getState().collection?.discoveredItems?.[recipe.output.itemId] === true, '成品沒有登錄圖鑑');
+
+  const stateBeforeFailure = JSON.stringify(getState());
+  const failed = craftRecipe(recipe.id, 1);
+  assert(!failed.ok, '材料不足時仍製作成功');
+  assert(JSON.stringify(getState()) === stateBeforeFailure, '製作失敗後背包或狀態仍被改動');
+
+  return `${recipe.name} ×${quantity} 原子交易與失敗回滾正常`;
+}
+
 function testCommission(original) {
   const commission = Object.values(GameDB.commissions || {})[0];
   assert(commission?.id, '沒有可測試的委託');
@@ -164,6 +211,7 @@ export function runSmokeTests() {
     runCase(results, '每日簽到', () => testDailyReward(original));
     runCase(results, '十連抽與貨幣扣除', () => testGachaBatch(original));
     runCase(results, '採集與背包入帳', () => testGathering(original));
+    runCase(results, '批次製作原子交易', () => testAtomicBatchCrafting(original));
     runCase(results, '委託完成與狀態', () => testCommission(original));
   } finally {
     replaceState(original);
