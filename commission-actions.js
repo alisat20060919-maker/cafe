@@ -1,7 +1,6 @@
 import { GameDB } from '@db';
 import {
   getState,
-  replaceState,
   canAffordItems,
   spendItems,
   spendCurrency,
@@ -13,6 +12,7 @@ import {
   isUnlocked,
   getUnlockRequirementText,
 } from '@state';
+import { markCommissionCompleted } from './state-transactions.js?v=core001';
 import { applyReward } from '@actions/player';
 import { getTotalFairyBuffValue } from '@actions/fairy';
 import { formatReward } from '@utils';
@@ -102,10 +102,6 @@ function mergeUnlocks(...groups) {
   });
 }
 
-function cloneStateForWrite() {
-  return JSON.parse(JSON.stringify(getState()));
-}
-
 export function getPaidRefreshCostText() {
   return formatCost(getPaidRefreshCost());
 }
@@ -182,10 +178,7 @@ export function completeCommission(commissionId) {
   const reward = getEffectiveReward(commission);
   const growth = applyReward(reward);
   const directUnlocks = applyCommissionUnlocks(commissionId);
-  const nextState = cloneStateForWrite();
-  nextState.commissions ||= {};
-  nextState.commissions[commissionId] = { status: 'completed', completedAt: new Date().toISOString() };
-  replaceState(nextState);
+  markCommissionCompleted(commissionId);
   const unlocked = mergeUnlocks(growth.unlocked || [], directUnlocks);
   return { ok: true, message: `委託完成：${formatReward(reward)}${formatLevelUps(growth)}${formatUnlocks(unlocked)}` };
 }
