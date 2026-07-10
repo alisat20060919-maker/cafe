@@ -91,7 +91,7 @@ function renderLockedStation(stationId) {
       <div class="craft-station-large-icon">🔒</div>
       <h2>${escapeHtml(meta.label)}尚未解鎖</h2>
       <p>${escapeHtml(requirementText)}後即可使用這個工作站。</p>
-      <button type="button" data-route="home">返回地圖</button>
+      <button type="button" data-route="world">返回世界地圖</button>
     </article>
   `;
 }
@@ -118,7 +118,7 @@ export function renderCraftStationPage(stationId) {
   root.innerHTML = `
     <section class="craft-station-page" data-station-page="${escapeHtml(stationId)}">
       <header class="craft-station-header">
-        <button type="button" class="craft-station-back" data-route="home">← 返回地圖</button>
+        <button type="button" class="craft-station-back" data-route="world">← 返回世界地圖</button>
         <div class="craft-station-title-wrap">
           <span class="craft-station-kicker">${escapeHtml(meta.kicker)}</span>
           <h2>${escapeHtml(meta.icon)} ${escapeHtml(meta.label)}</h2>
