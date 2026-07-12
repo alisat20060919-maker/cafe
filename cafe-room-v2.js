@@ -1,5 +1,6 @@
 import { navigate } from '@router';
 import { showModal } from '@ui';
+import { getState } from '@state';
 import { ROOM_DEFAULTS, OBJECTS, renderRoomMarkup } from './cafe-room-config.js?v=room004';
 
 let roomRoot = null;
@@ -21,9 +22,31 @@ let joystickPointerId = null;
 let joystickVector = { x: 0, y: 0 };
 let joystickFrame = null;
 let joystickLastStep = 0;
+let bumpTimer = null;
+
+const COLLISION_ZONES = [
+  { id: 'dessert-cabinet', minX: 13, maxX: 39, minY: 44, maxY: 67 },
+  { id: 'counter', minX: 54, maxX: 77, minY: 43, maxY: 68 },
+  { id: 'central-table', minX: 38, maxX: 57, minY: 57, maxY: 77 },
+  { id: 'lower-shelf', minX: 72, maxX: 92, minY: 71, maxY: 90 },
+];
+
+const SAFE_APPROACHES = {
+  rowan: { x: 61, y: 73 },
+  menu: { x: 28, y: 71 },
+  cabinet: { x: 31, y: 72 },
+  quest: { x: 49, y: 52 },
+  order: { x: 61, y: 72 },
+  kitchen: { x: 16, y: 57 },
+  backyard: { x: 87, y: 58 },
+  table: { x: 47, y: 82 },
+  catlamp: { x: 52, y: 84 },
+  stairs: { x: 77, y: 56 },
+};
 
 function clamp(value, min, max) { return Math.min(max, Math.max(min, value)); }
 function distance(a, b) { return Math.hypot(Number(a.x) - Number(b.x), Number(a.y) - Number(b.y)); }
+function getApproach(targetId, object = OBJECTS[targetId]) { return SAFE_APPROACHES[targetId] || object?.approach || object; }
 
 function ensureStylesheet() {
   if (document.querySelector('link[data-cafe-room-v2]')) return;
@@ -75,9 +98,54 @@ function keepPlayerInView() {
   viewport.scrollTo({ left: desiredLeft, top: desiredTop, behavior: 'smooth' });
 }
 
+function isBlocked(position) {
+  return COLLISION_ZONES.some((zone) => (
+    position.x >= zone.minX
+    && position.x <= zone.maxX
+    && position.y >= zone.minY
+    && position.y <= zone.maxY
+  ));
+}
+
+function resolveCollision(previous, desired) {
+  if (!isBlocked(desired)) return desired;
+  const xOnly = { x: desired.x, y: previous.y };
+  if (!isBlocked(xOnly)) return xOnly;
+  const yOnly = { x: previous.x, y: desired.y };
+  if (!isBlocked(yOnly)) return yOnly;
+  return previous;
+}
+
+function traceReachablePosition(previous, desired) {
+  const totalDistance = distance(previous, desired);
+  const steps = Math.max(1, Math.ceil(totalDistance / 1.15));
+  let current = { ...previous };
+
+  for (let index = 1; index <= steps; index += 1) {
+    const ratio = index / steps;
+    const candidate = {
+      x: previous.x + (desired.x - previous.x) * ratio,
+      y: previous.y + (desired.y - previous.y) * ratio,
+    };
+    const resolved = resolveCollision(current, candidate);
+    if (distance(current, resolved) < 0.01 && isBlocked(candidate)) break;
+    current = resolved;
+  }
+
+  return current;
+}
+
+function bumpPlayer() {
+  if (!player) return;
+  window.clearTimeout(bumpTimer);
+  player.classList.remove('is-bumped');
+  window.requestAnimationFrame(() => player.classList.add('is-bumped'));
+  bumpTimer = window.setTimeout(() => player?.classList.remove('is-bumped'), 220);
+}
+
 function findNearestObject(position = playerPosition) {
   return Object.entries(OBJECTS)
-    .map(([id, object]) => ({ id, object, dist: distance(position, object.approach || object) }))
+    .map(([id, object]) => ({ id, object, dist: distance(position, getApproach(id, object)) }))
     .sort((a, b) => a.dist - b.dist)[0] || null;
 }
 
@@ -85,23 +153,46 @@ function syncNearbyTarget() {
   const nearest = findNearestObject();
   nearbyTarget = nearest && nearest.dist <= 9.5 ? nearest.id : null;
   if (!prompt) return;
-  if (!nearbyTarget) { prompt.hidden = true; return; }
+  if (!nearbyTarget) {
+    prompt.hidden = true;
+    prompt.removeAttribute('data-target-kind');
+    prompt.removeAttribute('data-target-id');
+    return;
+  }
   const object = OBJECTS[nearbyTarget];
   prompt.hidden = false;
-  prompt.textContent = object.prompt || `互動：${object.label}`;
-  prompt.style.left = `${clamp(playerPosition.x + 1.5, 7, 92)}%`;
-  prompt.style.top = `${clamp(playerPosition.y - 12, 34, 84)}%`;
+  prompt.dataset.targetKind = object.kind || 'fixture';
+  prompt.dataset.targetId = nearbyTarget;
+  prompt.innerHTML = `<span>${object.kind === 'npc' ? '💬' : object.kind === 'door' ? '🚪' : '✦'}</span><b>${object.prompt || `互動：${object.label}`}</b>`;
+  if (!prompt.parentElement?.classList.contains('cafe-room-playfield')) {
+    prompt.style.left = `${clamp(playerPosition.x + 1.5, 7, 92)}%`;
+    prompt.style.top = `${clamp(playerPosition.y - 12, 34, 84)}%`;
+  } else {
+    prompt.style.removeProperty('left');
+    prompt.style.removeProperty('top');
+  }
 }
 
 function movePlayer(nextPosition, options = {}) {
   const bounds = ROOM_DEFAULTS.walkBounds;
-  const next = {
+  const previous = { ...playerPosition };
+  const desired = {
     x: clamp(Number(nextPosition.x), bounds.minX, bounds.maxX),
     y: clamp(Number(nextPosition.y), bounds.minY, bounds.maxY),
   };
-  const previous = { ...playerPosition };
-  const duration = Number(options.duration || clamp(distance(previous, next) * 25, 90, 720));
+  const next = traceReachablePosition(previous, desired);
+  const wasBlocked = distance(next, desired) > 0.12;
+  const travelled = distance(previous, next);
+  const duration = Number(options.duration || clamp(travelled * 25, 90, 720));
+
   window.clearTimeout(movementTimer);
+
+  if (travelled < 0.01) {
+    if (wasBlocked) bumpPlayer();
+    syncNearbyTarget();
+    return false;
+  }
+
   playerPosition = next;
   if (player) {
     player.style.setProperty('--walk-duration', `${duration}ms`);
@@ -109,18 +200,37 @@ function movePlayer(nextPosition, options = {}) {
   }
   updatePlayerVisual(next, previous);
   if (options.showMarker !== false) setMarker(next);
+  if (wasBlocked) bumpPlayer();
+
   movementTimer = window.setTimeout(() => {
     player?.classList.remove('is-walking');
     syncNearbyTarget();
     if (options.keepInView !== false) keepPlayerInView();
-    if (options.targetId) openInteraction(options.targetId);
+    if (options.targetId) {
+      const object = OBJECTS[options.targetId];
+      if (object && distance(playerPosition, getApproach(options.targetId, object)) <= 10.5) openInteraction(options.targetId);
+    }
   }, duration + 18);
+
+  return true;
+}
+
+function getResolvedActions(targetId) {
+  const object = OBJECTS[targetId];
+  if (!object) return [];
+  const chapterComplete = Boolean(getState().story?.chapter1Completed);
+  return object.actions.map((action) => {
+    if (action.id === 'hug' && chapterComplete) return { ...action, locked: false, lockText: '' };
+    if (action.id === 'locked-upstairs' && chapterComplete) {
+      return { ...action, id: 'visit-milo-room', label: '米洛的房間', icon: '🛏️', locked: false, lockText: '' };
+    }
+    return action;
+  });
 }
 
 function renderActions(targetId) {
   if (!drawerActions) return;
-  const object = OBJECTS[targetId];
-  drawerActions.innerHTML = object.actions.map((action) => `
+  drawerActions.innerHTML = getResolvedActions(targetId).map((action) => `
     <button type="button" data-cafe-action="${action.id}" ${action.locked ? 'disabled' : ''}>
       <span>${action.icon || '✦'}</span><b>${action.label}</b>${action.locked ? `<small>${action.lockText || '尚未解鎖'}</small>` : ''}
     </button>`).join('');
@@ -130,6 +240,7 @@ function openInteraction(targetId) {
   const object = OBJECTS[targetId];
   if (!object || !drawer) return;
   document.querySelectorAll('[data-cafe-object]').forEach((element) => element.classList.toggle('is-selected', element.dataset.cafeObject === targetId));
+  drawer.dataset.cafeTarget = targetId;
   if (drawerTitle) drawerTitle.textContent = object.label;
   if (drawerCopy) drawerCopy.textContent = object.intro;
   renderActions(targetId);
@@ -141,6 +252,7 @@ function openInteraction(targetId) {
 
 function closeInteraction() {
   drawer?.classList.remove('is-open');
+  if (drawer) delete drawer.dataset.cafeTarget;
   document.querySelectorAll('[data-cafe-object].is-selected').forEach((element) => element.classList.remove('is-selected'));
   window.setTimeout(() => { if (drawer && !drawer.classList.contains('is-open')) drawer.hidden = true; }, 160);
 }
@@ -153,6 +265,10 @@ function showOrderModal() {
   showModal(`<div class="core-modal-card cafe-room-modal compact"><button type="button" class="core-modal-close" data-close-modal>×</button><span class="core-modal-kicker">ORDERS</span><h2>今天的客人訂單</h2><p>目前沒有等待交付的特殊訂單。正式營業系統接上後，這裡會顯示待確認、製作中與已完成項目。</p></div>`);
 }
 
+function showMiloRoomModal() {
+  showModal(`<div class="core-modal-card cafe-room-modal compact milo-room-preview"><button type="button" class="core-modal-close" data-close-modal>×</button><span class="core-modal-kicker">NEW PLACE</span><div class="gather-result-icon">🛏️</div><h2>米洛的房間</h2><p>房間還留著新曬過的棉被香氣。窗邊放著一盞小燈，桌上則有洛溫準備好的乾淨衣服與熱水。</p><p class="core-modal-note">正式房間場景會在後續版本加入；現在已經記錄為米洛的新歸處。</p><button type="button" data-close-modal>回到咖啡廳</button></div>`);
+}
+
 function handleAction(actionId) {
   const copy = (speaker, place, text, drawerText) => {
     setGlobalDialogue(speaker, place, text);
@@ -162,6 +278,7 @@ function handleAction(actionId) {
     case 'talk': copy('洛溫', '櫃檯旁', '「怎麼了？今天想先做什麼？」金色長髮隨著他的動作滑過肩後。', '店長今天看起來心情不錯，願意停下來陪米洛說話。'); break;
     case 'status': copy('洛溫', '櫃檯旁', '「只是有些累，沒有大礙。」他說得很自然，卻沒有立刻移開視線。', '米洛總覺得店長把疲倦藏得太好了。'); break;
     case 'help': copy('洛溫', '店內工作', '「那就幫我把桌上的杯子收回來。做完再來找我。」', '新的小目標：整理中央座位。'); break;
+    case 'hug': copy('洛溫', '店內', '「過來。」洛溫張開手，讓米洛整個埋進自己懷裡。', '抱抱已解鎖。米洛隨時都可以來找店長。'); break;
     case 'view-menu': showMenuModal(); break;
     case 'recommend': copy('洛溫', '今日推薦', '「今天適合你的是星星莓奶油塔。酸一點，剛好能讓你打起精神。」', '洛溫甚至沒有翻菜單，就選好了米洛今天適合吃的東西。'); break;
     case 'browse-shop': closeInteraction(); navigate('shop'); break;
@@ -176,6 +293,7 @@ function handleAction(actionId) {
     case 'inspect-table': copy('米洛', '中央座位', '桌角壓著一張洛溫寫的便條：記得吃午餐。', '字很簡短，但顯然是特別留給米洛的。'); break;
     case 'pet-catlamp': copy('貓貓燈', '店內', '貓貓燈舒服地瞇起光點，在米洛掌心輕輕蹭了兩下。', '貓貓燈今天也很喜歡米洛。'); break;
     case 'charge-catlamp': copy('米洛', '店內', '米洛把窗邊收集到的一點星光放進燈芯，貓貓燈立刻亮了起來。', '燈光變得更溫暖了。'); break;
+    case 'visit-milo-room': showMiloRoomModal(); break;
     default: break;
   }
 }
@@ -184,7 +302,7 @@ function moveToObject(targetId) {
   const object = OBJECTS[targetId];
   if (!object) return;
   closeInteraction();
-  movePlayer(object.approach || object, { targetId });
+  movePlayer(getApproach(targetId, object), { targetId });
 }
 
 function stagePointFromEvent(event) {
@@ -241,6 +359,7 @@ function joystickTick(timestamp) {
     if (strength > .12) {
       closeInteraction();
       movePlayer({ x: playerPosition.x + joystickVector.x * 1.25, y: playerPosition.y + joystickVector.y * 1.05 }, { showMarker: false, duration: 80 });
+      syncNearbyTarget();
     }
   }
   joystickFrame = window.requestAnimationFrame(joystickTick);
@@ -273,8 +392,13 @@ function observeRoomVisibility() {
   pageHome.dataset.cafeRoomObserved = 'true';
   const sync = () => {
     if (pageHome.classList.contains('inside-mode')) {
-      setGlobalDialogue('洛溫', '半月琥珀・店內', '「歡迎回來。想先在店裡走走，還是來找我？」');
-      window.setTimeout(() => { keepPlayerInView(); viewport?.focus({ preventScroll:true }); }, 40);
+      const chapterComplete = Boolean(getState().story?.chapter1Completed);
+      setGlobalDialogue(
+        chapterComplete ? '洛溫' : '任務',
+        '半月琥珀・店內',
+        chapterComplete ? '「歡迎回來。想先在店裡走走，還是來找我？」' : '先走到金色長髮的店長身邊，和洛溫說話。',
+      );
+      window.setTimeout(() => { keepPlayerInView(); viewport?.focus({ preventScroll:true }); syncNearbyTarget(); }, 40);
       return;
     }
     closeInteraction();
@@ -300,6 +424,10 @@ function bindRoomEvents() {
     if (event.target.closest('[data-cafe-interact]') && nearbyTarget) { openInteraction(nearbyTarget); return; }
     const actionButton = event.target.closest('[data-cafe-action]');
     if (actionButton && !actionButton.disabled) handleAction(actionButton.dataset.cafeAction);
+  });
+  document.addEventListener('cafe-story-updated', () => {
+    const targetId = drawer?.dataset.cafeTarget;
+    if (targetId) renderActions(targetId);
   });
   bindJoystick();
 }
