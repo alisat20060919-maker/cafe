@@ -7,6 +7,7 @@ import { initCraftUI, renderCraftStationPage } from './craft-ui.js?v=core003';
 import { initBackyardEntry } from './backyard-entry.js?v=core001';
 import { initBackyardPage, renderBackyardPage } from './backyard-page.js?v=core001';
 import { initCafeRoomV2 } from './cafe-room-v2.js?v=room004';
+import { initCafeRoomFollowFix } from './cafe-room-follow-fix.js?v=room005';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
@@ -117,6 +118,7 @@ function boot() {
   initBackyardEntry();
   initBackyardPage();
   initCafeRoomV2();
+  initCafeRoomFollowFix();
   initHome();
   initGatherDropHelp();
   initGachaPage();
