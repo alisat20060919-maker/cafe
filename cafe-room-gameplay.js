@@ -2,6 +2,11 @@ import { getState, persistState } from '@state';
 import { closeModal } from '@ui';
 import { CHAPTER_ONE_STORY } from './data-chapter-one.js?v=story001';
 
+const STORY_PORTRAITS = Object.freeze({
+  milo: './assets/images/ui/IMG_7339.webp',
+  rowan: './assets/images/ui/IMG_7340.webp',
+});
+
 let roomRoot = null;
 let pageHome = null;
 let gameWindow = null;
@@ -14,12 +19,21 @@ let activeCompleteHandler = null;
 let previousFocus = null;
 
 function ensureStylesheet() {
-  if (document.querySelector('link[data-cafe-room-gameplay]')) return;
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = './cafe-room-gameplay.css?v=room007';
-  link.dataset.cafeRoomGameplay = 'true';
-  document.head.appendChild(link);
+  if (!document.querySelector('link[data-cafe-room-gameplay]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './cafe-room-gameplay.css?v=room007';
+    link.dataset.cafeRoomGameplay = 'true';
+    document.head.appendChild(link);
+  }
+
+  if (!document.querySelector('link[data-cafe-story-portraits]')) {
+    const portraitLink = document.createElement('link');
+    portraitLink.rel = 'stylesheet';
+    portraitLink.href = './cafe-story-portraits.css?v=portrait001';
+    portraitLink.dataset.cafeStoryPortraits = 'true';
+    document.head.appendChild(portraitLink);
+  }
 }
 
 function setDialogue(speaker, place, text) {
@@ -34,38 +48,14 @@ function setDialogue(speaker, place, text) {
 }
 
 function renderPortraitMarkup(characterId) {
-  if (characterId === 'milo') {
-    return `
-      <div class="cafe-story-portrait cafe-story-portrait--milo" aria-hidden="true">
-        <span class="cafe-story-milo-ear ear-left"></span>
-        <span class="cafe-story-milo-ear ear-right"></span>
-        <span class="cafe-story-milo-hair"></span>
-        <span class="cafe-story-milo-face">
-          <i class="cafe-story-eye eye-left"></i><i class="cafe-story-eye eye-right"></i>
-          <i class="cafe-story-brow brow-left"></i><i class="cafe-story-brow brow-right"></i>
-          <i class="cafe-story-mouth"></i>
-        </span>
-        <span class="cafe-story-milo-shirt"></span>
-        <span class="cafe-story-milo-apron"></span>
-      </div>`;
-  }
-
+  const src = STORY_PORTRAITS[characterId];
+  if (!src) return '';
+  const label = characterId === 'milo' ? '米洛' : '洛溫';
   return `
-    <div class="cafe-story-portrait cafe-story-portrait--rowan" aria-hidden="true">
-      <span class="cafe-story-rowan-hair-back"></span>
-      <span class="cafe-story-rowan-ear ear-left"></span>
-      <span class="cafe-story-rowan-ear ear-right"></span>
-      <span class="cafe-story-rowan-face">
-        <i class="cafe-story-eye eye-left"></i><i class="cafe-story-eye eye-right"></i>
-        <i class="cafe-story-brow brow-left"></i><i class="cafe-story-brow brow-right"></i>
-        <i class="cafe-story-mouth"></i>
-      </span>
-      <span class="cafe-story-rowan-fringe"></span>
-      <span class="cafe-story-rowan-hair-front hair-left"></span>
-      <span class="cafe-story-rowan-hair-front hair-right"></span>
-      <span class="cafe-story-rowan-shirt"></span>
-      <span class="cafe-story-rowan-vest"></span>
-    </div>`;
+    <figure class="cafe-story-portrait cafe-story-portrait--${characterId}" aria-hidden="true">
+      <img src="${src}" alt="" draggable="false" decoding="async" data-cafe-story-portrait-image="${characterId}" />
+      <figcaption class="sr-only">${label}</figcaption>
+    </figure>`;
 }
 
 function ensureStoryLayer() {
