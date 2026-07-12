@@ -1,0 +1,757 @@
+.milo-room-view[hidden]{display:none!important}
+
+.milo-room-view{
+  display:grid;
+  gap:12px;
+  min-width:0;
+}
+
+.milo-room-head{
+  animation:milo-room-head-in .24s ease-out both;
+}
+
+.milo-room-shell{
+  display:grid;
+  gap:12px;
+  min-width:0;
+}
+
+.milo-room-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:10px 14px;
+  border:1px solid rgba(112,76,45,.18);
+  border-radius:16px;
+  color:#65452d;
+  background:rgba(255,249,231,.82);
+  box-shadow:0 8px 18px rgba(72,43,25,.1);
+}
+
+.milo-room-toolbar div{
+  display:grid;
+  gap:2px;
+}
+
+.milo-room-toolbar span{
+  color:#a7773d;
+  font-size:.62rem;
+  font-weight:950;
+  letter-spacing:.15em;
+}
+
+.milo-room-toolbar b{
+  font-size:.88rem;
+}
+
+.milo-room-toolbar p{
+  margin:0;
+  color:#836349;
+  font-size:.74rem;
+  line-height:1.4;
+  text-align:right;
+}
+
+.milo-room-scene{
+  position:relative;
+  min-height:clamp(430px,58vh,700px);
+  overflow:hidden;
+  border:8px solid #543821;
+  border-radius:26px;
+  outline:none;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.12),transparent 34%),
+    linear-gradient(180deg,#dcc79e 0 61%,#a96f42 61% 100%);
+  box-shadow:
+    0 18px 34px rgba(50,28,15,.23),
+    inset 0 0 0 3px rgba(255,240,197,.34);
+  isolation:isolate;
+}
+
+.milo-room-scene::before{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  top:61%;
+  height:12px;
+  z-index:-1;
+  background:#5f3d25;
+  box-shadow:0 5px 0 rgba(255,214,150,.16);
+}
+
+.milo-room-scene::after{
+  content:"";
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:39%;
+  z-index:-2;
+  opacity:.55;
+  background:
+    repeating-linear-gradient(90deg,transparent 0 78px,rgba(82,48,26,.42) 79px 84px),
+    repeating-linear-gradient(0deg,transparent 0 44px,rgba(96,57,31,.22) 45px 49px);
+}
+
+.milo-room-wall-beam{
+  position:absolute;
+  top:0;
+  bottom:38%;
+  width:28px;
+  z-index:-1;
+  background:linear-gradient(90deg,#6d4628,#9c6940 50%,#5d3922);
+  box-shadow:0 0 0 4px rgba(84,50,29,.22);
+}
+
+.milo-room-wall-beam.beam-left{left:8%}
+.milo-room-wall-beam.beam-right{right:8%}
+
+.milo-room-window{
+  position:absolute;
+  left:50%;
+  top:7%;
+  width:clamp(180px,26vw,320px);
+  height:clamp(150px,23vw,260px);
+  transform:translateX(-50%);
+  border:12px solid #70482c;
+  border-radius:28px 28px 18px 18px;
+  background:#27424b;
+  box-shadow:0 14px 24px rgba(48,27,14,.2),inset 0 0 0 5px #d6aa6d;
+}
+
+.milo-room-window::before,
+.milo-room-window::after{
+  content:"";
+  position:absolute;
+  z-index:3;
+  background:#d7b074;
+  box-shadow:0 0 0 2px rgba(72,42,23,.28);
+}
+
+.milo-room-window::before{
+  left:50%;
+  top:8px;
+  bottom:8px;
+  width:8px;
+  transform:translateX(-50%);
+}
+
+.milo-room-window::after{
+  left:8px;
+  right:8px;
+  top:52%;
+  height:8px;
+  transform:translateY(-50%);
+}
+
+.milo-room-sky{
+  position:absolute;
+  inset:8px;
+  overflow:hidden;
+  border-radius:13px;
+  background:
+    radial-gradient(circle at 72% 32%,rgba(255,236,159,.18),transparent 18%),
+    linear-gradient(180deg,#243b58,#395a70 58%,#769094);
+}
+
+.milo-room-sky::after{
+  content:"";
+  position:absolute;
+  left:-10%;
+  right:-10%;
+  bottom:-20%;
+  height:58%;
+  background:
+    radial-gradient(circle at 12% 100%,#304b39 0 23%,transparent 24%),
+    radial-gradient(circle at 34% 100%,#3d5f44 0 27%,transparent 28%),
+    radial-gradient(circle at 58% 100%,#2f4b38 0 25%,transparent 26%),
+    radial-gradient(circle at 83% 100%,#3a5b41 0 28%,transparent 29%);
+}
+
+.milo-room-moon{
+  position:absolute;
+  right:17%;
+  top:17%;
+  width:34px;
+  height:34px;
+  z-index:2;
+  border-radius:50%;
+  background:#f4df94;
+  box-shadow:0 0 22px rgba(255,228,137,.64);
+}
+
+.milo-room-moon::after{
+  content:"";
+  position:absolute;
+  left:10px;
+  top:-2px;
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:#2d4960;
+}
+
+.milo-room-star{
+  position:absolute;
+  z-index:2;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#fff0b0;
+  box-shadow:0 0 8px rgba(255,241,180,.9);
+  animation:milo-room-star-twinkle 1.8s ease-in-out infinite;
+}
+
+.milo-room-star.star-one{left:23%;top:25%}
+.milo-room-star.star-two{left:34%;top:42%;animation-delay:.7s}
+
+.milo-room-curtain{
+  position:absolute;
+  top:-12px;
+  bottom:-20px;
+  z-index:5;
+  width:31%;
+  border:4px solid #604733;
+  background:
+    linear-gradient(90deg,rgba(255,255,255,.13),transparent 18% 82%,rgba(53,35,23,.14)),
+    #69806b;
+  box-shadow:inset 0 -12px 0 rgba(58,77,60,.18);
+}
+
+.milo-room-curtain.curtain-left{
+  left:-24%;
+  border-radius:20px 4px 16px 20px;
+  transform:rotate(4deg);
+}
+
+.milo-room-curtain.curtain-right{
+  right:-24%;
+  border-radius:4px 20px 20px 16px;
+  transform:rotate(-4deg);
+}
+
+.milo-room-bed{
+  position:absolute;
+  left:7%;
+  bottom:12%;
+  width:clamp(260px,38vw,500px);
+  height:clamp(170px,25vw,290px);
+  z-index:4;
+}
+
+.milo-room-bed span{position:absolute;display:block;box-sizing:border-box}
+
+.milo-room-headboard{
+  left:0;
+  bottom:13%;
+  width:24%;
+  height:76%;
+  border:7px solid #50311f;
+  border-radius:24px 24px 8px 8px;
+  background:linear-gradient(90deg,#7a4b2c,#a87345,#6a4027);
+  box-shadow:inset 0 0 0 6px rgba(238,193,128,.16);
+}
+
+.milo-room-mattress{
+  left:13%;
+  right:0;
+  bottom:19%;
+  height:43%;
+  border:7px solid #50311f;
+  border-radius:20px 34px 18px 18px;
+  background:linear-gradient(180deg,#f4e9cd,#d7c29b);
+  box-shadow:inset 0 -12px 0 rgba(151,112,70,.13);
+}
+
+.milo-room-pillow{
+  left:19%;
+  top:24%;
+  width:27%;
+  height:27%;
+  border:5px solid #8a6745;
+  border-radius:48% 44% 42% 52%;
+  background:#fff5dc;
+  transform:rotate(-6deg);
+}
+
+.milo-room-blanket{
+  right:3%;
+  top:34%;
+  width:58%;
+  height:48%;
+  border:6px solid #4b633f;
+  border-radius:30px 34px 24px 20px;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.18),transparent 40%),
+    repeating-linear-gradient(90deg,#76916e 0 34px,#68835f 35px 67px);
+  box-shadow:inset 0 -11px 0 rgba(42,69,43,.14);
+}
+
+.milo-room-bed-leg{
+  bottom:1%;
+  width:7%;
+  height:20%;
+  border:5px solid #4b2e1e;
+  background:#81502f;
+}
+
+.milo-room-bed-leg.leg-left{left:17%}
+.milo-room-bed-leg.leg-right{right:5%}
+
+.milo-room-table{
+  position:absolute;
+  right:8%;
+  bottom:15%;
+  width:clamp(160px,22vw,280px);
+  height:clamp(180px,25vw,300px);
+  z-index:4;
+}
+
+.milo-room-table span{position:absolute;display:block;box-sizing:border-box}
+
+.milo-room-table-top{
+  left:0;
+  right:0;
+  top:43%;
+  height:15%;
+  border:6px solid #4d2d1d;
+  border-radius:18px;
+  background:linear-gradient(180deg,#a77347,#6f452b);
+  box-shadow:0 9px 0 rgba(53,31,19,.14);
+}
+
+.milo-room-table-leg{
+  top:55%;
+  width:12%;
+  height:38%;
+  border:5px solid #4c2d1d;
+  background:#784a2d;
+}
+
+.milo-room-table-leg.table-leg-left{left:12%}
+.milo-room-table-leg.table-leg-right{right:12%}
+
+.milo-room-lamp{
+  left:13%;
+  top:5%;
+  width:34%;
+  height:40%;
+}
+
+.milo-room-lamp::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:12%;
+  height:44%;
+  transform:translateX(-50%);
+  border:4px solid #5e3b24;
+  border-radius:999px;
+  background:#b17a46;
+}
+
+.milo-room-lamp::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  width:82%;
+  height:54%;
+  transform:translateX(-50%);
+  border:5px solid #6b4a2d;
+  border-radius:44% 44% 35% 35%;
+  background:#f0d59b;
+  box-shadow:0 0 0 0 rgba(255,210,101,0);
+  transition:box-shadow .25s ease,background .25s ease;
+}
+
+.milo-room-lamp i{
+  left:35%;
+  right:35%;
+  bottom:-4%;
+  height:13%;
+  border:4px solid #59361f;
+  border-radius:50%;
+  background:#936039;
+}
+
+.milo-room-view.lamp-on .milo-room-lamp::after{
+  background:#ffe3a0;
+  box-shadow:0 0 34px 16px rgba(255,205,96,.48);
+}
+
+.milo-room-view.lamp-on .milo-room-scene{
+  background:
+    radial-gradient(circle at 78% 45%,rgba(255,214,120,.18),transparent 30%),
+    linear-gradient(180deg,rgba(255,255,255,.12),transparent 34%),
+    linear-gradient(180deg,#dcc79e 0 61%,#a96f42 61% 100%);
+}
+
+.milo-room-cup{
+  right:18%;
+  top:31%;
+  width:18%;
+  height:13%;
+  border:4px solid #6c4a31;
+  border-radius:5px 5px 12px 12px;
+  background:#e7d3a7;
+}
+
+.milo-room-cup::after{
+  content:"";
+  position:absolute;
+  right:-34%;
+  top:12%;
+  width:38%;
+  height:55%;
+  border:4px solid #6c4a31;
+  border-left:0;
+  border-radius:0 50% 50% 0;
+}
+
+.milo-room-boxes{
+  position:absolute;
+  right:28%;
+  bottom:12%;
+  width:clamp(150px,21vw,260px);
+  height:clamp(120px,16vw,210px);
+  z-index:3;
+}
+
+.milo-room-boxes span{position:absolute;display:block;box-sizing:border-box}
+
+.milo-room-box{
+  border:6px solid #664126;
+  border-radius:10px;
+  background:linear-gradient(135deg,#bd8a55,#96623a);
+  box-shadow:inset 0 0 0 5px rgba(246,205,142,.12);
+}
+
+.milo-room-box::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:-6px;
+  bottom:-6px;
+  width:10%;
+  transform:translateX(-50%);
+  background:rgba(239,201,133,.34);
+}
+
+.milo-room-box.box-one{left:0;bottom:0;width:62%;height:58%}
+.milo-room-box.box-two{right:0;bottom:3%;width:46%;height:43%}
+
+.milo-room-folded-cloth{
+  left:9%;
+  top:4%;
+  width:45%;
+  height:38%;
+  border:5px solid #5a6d58;
+  border-radius:10px;
+  background:linear-gradient(180deg,#a8b89c,#7f9278);
+  box-shadow:0 9px 0 #d9c7a5,0 14px 0 #8aa087;
+}
+
+.milo-room-rug{
+  position:absolute;
+  left:33%;
+  bottom:6%;
+  width:34%;
+  height:18%;
+  z-index:1;
+  border:7px solid #6c4930;
+  border-radius:50%;
+  background:
+    radial-gradient(ellipse,#d6bd85 0 46%,#b68758 47% 62%,#6f8a68 63% 100%);
+  opacity:.9;
+  transform:perspective(300px) rotateX(58deg);
+}
+
+.milo-room-paw{
+  position:absolute;
+  left:50%;
+  bottom:14%;
+  z-index:5;
+  display:grid;
+  place-items:center;
+  width:56px;
+  height:56px;
+  border:5px solid #60402a;
+  border-radius:50%;
+  background:rgba(255,245,216,.86);
+  box-shadow:0 10px 16px rgba(65,38,22,.18);
+  transform:translateX(-50%);
+  font-size:1.35rem;
+}
+
+.milo-room-hotspot{
+  position:absolute;
+  z-index:20;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:42px;
+  padding:8px 12px;
+  border:2px solid rgba(255,238,189,.8);
+  border-radius:999px;
+  color:#fff4d3;
+  background:rgba(71,47,31,.88);
+  box-shadow:0 8px 18px rgba(39,21,12,.24),0 0 0 4px rgba(255,222,142,.1);
+  font-size:.72rem;
+  font-weight:900;
+  cursor:pointer;
+  backdrop-filter:blur(5px);
+  animation:milo-room-hotspot-breathe 1.8s ease-in-out infinite;
+}
+
+.milo-room-hotspot span{font-size:1rem}
+.milo-room-hotspot b{white-space:nowrap}
+.milo-room-hotspot:hover,
+.milo-room-hotspot:focus-visible{
+  outline:3px solid rgba(255,222,132,.52);
+  transform:translateY(-2px);
+}
+
+.milo-room-hotspot.hotspot-bed{left:16%;bottom:28%}
+.milo-room-hotspot.hotspot-window{left:50%;top:36%;transform:translateX(-50%)}
+.milo-room-hotspot.hotspot-box{right:29%;bottom:27%}
+.milo-room-hotspot.hotspot-lamp{right:9%;top:34%}
+
+.milo-room-note{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-areas:
+    "label title"
+    "label text";
+  gap:2px 12px;
+  align-items:center;
+  min-height:78px;
+  padding:13px 16px;
+  border:1px solid rgba(115,78,43,.2);
+  border-radius:17px;
+  color:#65442e;
+  background:linear-gradient(180deg,rgba(255,250,232,.96),rgba(239,222,188,.96));
+  box-shadow:0 10px 22px rgba(70,41,22,.12),inset 0 0 0 3px rgba(255,255,255,.32);
+}
+
+.milo-room-note>span{
+  grid-area:label;
+  align-self:stretch;
+  display:grid;
+  place-items:center;
+  min-width:78px;
+  padding:7px;
+  border-radius:12px;
+  color:#fff0c9;
+  background:#6e4d34;
+  font-size:.62rem;
+  font-weight:950;
+  letter-spacing:.12em;
+  writing-mode:vertical-rl;
+}
+
+.milo-room-note h3{
+  grid-area:title;
+  margin:0;
+  color:#6e4a2d;
+  font-size:.92rem;
+}
+
+.milo-room-note p{
+  grid-area:text;
+  margin:0;
+  color:#816247;
+  font-size:.78rem;
+  line-height:1.55;
+}
+
+.milo-room-view.is-entering .milo-room-scene{
+  animation:milo-room-scene-in .32s ease-out both;
+}
+
+.milo-room-view.is-entering .milo-room-note{
+  animation:milo-room-note-in .34s .06s ease-out both;
+}
+
+@keyframes milo-room-star-twinkle{
+  0%,100%{opacity:.45;transform:scale(.78)}
+  50%{opacity:1;transform:scale(1.25)}
+}
+
+@keyframes milo-room-hotspot-breathe{
+  0%,100%{box-shadow:0 8px 18px rgba(39,21,12,.24),0 0 0 4px rgba(255,222,142,.08)}
+  50%{box-shadow:0 10px 22px rgba(39,21,12,.28),0 0 0 8px rgba(255,222,142,.13)}
+}
+
+@keyframes milo-room-scene-in{
+  from{opacity:0;transform:translateY(16px) scale(.985)}
+  to{opacity:1;transform:none}
+}
+
+@keyframes milo-room-note-in{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:none}
+}
+
+@keyframes milo-room-head-in{
+  from{opacity:0;transform:translateY(-8px)}
+  to{opacity:1;transform:none}
+}
+
+@media(max-width:760px){
+  .milo-room-toolbar{
+    align-items:flex-start;
+  }
+  .milo-room-toolbar p{
+    max-width:52%;
+    font-size:.68rem;
+  }
+  .milo-room-scene{
+    min-height:520px;
+  }
+  .milo-room-window{
+    top:6%;
+    width:220px;
+    height:175px;
+  }
+  .milo-room-bed{
+    left:2%;
+    bottom:11%;
+    width:58%;
+    height:38%;
+  }
+  .milo-room-table{
+    right:2%;
+    bottom:16%;
+    width:27%;
+    height:38%;
+  }
+  .milo-room-boxes{
+    right:23%;
+    bottom:11%;
+    width:27%;
+    height:22%;
+  }
+  .milo-room-rug{
+    left:31%;
+    bottom:4%;
+    width:38%;
+    height:17%;
+  }
+  .milo-room-paw{
+    bottom:12%;
+    width:50px;
+    height:50px;
+  }
+  .milo-room-hotspot{
+    min-height:38px;
+    padding:7px 9px;
+    font-size:.66rem;
+  }
+  .milo-room-hotspot.hotspot-bed{left:8%;bottom:31%}
+  .milo-room-hotspot.hotspot-window{top:37%}
+  .milo-room-hotspot.hotspot-box{right:23%;bottom:28%}
+  .milo-room-hotspot.hotspot-lamp{right:2%;top:38%}
+}
+
+@media(max-width:520px){
+  .milo-room-toolbar{
+    display:grid;
+    gap:6px;
+  }
+  .milo-room-toolbar p{
+    max-width:none;
+    text-align:left;
+  }
+  .milo-room-scene{
+    min-height:550px;
+    border-width:6px;
+    border-radius:20px;
+  }
+  .milo-room-window{
+    top:5%;
+    width:190px;
+    height:155px;
+  }
+  .milo-room-bed{
+    left:-3%;
+    bottom:10%;
+    width:67%;
+    height:35%;
+  }
+  .milo-room-table{
+    right:-1%;
+    bottom:17%;
+    width:31%;
+    height:35%;
+  }
+  .milo-room-boxes{
+    right:19%;
+    bottom:10%;
+    width:31%;
+    height:20%;
+  }
+  .milo-room-hotspot b{display:none}
+  .milo-room-hotspot{
+    width:40px;
+    min-height:40px;
+    justify-content:center;
+    padding:6px;
+  }
+  .milo-room-hotspot.hotspot-bed{left:7%;bottom:29%}
+  .milo-room-hotspot.hotspot-window{top:35%}
+  .milo-room-hotspot.hotspot-box{right:22%;bottom:25%}
+  .milo-room-hotspot.hotspot-lamp{right:3%;top:37%}
+  .milo-room-note{
+    grid-template-columns:1fr;
+    grid-template-areas:"label" "title" "text";
+    gap:5px;
+  }
+  .milo-room-note>span{
+    min-width:0;
+    writing-mode:horizontal-tb;
+  }
+}
+
+@media(max-height:650px) and (orientation:landscape){
+  .milo-room-scene{
+    min-height:360px;
+  }
+  .milo-room-window{
+    top:4%;
+    width:180px;
+    height:145px;
+  }
+  .milo-room-bed{
+    bottom:6%;
+    width:42%;
+    height:47%;
+  }
+  .milo-room-table{
+    bottom:7%;
+    width:22%;
+    height:52%;
+  }
+  .milo-room-boxes{
+    bottom:7%;
+    width:20%;
+    height:31%;
+  }
+  .milo-room-paw{bottom:8%}
+  .milo-room-hotspot.hotspot-bed{bottom:28%}
+  .milo-room-hotspot.hotspot-box{bottom:24%}
+  .milo-room-hotspot.hotspot-lamp{top:31%}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .milo-room-view.is-entering .milo-room-scene,
+  .milo-room-view.is-entering .milo-room-note,
+  .milo-room-head,
+  .milo-room-star,
+  .milo-room-hotspot{
+    animation:none!important;
+  }
+}
