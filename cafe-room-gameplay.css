@@ -13,6 +13,7 @@
   background:linear-gradient(180deg,rgba(84,53,32,.94),rgba(43,28,20,.96));
   box-shadow:0 10px 24px rgba(31,17,9,.3),inset 0 0 0 3px rgba(255,255,255,.04);
   pointer-events:none;
+  transition:opacity .18s ease,transform .18s ease;
 }
 .cafe-chapter-quest span{color:#f6cf72;font-size:.62rem;font-weight:900;letter-spacing:.13em}
 .cafe-chapter-quest b{font-size:.75rem;line-height:1.35}
@@ -38,33 +39,314 @@
   animation:cafe-story-target-bob 1.25s ease-in-out infinite;
 }
 
-.cafe-story-modal{
-  max-width:540px;
-  text-align:center;
-  background:
-    radial-gradient(circle at 50% 0,rgba(246,210,121,.16),transparent 38%),
-    linear-gradient(180deg,#fff8e6,#f1dfbd);
-  color:#5a3826;
-}
-.cafe-story-modal .core-modal-kicker{color:#8a6335}
-.cafe-story-icon{
-  display:grid;
-  place-items:center;
-  width:62px;
-  height:62px;
-  margin:5px auto 8px;
-  border:3px solid #8a5d38;
-  border-radius:50%;
-  background:linear-gradient(180deg,#fff1b8,#e9bc69);
-  box-shadow:0 9px 20px rgba(83,49,27,.16);
-  font-size:1.7rem;
-}
-.cafe-story-speaker{margin:0;color:#8b5c35;font-size:.78rem;font-weight:900;letter-spacing:.12em}
-.cafe-story-modal h2{margin:.25rem 0 .7rem;color:#5b3825}
-.cafe-story-body{min-height:5.2em;margin:0 auto 1rem;max-width:34em;color:#694832;line-height:1.8;text-align:left}
-.cafe-story-modal>button{width:100%;min-height:46px;border:0;border-radius:14px;color:#fff8df;background:linear-gradient(180deg,#7b5b35,#503521);font-weight:900;box-shadow:inset 0 -3px 0 rgba(28,15,8,.22),0 8px 16px rgba(69,39,21,.18)}
-
 .cafe-player.is-bumped .cafe-milo-sprite{animation:cafe-player-bump .2s ease-out!important}
+
+.cafe-room-story-active [data-cafe-joystick],
+.cafe-room-story-active [data-cafe-interact],
+.cafe-room-story-active [data-cafe-drawer],
+.cafe-room-story-active [data-cafe-chapter-quest],
+.cafe-room-story-active .cafe-rowan.is-story-target::after{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+
+.game-window.cafe-story-active .top-bar,
+.game-window.cafe-story-active .bottom-dock,
+.game-window.cafe-story-active .floating-collection-button,
+#page-home.cafe-story-active>.dialogue-box{
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+}
+
+.cafe-story-layer{
+  position:absolute;
+  inset:0;
+  z-index:900;
+  display:grid;
+  overflow:hidden;
+  isolation:isolate;
+  color:#52351f;
+  font-family:inherit;
+  touch-action:manipulation;
+}
+.cafe-story-layer[hidden]{display:none!important}
+.cafe-story-backdrop{
+  position:absolute;
+  inset:0;
+  z-index:-3;
+  background:
+    linear-gradient(180deg,rgba(24,20,18,.18) 0%,rgba(24,17,13,.16) 42%,rgba(28,18,12,.52) 100%),
+    radial-gradient(circle at 50% 25%,rgba(255,241,190,.16),transparent 46%);
+  backdrop-filter:blur(1.5px) saturate(.9);
+}
+.cafe-story-backdrop::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(26,16,12,.18),transparent 28%,transparent 72%,rgba(26,16,12,.18));
+}
+
+.cafe-story-chapter{
+  position:absolute;
+  top:max(12px,calc(env(safe-area-inset-top) + 8px));
+  left:50%;
+  z-index:8;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  max-width:calc(100% - 28px);
+  padding:7px 12px;
+  border:1px solid rgba(255,239,192,.5);
+  border-radius:999px;
+  color:#fff3cb;
+  background:rgba(53,35,24,.72);
+  box-shadow:0 8px 20px rgba(35,20,12,.22);
+  transform:translateX(-50%);
+  backdrop-filter:blur(9px);
+  white-space:nowrap;
+}
+.cafe-story-chapter span{font-size:.62rem;font-weight:950;letter-spacing:.16em}
+.cafe-story-chapter b{overflow:hidden;font-size:.73rem;text-overflow:ellipsis}
+
+.cafe-story-characters{
+  position:absolute;
+  inset:34px 0 24%;
+  z-index:-1;
+  pointer-events:none;
+}
+.cafe-story-character{
+  position:absolute;
+  bottom:-3%;
+  width:min(36%,300px);
+  height:96%;
+  opacity:.5;
+  filter:saturate(.72) brightness(.74);
+  transform:translateY(4%) scale(.94);
+  transform-origin:50% 100%;
+  transition:opacity .24s ease,filter .24s ease,transform .24s ease;
+}
+.cafe-story-character--left{left:1.5%}
+.cafe-story-character--right{right:1.5%}
+.cafe-story-character.is-speaking{
+  z-index:2;
+  opacity:1;
+  filter:drop-shadow(0 18px 22px rgba(35,19,10,.26)) saturate(1) brightness(1);
+  transform:translateY(0) scale(1.02);
+}
+.cafe-story-character.is-listening{opacity:.42}
+.cafe-story-character.is-hidden-for-system{opacity:.12;filter:grayscale(.35) brightness(.65);transform:translateY(7%) scale(.9)}
+
+.cafe-story-portrait{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:clamp(150px,22vw,260px);
+  height:clamp(220px,39vw,410px);
+  transform:translateX(-50%);
+}
+.cafe-story-portrait span,.cafe-story-portrait i{position:absolute;display:block;box-sizing:border-box}
+
+/* 米洛：暫用的 CSS 角色立牌，之後可直接換成正式透明立繪。 */
+.cafe-story-portrait--milo .cafe-story-milo-ear{
+  top:10%;
+  width:34%;
+  height:41%;
+  border:4px solid #5b3b2a;
+  border-radius:50% 50% 62% 38%;
+  background:linear-gradient(145deg,#9d6c49,#6b432d);
+  box-shadow:inset 0 0 0 8px rgba(238,180,148,.35);
+}
+.cafe-story-portrait--milo .ear-left{left:4%;transform:rotate(-28deg)}
+.cafe-story-portrait--milo .ear-right{right:4%;transform:scaleX(-1) rotate(-28deg)}
+.cafe-story-milo-hair{
+  top:8%;left:16%;width:68%;height:44%;
+  border:4px solid #5b3b2a;border-radius:46% 46% 42% 42%;
+  background:
+    radial-gradient(circle at 20% 12%,#b78358 0 13%,transparent 14%),
+    radial-gradient(circle at 43% 5%,#ad7750 0 16%,transparent 17%),
+    radial-gradient(circle at 68% 10%,#9e6a46 0 14%,transparent 15%),
+    linear-gradient(145deg,#9b6846,#69422e);
+  box-shadow:inset 0 -10px 0 rgba(66,37,24,.13);
+}
+.cafe-story-milo-face{
+  top:21%;left:21%;width:58%;height:34%;
+  border:4px solid #5b3b2a;border-radius:46% 46% 50% 50%;
+  background:linear-gradient(160deg,#f4caaa,#ddb08d);
+}
+.cafe-story-eye{top:41%;width:11%;height:14%;border-radius:50%;background:#4c332a;box-shadow:inset 0 -2px 0 #241914}
+.cafe-story-eye::after{content:"";position:absolute;left:22%;top:14%;width:30%;height:30%;border-radius:50%;background:#fff7ec}
+.cafe-story-eye.eye-left{left:25%}.cafe-story-eye.eye-right{right:25%}
+.cafe-story-brow{top:30%;width:18%;height:3px;border-radius:999px;background:#704b38}
+.cafe-story-brow.brow-left{left:19%;transform:rotate(-6deg)}.cafe-story-brow.brow-right{right:19%;transform:rotate(6deg)}
+.cafe-story-mouth{left:43%;bottom:18%;width:14%;height:7%;border-bottom:3px solid #8f5b50;border-radius:0 0 50% 50%}
+.cafe-story-milo-shirt{
+  left:15%;bottom:0;width:70%;height:46%;
+  border:4px solid #5b3b2a;border-radius:44% 44% 14% 14%;
+  background:linear-gradient(160deg,#fff8e7,#e8dcc3);
+}
+.cafe-story-milo-apron{
+  left:29%;bottom:0;width:42%;height:38%;
+  border:4px solid #365e43;border-radius:22% 22% 8% 8%;
+  background:linear-gradient(160deg,#79a579,#486f58);
+}
+.cafe-story-milo-apron::before{content:"";position:absolute;left:20%;right:20%;top:-26%;height:32%;border:5px solid #486f58;border-bottom:0;border-radius:50% 50% 0 0}
+
+.cafe-story-character[data-expression="nervous"] .cafe-story-portrait--milo .brow-left{transform:rotate(12deg)}
+.cafe-story-character[data-expression="nervous"] .cafe-story-portrait--milo .brow-right{transform:rotate(-12deg)}
+.cafe-story-character[data-expression="nervous"] .cafe-story-portrait--milo .cafe-story-mouth{height:9%;border:2px solid #8f5b50;border-radius:50%}
+.cafe-story-character[data-expression="hopeful"] .cafe-story-portrait--milo .cafe-story-eye{height:17%;transform:scale(1.08)}
+.cafe-story-character[data-expression="determined"] .cafe-story-portrait--milo .brow-left{transform:rotate(-12deg)}
+.cafe-story-character[data-expression="determined"] .cafe-story-portrait--milo .brow-right{transform:rotate(12deg)}
+
+/* 洛溫 */
+.cafe-story-rowan-hair-back{
+  top:4%;left:11%;width:78%;height:86%;
+  border:4px solid #6c4d27;border-radius:47% 47% 30% 30%;
+  background:linear-gradient(90deg,#c99745,#f3d383 44%,#d8a94f 78%,#b77d31);
+  box-shadow:inset 12px 0 0 rgba(255,245,185,.22),inset -12px 0 0 rgba(116,72,25,.12);
+}
+.cafe-story-rowan-ear{
+  top:28%;width:26%;height:10%;
+  border:3px solid #8d6542;background:#f1c7a2;
+}
+.cafe-story-rowan-ear.ear-left{left:3%;border-radius:90% 10% 90% 10%;transform:rotate(-16deg)}
+.cafe-story-rowan-ear.ear-right{right:3%;border-radius:10% 90% 10% 90%;transform:rotate(16deg)}
+.cafe-story-rowan-face{
+  top:13%;left:23%;width:54%;height:43%;
+  border:4px solid #785634;border-radius:44% 44% 48% 48%;
+  background:linear-gradient(155deg,#ffe2c1,#edbd91);
+}
+.cafe-story-portrait--rowan .cafe-story-eye{top:43%;width:11%;height:9%;background:#6c7244}
+.cafe-story-portrait--rowan .cafe-story-eye.eye-left{left:25%}.cafe-story-portrait--rowan .cafe-story-eye.eye-right{right:25%}
+.cafe-story-portrait--rowan .cafe-story-brow{top:32%;background:#8f6c37}
+.cafe-story-portrait--rowan .cafe-story-mouth{bottom:20%;border-color:#a36c60}
+.cafe-story-rowan-fringe{
+  top:8%;left:18%;width:66%;height:30%;
+  border-radius:52% 50% 40% 60%;
+  background:linear-gradient(135deg,#f5da8b,#c9913b);
+  clip-path:polygon(0 0,100% 0,88% 48%,73% 30%,61% 70%,48% 35%,32% 77%,20% 36%,0 63%);
+}
+.cafe-story-rowan-hair-front{top:23%;width:18%;height:62%;border:3px solid #7c582a;border-radius:50%;background:linear-gradient(90deg,#c78d37,#f0cf72,#b8782c)}
+.cafe-story-rowan-hair-front.hair-left{left:12%;transform:rotate(4deg)}
+.cafe-story-rowan-hair-front.hair-right{right:12%;transform:rotate(-4deg)}
+.cafe-story-rowan-shirt{
+  left:12%;bottom:0;width:76%;height:47%;
+  border:4px solid #705231;border-radius:42% 42% 10% 10%;
+  background:linear-gradient(150deg,#fff5da,#dfc99e);
+}
+.cafe-story-rowan-vest{
+  left:27%;bottom:0;width:46%;height:41%;
+  border:4px solid #523a28;border-radius:28% 28% 7% 7%;
+  background:linear-gradient(160deg,#76563b,#493325);
+}
+.cafe-story-character[data-expression="gentle"] .cafe-story-portrait--rowan .cafe-story-mouth{width:18%;left:41%;height:9%;border-bottom-width:4px}
+.cafe-story-character[data-expression="serious"] .cafe-story-portrait--rowan .brow-left{transform:rotate(-10deg)}
+.cafe-story-character[data-expression="serious"] .cafe-story-portrait--rowan .brow-right{transform:rotate(10deg)}
+.cafe-story-character[data-expression="serious"] .cafe-story-portrait--rowan .cafe-story-mouth{width:16%;left:42%;border-radius:0}
+
+.cafe-story-choice-list{
+  position:absolute;
+  left:50%;
+  bottom:clamp(190px,31%,285px);
+  z-index:12;
+  display:grid;
+  gap:8px;
+  width:min(680px,calc(100% - 30px));
+  transform:translateX(-50%);
+}
+.cafe-story-choice-list[hidden]{display:none!important}
+.cafe-story-choice-list button{
+  display:grid;
+  grid-template-columns:30px 1fr;
+  align-items:center;
+  gap:10px;
+  min-height:48px;
+  padding:9px 14px 9px 10px;
+  border:2px solid rgba(123,83,44,.48);
+  border-radius:15px;
+  color:#5a3825;
+  background:linear-gradient(180deg,rgba(255,250,232,.98),rgba(238,218,181,.98));
+  box-shadow:0 8px 22px rgba(34,18,10,.2),inset 0 0 0 3px rgba(255,255,255,.35);
+  text-align:left;
+  cursor:pointer;
+}
+.cafe-story-choice-list button span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:#fff7de;background:#765334;font-size:.74rem;font-weight:950}
+.cafe-story-choice-list button b{font-size:.88rem;line-height:1.4}
+.cafe-story-choice-list button:hover,.cafe-story-choice-list button:focus-visible{outline:3px solid rgba(255,226,139,.72);transform:translateY(-1px)}
+
+.cafe-story-dialogue{
+  position:absolute;
+  left:max(12px,calc(env(safe-area-inset-left) + 10px));
+  right:max(12px,calc(env(safe-area-inset-right) + 10px));
+  bottom:max(10px,calc(env(safe-area-inset-bottom) + 8px));
+  z-index:10;
+  min-height:clamp(154px,25%,220px);
+  padding:23px clamp(20px,4vw,48px) 18px;
+  border:4px solid #6b482d;
+  border-radius:20px 20px 16px 16px;
+  background:
+    linear-gradient(180deg,rgba(255,250,232,.98),rgba(239,220,183,.98)),
+    repeating-linear-gradient(0deg,transparent 0 7px,rgba(114,74,39,.025) 8px 9px);
+  box-shadow:0 20px 40px rgba(30,17,10,.38),inset 0 0 0 4px rgba(255,255,255,.42),inset 0 -7px 0 rgba(122,78,40,.08);
+  cursor:pointer;
+}
+.cafe-story-dialogue::before,.cafe-story-dialogue::after{content:"";position:absolute;top:12px;bottom:12px;width:8px;border-top:2px solid rgba(115,77,43,.32);border-bottom:2px solid rgba(115,77,43,.32)}
+.cafe-story-dialogue::before{left:10px;border-left:2px solid rgba(115,77,43,.32);border-radius:10px 0 0 10px}
+.cafe-story-dialogue::after{right:10px;border-right:2px solid rgba(115,77,43,.32);border-radius:0 10px 10px 0}
+.cafe-story-name-row{position:absolute;left:24px;top:-20px;display:flex;align-items:center;gap:10px;max-width:calc(100% - 48px)}
+.cafe-story-name{
+  display:inline-flex;
+  align-items:center;
+  min-height:39px;
+  padding:7px 20px;
+  border:3px solid #6b482d;
+  border-radius:13px;
+  color:#fff4cf;
+  background:linear-gradient(180deg,#87613e,#5b3c28);
+  box-shadow:0 7px 14px rgba(38,21,12,.22),inset 0 0 0 2px rgba(255,255,255,.1);
+  font-weight:950;
+  letter-spacing:.08em;
+  white-space:nowrap;
+}
+.cafe-story-place{overflow:hidden;color:#7a5635;font-size:.67rem;font-weight:850;text-overflow:ellipsis;white-space:nowrap}
+.cafe-story-line-title{margin:0 0 6px;color:#9b6b35;font-size:.72rem;font-weight:950;letter-spacing:.09em}
+.cafe-story-text{min-height:3.2em;margin:0;padding-right:58px;color:#563a28;font-size:clamp(.88rem,1.8vw,1.04rem);font-weight:650;line-height:1.75;text-align:left}
+.cafe-story-rewards{display:flex;flex-wrap:wrap;gap:8px;margin-top:11px}
+.cafe-story-rewards[hidden]{display:none!important}
+.cafe-story-rewards span{padding:7px 11px;border:1px solid rgba(116,79,40,.28);border-radius:999px;color:#714a27;background:rgba(255,245,211,.72);font-size:.74rem;font-weight:900}
+.cafe-story-next{
+  position:absolute;
+  right:18px;
+  bottom:14px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:38px;
+  padding:8px 12px 8px 15px;
+  border:0;
+  border-radius:999px;
+  color:#fff6d8;
+  background:linear-gradient(180deg,#84603d,#5a3c28);
+  box-shadow:0 7px 14px rgba(48,27,15,.22),inset 0 -2px 0 rgba(35,19,10,.22);
+  font-size:.74rem;
+  font-weight:950;
+  cursor:pointer;
+}
+.cafe-story-next[hidden]{display:none!important}
+.cafe-story-next i{font-style:normal;font-size:1.25rem;line-height:.7;animation:cafe-story-next-pulse 1s ease-in-out infinite}
+.cafe-story-next:hover,.cafe-story-next:focus-visible{outline:3px solid rgba(224,174,82,.4);transform:translateY(-1px)}
+
+.cafe-story-layer[data-mode="reward"] .cafe-story-dialogue{text-align:center;background:radial-gradient(circle at 50% 0,rgba(255,222,128,.42),transparent 48%),linear-gradient(180deg,rgba(255,250,232,.99),rgba(235,212,169,.99))}
+.cafe-story-layer[data-mode="reward"] .cafe-story-name-row{left:50%;transform:translateX(-50%)}
+.cafe-story-layer[data-mode="reward"] .cafe-story-place{display:none}
+.cafe-story-layer[data-mode="reward"] .cafe-story-text{padding-right:0;text-align:center;font-size:1rem}
+.cafe-story-layer[data-mode="reward"] .cafe-story-rewards{justify-content:center}
+
+.cafe-story-layer.is-entering .cafe-story-dialogue{animation:cafe-story-dialogue-in .28s ease-out both}
+.cafe-story-layer.is-entering .cafe-story-character--left{animation:cafe-story-left-in .32s ease-out both}
+.cafe-story-layer.is-entering .cafe-story-character--right{animation:cafe-story-right-in .32s ease-out both}
 
 @keyframes cafe-story-target-bob{
   0%,100%{transform:translateX(-50%) translateY(0)}
@@ -75,13 +357,55 @@
   45%{filter:brightness(1.25);transform:translateX(-50%) scale(.96)}
   100%{filter:none}
 }
+@keyframes cafe-story-dialogue-in{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+@keyframes cafe-story-left-in{from{opacity:0;transform:translateX(-18px) translateY(5%) scale(.94)}to{}}
+@keyframes cafe-story-right-in{from{opacity:0;transform:translateX(18px) translateY(5%) scale(.94)}to{}}
+@keyframes cafe-story-next-pulse{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}
+
+@media(max-width:760px){
+  .cafe-story-characters{inset:42px 0 30%}
+  .cafe-story-character{width:42%;height:92%}
+  .cafe-story-character--left{left:-2%}.cafe-story-character--right{right:-2%}
+  .cafe-story-portrait{width:clamp(130px,32vw,210px);height:clamp(190px,47vw,320px)}
+  .cafe-story-dialogue{min-height:170px;padding:22px 18px 56px}
+  .cafe-story-text{padding-right:0;font-size:.9rem;line-height:1.62}
+  .cafe-story-choice-list{bottom:205px;width:calc(100% - 24px)}
+  .cafe-story-choice-list button{min-height:44px;padding:8px 11px 8px 8px}
+  .cafe-story-choice-list button b{font-size:.8rem}
+}
 
 @media(max-width:600px){
   .cafe-chapter-quest{top:10px;right:10px;max-width:50vw;padding:7px 9px}
   .cafe-chapter-quest b{font-size:.68rem}
-  .cafe-story-body{font-size:.92rem;line-height:1.7}
+  .cafe-story-chapter{top:8px;padding:6px 10px}
+  .cafe-story-chapter span{font-size:.55rem}.cafe-story-chapter b{font-size:.66rem}
+  .cafe-story-characters{inset:38px -4% 34%}
+  .cafe-story-character{width:48%;height:90%}
+  .cafe-story-dialogue{left:7px;right:7px;bottom:max(7px,env(safe-area-inset-bottom));min-height:178px;border-width:3px;border-radius:17px;padding:23px 15px 54px}
+  .cafe-story-name-row{left:16px;top:-18px;max-width:calc(100% - 32px)}
+  .cafe-story-name{min-height:35px;padding:6px 15px;font-size:.82rem}
+  .cafe-story-place{font-size:.6rem}
+  .cafe-story-line-title{font-size:.65rem}
+  .cafe-story-text{font-size:.84rem;line-height:1.58}
+  .cafe-story-next{right:12px;bottom:10px;min-height:35px;padding:7px 10px 7px 13px}
+  .cafe-story-choice-list{bottom:211px;gap:6px}
+}
+
+@media(max-height:650px) and (orientation:landscape){
+  .cafe-story-characters{inset:26px 0 34%}
+  .cafe-story-character{width:30%;height:100%}
+  .cafe-story-portrait{width:clamp(125px,18vw,190px);height:clamp(180px,30vw,285px)}
+  .cafe-story-dialogue{min-height:132px;padding:19px 24px 44px}
+  .cafe-story-text{font-size:.8rem;line-height:1.45}
+  .cafe-story-choice-list{bottom:160px;grid-template-columns:1fr 1fr}
+  .cafe-story-choice-list button{min-height:42px}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .cafe-rowan.is-story-target::after,.cafe-player.is-bumped .cafe-milo-sprite{animation:none!important}
+  .cafe-rowan.is-story-target::after,
+  .cafe-player.is-bumped .cafe-milo-sprite,
+  .cafe-story-layer.is-entering .cafe-story-dialogue,
+  .cafe-story-layer.is-entering .cafe-story-character,
+  .cafe-story-next i{animation:none!important}
+  .cafe-story-character,.cafe-chapter-quest{transition:none!important}
 }
