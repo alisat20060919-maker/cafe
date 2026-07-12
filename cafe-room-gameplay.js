@@ -274,8 +274,12 @@ function isChapterComplete() {
   return Boolean(getState().story?.chapter1Completed);
 }
 
+function isChapterPresentationSeen() {
+  return Boolean(getState().story?.chapter1PresentationV1Seen);
+}
+
 function startChapterOne() {
-  if (isChapterComplete() || activeStory) return false;
+  if (isChapterPresentationSeen() || activeStory) return false;
   const state = getState();
   state.story ||= {};
   state.story.chapter1Started = true;
@@ -290,6 +294,7 @@ function finishChapterOne() {
   state.story.chapter1Started = true;
   state.story.talkedToRowan = true;
   state.story.chapter1Completed = true;
+  state.story.chapter1PresentationV1Seen = true;
   state.story.miloRoomUnlocked = true;
   persistState('story:chapter1-complete');
   syncChapterPresentation();
@@ -300,19 +305,21 @@ function finishChapterOne() {
 function syncChapterPresentation() {
   if (!roomRoot) return;
   const completed = isChapterComplete();
+  const presentationSeen = isChapterPresentationSeen();
   roomRoot.classList.toggle('chapter-one-complete', completed);
+  roomRoot.classList.toggle('chapter-one-presentation-seen', presentationSeen);
   const rowan = roomRoot.querySelector('[data-cafe-object="rowan"]');
-  rowan?.classList.toggle('is-story-target', !completed);
+  rowan?.classList.toggle('is-story-target', !presentationSeen);
 
   let quest = roomRoot.querySelector('[data-cafe-chapter-quest]');
-  if (!completed && !quest) {
+  if (!presentationSeen && !quest) {
     quest = document.createElement('div');
     quest.className = 'cafe-chapter-quest';
     quest.dataset.cafeChapterQuest = '1';
     quest.innerHTML = '<span>主線任務</span><b>走到洛溫身邊並和他說話</b>';
     roomRoot.querySelector('.cafe-room-playfield')?.appendChild(quest);
   }
-  if (completed) quest?.remove();
+  if (presentationSeen) quest?.remove();
 }
 
 function isRowanTalkAction(element) {
@@ -342,7 +349,7 @@ function handleDocumentClick(event) {
     return;
   }
 
-  if (activeStory || isChapterComplete()) return;
+  if (activeStory || isChapterPresentationSeen()) return;
 
   const interactButton = target.closest('[data-cafe-interact][data-target-id="rowan"]');
   const talkButton = target.closest('[data-cafe-action="talk"]');
@@ -377,7 +384,7 @@ function watchRoomVisibility() {
       return;
     }
     syncChapterPresentation();
-    if (!isChapterComplete() && !activeStory) {
+    if (!isChapterPresentationSeen() && !activeStory) {
       setDialogue('任務', '第一章・先住下吧', '使用左下角搖桿走到洛溫身邊，再按右下角的互動鍵。');
     }
   };
