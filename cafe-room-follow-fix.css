@@ -35,6 +35,38 @@
   height:50px;
 }
 
+.cafe-room-playfield>.cafe-interact-prompt{
+  position:absolute!important;
+  left:auto!important;
+  top:auto!important;
+  right:max(16px,calc(env(safe-area-inset-right) + 8px))!important;
+  bottom:max(18px,calc(env(safe-area-inset-bottom) + 10px))!important;
+  z-index:425!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  min-width:112px;
+  max-width:min(210px,43vw);
+  min-height:48px;
+  padding:8px 13px;
+  border-radius:18px!important;
+  transform:none!important;
+  animation:cafe-interact-ready 1.45s ease-in-out infinite!important;
+  white-space:normal!important;
+  line-height:1.2;
+  text-align:center;
+}
+
+.cafe-room-playfield>.cafe-interact-prompt[hidden]{display:none!important}
+.cafe-room-playfield>.cafe-interact-prompt span{font-size:1.05rem}
+.cafe-room-playfield>.cafe-interact-prompt b{font-size:.72rem}
+
+@keyframes cafe-interact-ready{
+  0%,100%{filter:brightness(1);box-shadow:inset 0 -3px 0 rgba(20,12,8,.22),0 7px 16px rgba(0,0,0,.18)}
+  50%{filter:brightness(1.08);box-shadow:inset 0 -3px 0 rgba(20,12,8,.22),0 0 0 5px rgba(247,216,123,.15),0 9px 20px rgba(0,0,0,.24)}
+}
+
 @media(max-width:760px){
   .cafe-room-playfield .cafe-joystick{
     left:max(12px,calc(env(safe-area-inset-left) + 6px))!important;
@@ -42,9 +74,23 @@
   }
   .cafe-room-playfield .cafe-joystick-ring{width:92px;height:92px}
   .cafe-room-playfield .cafe-joystick-knob{width:44px;height:44px;font-size:1.05rem}
+  .cafe-room-playfield>.cafe-interact-prompt{
+    right:max(12px,calc(env(safe-area-inset-right) + 6px))!important;
+    bottom:max(14px,calc(env(safe-area-inset-bottom) + 7px))!important;
+    min-width:104px;
+    max-width:40vw;
+    min-height:44px;
+    padding:7px 10px;
+  }
 }
 
 @media(max-width:430px){
   .cafe-room-playfield .cafe-joystick-ring{width:86px;height:86px}
   .cafe-room-playfield .cafe-joystick-knob{width:42px;height:42px}
+  .cafe-room-playfield>.cafe-interact-prompt{min-width:96px;max-width:38vw}
+  .cafe-room-playfield>.cafe-interact-prompt b{font-size:.66rem}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .cafe-room-playfield>.cafe-interact-prompt{animation:none!important}
 }
