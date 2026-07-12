@@ -148,9 +148,20 @@ function handleRoomAction(actionId) {
   }
 }
 
+function closeCafeInteraction() {
+  const drawer = roomRoot?.querySelector('[data-cafe-drawer]');
+  drawer?.classList.remove('is-open');
+  if (drawer) {
+    drawer.hidden = true;
+    delete drawer.dataset.cafeTarget;
+  }
+  roomRoot?.querySelectorAll('[data-cafe-object].is-selected').forEach((element) => element.classList.remove('is-selected'));
+}
+
 function openMiloRoom() {
   if (!roomView || !getState().story?.chapter1Completed) return false;
   previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  closeCafeInteraction();
   cafeHead = roomRoot?.querySelector('.cafe-room-head');
   cafeScene = roomRoot?.querySelector('.cafe-room-v2');
   if (cafeHead) cafeHead.hidden = true;
@@ -181,6 +192,15 @@ function closeMiloRoom({ restoreFocus = true, silent = false } = {}) {
 }
 
 function bindEvents() {
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : event.target?.parentElement;
+    const visitButton = target?.closest('[data-cafe-action="visit-milo-room"]');
+    if (!visitButton) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    openMiloRoom();
+  }, true);
+
   document.addEventListener('cafe-open-milo-room', openMiloRoom);
   roomView?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : event.target?.parentElement;
