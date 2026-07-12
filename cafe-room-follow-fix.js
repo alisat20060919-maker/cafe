@@ -11,20 +11,25 @@ function ensureStylesheet() {
   if (document.querySelector('link[data-cafe-room-follow-fix]')) return;
   const link = document.createElement('link');
   link.rel = 'stylesheet';
-  link.href = './cafe-room-follow-fix.css?v=room005';
+  link.href = './cafe-room-follow-fix.css?v=room006';
   link.dataset.cafeRoomFollowFix = 'true';
   document.head.appendChild(link);
 }
 
-function createPlayfield(viewport, joystick) {
+function createPlayfield(viewport, joystick, prompt) {
   const existing = viewport.closest('.cafe-room-playfield');
-  if (existing) return existing;
+  if (existing) {
+    if (joystick && joystick.parentElement !== existing) existing.appendChild(joystick);
+    if (prompt && prompt.parentElement !== existing) existing.appendChild(prompt);
+    return existing;
+  }
 
   const playfield = document.createElement('div');
   playfield.className = 'cafe-room-playfield';
   viewport.before(playfield);
   playfield.appendChild(viewport);
   if (joystick) playfield.appendChild(joystick);
+  if (prompt) playfield.appendChild(prompt);
   return playfield;
 }
 
@@ -59,12 +64,13 @@ export function initCafeRoomFollowFix() {
   const stage = roomRoot.querySelector('[data-cafe-stage]');
   const player = roomRoot.querySelector('[data-cafe-player]');
   const joystick = roomRoot.querySelector('[data-cafe-joystick]');
+  const prompt = roomRoot.querySelector('[data-cafe-interact]');
   const pageHome = document.querySelector('#page-home');
   if (!viewport || !stage || !player) return;
 
   roomRoot.dataset.followFixReady = 'true';
   ensureStylesheet();
-  createPlayfield(viewport, joystick);
+  createPlayfield(viewport, joystick, prompt);
 
   const requestFollow = (duration = 240) => {
     followUntil = Math.max(followUntil, performance.now() + duration);
