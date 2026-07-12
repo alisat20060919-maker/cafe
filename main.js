@@ -6,6 +6,7 @@ import { runEdgeTests, renderEdgeTestReport } from './edge-tests.js?v=core002';
 import { initCraftUI, renderCraftStationPage } from './craft-ui.js?v=core003';
 import { initBackyardEntry } from './backyard-entry.js?v=core001';
 import { initBackyardPage, renderBackyardPage } from './backyard-page.js?v=core001';
+import { initCafeRoomV2 } from './cafe-room-v2.js?v=room003';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
@@ -134,6 +135,7 @@ function boot() {
   initCraftUI();
   initBackyardEntry();
   initBackyardPage();
+  initCafeRoomV2();
   initHome();
   initGatherDropHelp();
   initGachaPage();
