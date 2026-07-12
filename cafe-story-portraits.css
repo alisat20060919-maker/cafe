@@ -1,6 +1,7 @@
 .cafe-story-portrait{
   width:clamp(300px,43vw,560px);
   height:clamp(360px,66vw,720px);
+  margin:0;
   overflow:visible;
   pointer-events:none;
 }
