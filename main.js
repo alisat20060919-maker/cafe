@@ -8,7 +8,7 @@ import { initBackyardEntry } from './backyard-entry.js?v=core001';
 import { initBackyardPage, renderBackyardPage } from './backyard-page.js?v=core001';
 import { initCafeRoomV2 } from './cafe-room-v2.js?v=room006';
 import { initCafeRoomFollowFix } from './cafe-room-follow-fix.js?v=room006';
-import { initCafeRoomGameplay } from './cafe-room-gameplay.js?v=room006';
+import { initCafeRoomGameplay } from './cafe-room-gameplay.js?v=room007';
 import { GameDB } from '@db';
 import { applyFairyExpansion } from './fairy-expansion.js?v=core002';
 import { initState } from '@state';
