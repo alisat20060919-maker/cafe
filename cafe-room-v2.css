@@ -1,0 +1,231 @@
+@import url('./cafe-room-v2-characters.css?v=room003');
+/* Halfmoon Amber walkable cafe interior v2 */
+#page-home.inside-mode .location-tabs,
+#page-home.inside-mode .map-area,
+.game-window.inside-mode .location-tabs,
+.game-window.inside-mode .map-area {
+  display: none !important;
+}
+
+#page-home.inside-mode .cafe-inside,
+.game-window.inside-mode .cafe-inside {
+  display: block !important;
+}
+
+.cafe-inside {
+  padding: 16px 20px 20px;
+  background:
+    radial-gradient(circle at 16% 4%, rgba(247,216,123,.1), transparent 28%),
+    linear-gradient(180deg, #173f2c 0%, #203827 100%);
+}
+
+.cafe-room-head { margin-bottom: 10px; }
+.cafe-room-v2 { position: relative; display: grid; gap: 10px; }
+
+.cafe-room-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(220px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 2px solid rgba(247,216,123,.35);
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(83,54,34,.82), rgba(45,31,22,.9));
+  box-shadow: inset 0 0 0 3px rgba(255,244,215,.05), 0 8px 20px rgba(0,0,0,.16);
+}
+
+.cafe-room-toolbar > div { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.cafe-room-toolbar b { overflow: hidden; color: #fff7d8; font-size: .92rem; text-overflow: ellipsis; white-space: nowrap; }
+.cafe-room-toolbar p { margin: 0; color: #d8eec7; font-size: .78rem; line-height: 1.5; text-align: center; font-weight: 700; }
+
+.cafe-room-mode {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: #2b1d13;
+  background: linear-gradient(180deg, #fff0a9, #efb65c);
+  font-size: .72rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.cafe-room-toolbar button,
+.cafe-room-dpad button,
+.cafe-action-buttons button,
+.cafe-action-close,
+.cafe-interact-prompt {
+  border: 2px solid rgba(247,216,123,.55);
+  color: #fff4d7;
+  background: linear-gradient(180deg, rgba(87,55,34,.94), rgba(48,31,22,.98));
+  box-shadow: inset 0 -3px 0 rgba(20,12,8,.22), 0 7px 16px rgba(0,0,0,.18);
+  font-weight: 900;
+}
+
+.cafe-room-toolbar button {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: #2b1d13;
+  background: linear-gradient(180deg, #fff0a9, #efb65c);
+  white-space: nowrap;
+}
+
+.cafe-room-viewport {
+  position: relative;
+  width: 100%;
+  min-height: 470px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 3px solid rgba(247,216,123,.7);
+  border-radius: 25px;
+  outline: none;
+  background: #1f3728;
+  box-shadow: inset 0 0 0 5px rgba(255,244,215,.07), 0 18px 36px rgba(0,0,0,.24);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(247,216,123,.7) rgba(43,29,19,.48);
+  touch-action: pan-x;
+}
+
+.cafe-room-viewport:focus-visible {
+  box-shadow: inset 0 0 0 5px rgba(145,240,208,.16), 0 0 0 3px rgba(145,240,208,.42), 0 18px 36px rgba(0,0,0,.24);
+}
+
+.cafe-room-stage {
+  position: relative;
+  width: max(100%, 980px);
+  height: 470px;
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+  background-image:
+    linear-gradient(180deg, rgba(15,36,28,.04) 0%, rgba(28,34,22,.06) 46%, rgba(34,22,15,.25) 100%),
+    var(--inside-cafe-bg);
+  background-position: center 54%;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.cafe-room-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(28,19,13,.2), transparent 16%, transparent 84%, rgba(28,19,13,.22)),
+    linear-gradient(180deg, rgba(255,248,211,.03), transparent 45%, rgba(29,18,12,.12));
+}
+
+.cafe-room-stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  height: 36%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(45,31,22,.1));
+}
+
+.cafe-room-light {
+  position: absolute;
+  z-index: 4;
+  width: 220px;
+  height: 270px;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: .4;
+  filter: blur(14px);
+  background: radial-gradient(circle, rgba(255,235,167,.72), transparent 67%);
+  animation: cafe-room-breathe 4.8s ease-in-out infinite;
+}
+
+.cafe-room-light.light-left { left: 4%; top: 8%; }
+.cafe-room-light.light-right { right: 5%; top: 18%; animation-delay: -2.1s; }
+
+.cafe-room-floor-glow {
+  position: absolute;
+  left: 10%;
+  right: 8%;
+  bottom: 2%;
+  z-index: 4;
+  height: 34%;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(255,231,167,.13), transparent 68%);
+}
+
+.cafe-object {
+  position: absolute;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+  border: 0;
+  border-radius: 18px;
+  color: #2b1d13;
+  background: transparent;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cafe-object-pin {
+  display: grid;
+  place-items: center;
+  width: 31px;
+  height: 31px;
+  border: 2px solid #fff4bd;
+  border-radius: 50%;
+  color: #2b1d13;
+  background: linear-gradient(180deg, #fff2aa, #efb65d);
+  box-shadow: 0 0 0 6px rgba(247,216,123,.18), 0 7px 16px rgba(38,22,13,.3);
+  font-size: .94rem;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+.cafe-object-label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 4px);
+  min-width: max-content;
+  padding: 4px 8px;
+  border: 2px solid rgba(247,216,123,.62);
+  border-radius: 999px;
+  color: #fff4d7;
+  background: rgba(42,29,22,.86);
+  box-shadow: 0 5px 12px rgba(0,0,0,.18);
+  transform: translateX(-50%);
+  font-size: .68rem;
+  font-weight: 900;
+  white-space: nowrap;
+  opacity: .86;
+  transition: opacity .16s ease, transform .16s ease;
+}
+
+.cafe-object:hover .cafe-object-pin,
+.cafe-object:focus-visible .cafe-object-pin,
+.cafe-object.is-selected .cafe-object-pin {
+  box-shadow: 0 0 0 9px rgba(145,240,208,.22), 0 0 22px rgba(145,240,208,.72), 0 7px 16px rgba(38,22,13,.3);
+  filter: brightness(1.08);
+  transform: translateY(-2px) scale(1.08);
+}
+
+.cafe-object:hover .cafe-object-label,
+.cafe-object:focus-visible .cafe-object-label,
+.cafe-object.is-selected .cafe-object-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.object-menu { left: 25%; top: 38%; }
+.object-cabinet { left: 31%; top: 62%; }
+.object-quest { left: 57%; top: 37%; }
+.object-order { left: 73%; top: 61%; }
+.object-kitchen { left: 12%; top: 53%; }
+.object-backyard { left: 90%; top: 51%; }
+.object-table { left: 49%; top: 65%; }
+.object-stairs { left: 51%; top: 25%; }
